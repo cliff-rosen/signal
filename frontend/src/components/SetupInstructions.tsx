@@ -2,14 +2,30 @@ import { useState } from 'react';
 import { useBotBeam } from '../context/BotBeamContext';
 
 type SetupTab = 'chatgpt' | 'claude' | 'claude-code';
+type Platform = 'mac' | 'windows';
+
+function detectPlatform(): Platform {
+  return navigator.platform.toLowerCase().includes('win') ? 'windows' : 'mac';
+}
 
 export default function SetupInstructions({ mcpUrl }: { mcpUrl: string }) {
   const { namespace } = useBotBeam();
   const [tab, setTab] = useState<SetupTab>('chatgpt');
+  const [platform, setPlatform] = useState<Platform>(detectPlatform);
   const [copied, setCopied] = useState(false);
 
   const serverUrl = mcpUrl.replace(/\/s\/.*/, '');
-  const claudeCodeCommand = `claude mcp add --transport stdio -e BOTBEAM_NAMESPACE=${namespace} -e BOTBEAM_SERVER_URL=${serverUrl} botbeam -- npx -y botbeam@latest`;
+
+  const commands = {
+    mac: `claude mcp add botbeam --transport stdio \\
+  -e BOTBEAM_NAMESPACE=${namespace} \\
+  -e BOTBEAM_SERVER_URL=${serverUrl} \\
+  -- npx -y botbeam@latest`,
+    windows: `claude mcp add botbeam --transport stdio ^
+  -e BOTBEAM_NAMESPACE=${namespace} ^
+  -e "BOTBEAM_SERVER_URL=${serverUrl}" ^
+  -- cmd /c npx -y botbeam@latest`,
+  };
 
   function copy(text: string) {
     navigator.clipboard.writeText(text).then(() => {
@@ -69,10 +85,17 @@ export default function SetupInstructions({ mcpUrl }: { mcpUrl: string }) {
           <ol className="setup-steps">
             <li>Run this command in your terminal:</li>
           </ol>
-          <pre className="setup-codeblock"><code>{claudeCodeCommand}</code></pre>
-          <button className="btn btn-primary btn-copy btn-copy-config" onClick={() => copy(claudeCodeCommand)}>
+
+          <div className="setup-tabs" style={{ marginBottom: 8 }}>
+            <button className={`setup-tab ${platform === 'mac' ? 'active' : ''}`} onClick={() => setPlatform('mac')}>macOS / Linux</button>
+            <button className={`setup-tab ${platform === 'windows' ? 'active' : ''}`} onClick={() => setPlatform('windows')}>Windows</button>
+          </div>
+
+          <pre className="setup-codeblock"><code>{commands[platform]}</code></pre>
+          <button className="btn btn-primary btn-copy btn-copy-config" onClick={() => copy(commands[platform])}>
             {copied ? 'Copied!' : 'Copy command'}
           </button>
+
           <ol className="setup-steps" start={2}>
             <li>Restart Claude Code to pick up the new MCP server.</li>
           </ol>

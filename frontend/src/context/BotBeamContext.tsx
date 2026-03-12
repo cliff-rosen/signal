@@ -111,25 +111,31 @@ export function BotBeamProvider({ children }: { children: ReactNode }) {
 
       ws.onmessage = (e) => {
         const msg: WSEvent = JSON.parse(e.data);
-        const time = new Date().toLocaleTimeString();
 
-        if (msg.event === 'device_created') {
-          setDevices(prev => prev.some(d => d.id === msg.device.id) ? prev : [...prev, msg.device]);
-          setActiveTab(msg.device.id);
-          setWsLog(prev => [...prev, { time, event: msg.event, detail: msg.device.name }]);
-        } else if (msg.event === 'device_deleted') {
-          setDevices(prev => prev.filter(d => d.id !== msg.deviceId));
-          setContentMap(prev => { const next = { ...prev }; delete next[msg.deviceId]; return next; });
-          setActiveTab(prev => prev === msg.deviceId ? 'home' : prev);
-          setWsLog(prev => [...prev, { time, event: msg.event, detail: msg.deviceId }]);
-        } else if (msg.event === 'content_updated') {
-          setContentMap(prev => ({ ...prev, [msg.deviceId]: msg.data }));
-          setActiveTab(msg.deviceId);
-          setWsLog(prev => [...prev, { time, event: msg.event, detail: `${msg.deviceId} (${msg.data.type})` }]);
-        } else if (msg.event === 'content_cleared') {
-          setContentMap(prev => ({ ...prev, [msg.deviceId]: null }));
-          setWsLog(prev => [...prev, { time, event: msg.event, detail: msg.deviceId }]);
+        switch (msg.event) {
+          case 'device_created':
+            setDevices(prev => prev.some(d => d.id === msg.device.id) ? prev : [...prev, msg.device]);
+            setActiveTab(msg.device.id);
+            break;
+          case 'device_deleted':
+            setDevices(prev => prev.filter(d => d.id !== msg.deviceId));
+            setContentMap(prev => { const next = { ...prev }; delete next[msg.deviceId]; return next; });
+            setActiveTab(prev => prev === msg.deviceId ? 'home' : prev);
+            break;
+          case 'content_updated':
+            setContentMap(prev => ({ ...prev, [msg.deviceId]: msg.data }));
+            setActiveTab(msg.deviceId);
+            break;
+          case 'content_cleared':
+            setContentMap(prev => ({ ...prev, [msg.deviceId]: null }));
+            break;
         }
+
+        setWsLog(prev => [...prev, {
+          time: new Date().toLocaleTimeString(),
+          event: msg.event,
+          detail: 'device' in msg ? msg.device.name : 'deviceId' in msg ? msg.deviceId : '',
+        }]);
       };
 
       ws.onclose = () => {

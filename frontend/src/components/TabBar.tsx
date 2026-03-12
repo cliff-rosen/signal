@@ -1,13 +1,12 @@
 import { useState } from 'react';
 import { useBotBeam } from '../context/BotBeamContext';
-import { createDevice } from '../lib/botbeam';
 
 function slugify(name: string) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 }
 
 export default function TabBar() {
-  const { devices, activeTab, switchTab, removeDevice, namespace, refreshDevices } = useBotBeam();
+  const { devices, activeTab, switchTab, removeDevice, addDevice } = useBotBeam();
   const [showModal, setShowModal] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
   const [newName, setNewName] = useState('');
@@ -15,10 +14,9 @@ export default function TabBar() {
   async function handleCreate() {
     const name = newName.trim();
     if (!name) return;
-    await createDevice(namespace, name);
+    await addDevice(name);
     setShowModal(false);
     setNewName('');
-    await refreshDevices();
     switchTab(slugify(name));
   }
 

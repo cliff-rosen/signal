@@ -7,8 +7,8 @@ interface Props {
 }
 
 export default function DeviceView({ deviceId }: Props) {
-  const { namespace, devices } = useBotBeam();
-  const { content, loading } = useDeviceWebSocket(namespace, deviceId);
+  const { devices } = useBotBeam();
+  const { content, loading } = useDeviceWebSocket(deviceId);
   const device = devices.find(d => d.id === deviceId);
 
   if (loading && !content) {
@@ -35,7 +35,7 @@ export default function DeviceView({ deviceId }: Props) {
 
   return (
     <div className="main display-view">
-      <ContentRenderer content={content} namespace={namespace} />
+      <ContentRenderer content={content} />
     </div>
   );
 }

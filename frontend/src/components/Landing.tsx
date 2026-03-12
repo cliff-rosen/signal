@@ -1,10 +1,7 @@
-import { createNamespace } from '../lib/botbeam';
+import { useBotBeam } from '../context/BotBeamContext';
 
 export default function Landing() {
-  async function getStarted() {
-    const { url } = await createNamespace();
-    window.location.href = url;
-  }
+  const { getStarted } = useBotBeam();
 
   return (
     <div className="landing-page">

@@ -1,24 +1,27 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Content, WSEvent } from '../types';
-import { getContent } from '../lib/botbeam';
+import { useBotBeam } from '../context/BotBeamContext';
 
 /**
  * Manages a per-device WebSocket connection.
  * Returns the current content (from REST fetch + live WS updates).
  * Automatically connects on mount and disconnects on unmount.
  */
-export function useDeviceWebSocket(namespace: string, deviceId: string) {
+export function useDeviceWebSocket(deviceId: string) {
+  const { namespace, getContent } = useBotBeam();
   const [content, setContent] = useState<Content | null>(null);
   const [loading, setLoading] = useState(true);
   const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
+    if (!namespace) return;
+
     let cancelled = false;
     let reconnectTimer: ReturnType<typeof setTimeout>;
     let reconnectDelay = 1000;
 
-    // Fetch current content via REST
-    getContent(namespace, deviceId).then(data => {
+    // Fetch current content via context
+    getContent(deviceId).then(data => {
       if (!cancelled) {
         setContent(data);
         setLoading(false);
@@ -60,7 +63,7 @@ export function useDeviceWebSocket(namespace: string, deviceId: string) {
       clearTimeout(reconnectTimer);
       if (wsRef.current) wsRef.current.close();
     };
-  }, [namespace, deviceId]);
+  }, [namespace, deviceId, getContent]);
 
   return { content, loading };
 }

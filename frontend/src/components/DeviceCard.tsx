@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react';
 import { marked } from 'marked';
 import type { Device, Content, DashboardCard, ListItem } from '../types';
-import { getContent } from '../lib/botbeam';
+import { useBotBeam } from '../context/BotBeamContext';
 
 interface Props {
   device: Device;
-  namespace: string;
   onClick: () => void;
 }
 
@@ -67,16 +66,17 @@ function Preview({ content }: { content: Content }) {
   }
 }
 
-export default function DeviceCard({ device, namespace, onClick }: Props) {
+export default function DeviceCard({ device, onClick }: Props) {
+  const { getContent } = useBotBeam();
   const [content, setContent] = useState<Content | null>(null);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    getContent(namespace, device.id).then(data => {
+    getContent(device.id).then(data => {
       setContent(data);
       setLoaded(true);
     }).catch(() => setLoaded(true));
-  }, [namespace, device.id]);
+  }, [getContent, device.id]);
 
   return (
     <div className="device-card" onClick={onClick}>

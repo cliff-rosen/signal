@@ -59,7 +59,6 @@ export default function Home() {
               <DeviceCard
                 key={d.id}
                 device={d}
-                namespace={namespace}
                 onClick={() => switchTab(d.id)}
               />
             ))}

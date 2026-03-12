@@ -1,13 +1,13 @@
 import { marked } from 'marked';
 import type { Content, DashboardCard, ListItem } from '../types';
-import { proxyUrl } from '../lib/botbeam';
+import { useBotBeam } from '../context/BotBeamContext';
 
 interface Props {
   content: Content;
-  namespace: string;
 }
 
-export default function ContentRenderer({ content, namespace }: Props) {
+export default function ContentRenderer({ content }: Props) {
+  const { proxyUrl } = useBotBeam();
   switch (content.type) {
     case 'text':
       return <div className="content content-text">{content.body}</div>;
@@ -36,7 +36,7 @@ export default function ContentRenderer({ content, namespace }: Props) {
         <div className="content">
           <iframe
             className="content-url"
-            src={proxyUrl(namespace, content.body)}
+            src={proxyUrl(content.body)}
             allowFullScreen
           />
         </div>

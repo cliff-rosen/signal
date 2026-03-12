@@ -5,7 +5,9 @@ import DeviceView from './components/DeviceView';
 import Landing from './components/Landing';
 
 function AppContent() {
-  const { activeTab } = useBotBeam();
+  const { namespace, activeTab } = useBotBeam();
+
+  if (!namespace) return <Landing />;
 
   return (
     <div className="app">
@@ -16,15 +18,8 @@ function AppContent() {
 }
 
 export default function App() {
-  const match = window.location.pathname.match(/^\/s\/([^/]+)/);
-  const namespace = match?.[1];
-
-  if (!namespace) {
-    return <Landing />;
-  }
-
   return (
-    <BotBeamProvider namespace={namespace}>
+    <BotBeamProvider>
       <AppContent />
     </BotBeamProvider>
   );

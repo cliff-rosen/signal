@@ -77,7 +77,7 @@ function renderContent(data) {
       contentEl.innerHTML = '';
       const urlFrame = document.createElement('iframe');
       urlFrame.className = 'content-url';
-      urlFrame.src = data.body;
+      urlFrame.src = `${API_BASE}/proxy?url=${encodeURIComponent(data.body)}`;
       urlFrame.setAttribute('allowfullscreen', '');
       contentEl.appendChild(urlFrame);
       break;

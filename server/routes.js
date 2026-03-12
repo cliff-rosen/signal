@@ -74,6 +74,38 @@ function createRouter(broadcast, broadcastGlobal) {
     res.status(204).end();
   });
 
+  // Proxy external URLs (bypasses X-Frame-Options)
+  router.get('/proxy', async (req, res) => {
+    const url = req.query.url;
+    if (!url) return res.status(400).json({ error: 'url parameter required' });
+
+    try {
+      const response = await fetch(url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        },
+        redirect: 'follow',
+      });
+
+      const contentType = response.headers.get('content-type') || 'text/html';
+      const html = await response.text();
+
+      // Strip scripts to prevent frame-busting, auth redirects, and browser hangs
+      let cleaned = html.replace(/<script[\s\S]*?<\/script>/gi, '');
+
+      // Inject a <base> tag so relative URLs resolve against the original site's origin
+      const origin = new URL(url).origin;
+      const baseTag = `<base href="${origin}/">`;
+      const patched = cleaned.replace(/<head([^>]*)>/i, `<head$1>${baseTag}`);
+
+      res.setHeader('Content-Type', contentType);
+      res.send(patched);
+    } catch (err) {
+      res.status(502).json({ error: `Failed to fetch: ${err.message}` });
+    }
+  });
+
   return router;
 }
 

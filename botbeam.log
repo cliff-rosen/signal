@@ -63,3 +63,369 @@
 2026-03-12T07:18:39.366Z [WS] Connected: HkdnqGOS:test-display (1 clients)
 2026-03-12T07:18:39.400Z [API] GET /s/HkdnqGOS/api/devices/test-display/content
 2026-03-12T07:18:40.375Z [WS] Connected: HkdnqGOS:test-display (2 clients)
+2026-03-12T07:39:39.989Z [WS] Disconnected: HkdnqGOS:_global (0 remaining)
+2026-03-12T07:39:39.993Z [WS] Disconnected: HkdnqGOS:test-display (1 remaining)
+2026-03-12T07:39:39.995Z [WS] Disconnected: HkdnqGOS:test-display (0 remaining)
+2026-03-12T07:39:40.121Z [WS] Connected: HkdnqGOS:_global (1 clients)
+2026-03-12T07:39:40.159Z [API] GET /s/HkdnqGOS/api/devices
+2026-03-12T07:39:40.333Z [API] GET /s/HkdnqGOS/api/devices/test-display/content
+2026-03-12T07:39:53.032Z [API] GET /s/HkdnqGOS/api/proxy
+2026-03-12T07:41:07.281Z [WS] Connected: HkdnqGOS:_global (1 clients)
+2026-03-12T07:41:36.714Z [WS] Broadcast HkdnqGOS:_global: device_created → 1 clients
+2026-03-12T07:41:36.791Z [WS] Broadcast HkdnqGOS:research: content → 0 clients
+2026-03-12T07:41:36.792Z [WS] Broadcast HkdnqGOS:_global: content_updated → 1 clients
+2026-03-12T07:41:36.800Z [WS] Connected: HkdnqGOS:research (1 clients)
+2026-03-12T07:41:36.838Z [API] GET /s/HkdnqGOS/api/devices/research/content
+2026-03-12T07:41:36.878Z [API] GET /s/HkdnqGOS/api/devices
+2026-03-12T07:41:36.923Z [WS] Connected: HkdnqGOS:research (2 clients)
+2026-03-12T07:41:36.924Z [WS] Disconnected: HkdnqGOS:research (1 remaining)
+2026-03-12T07:41:37.021Z [API] GET /s/HkdnqGOS/api/devices/research/content
+2026-03-12T07:41:37.928Z [WS] Connected: HkdnqGOS:research (2 clients)
+2026-03-12T07:41:50.707Z [WS] Disconnected: HkdnqGOS:_global (0 remaining)
+2026-03-12T07:41:50.708Z [WS] Disconnected: HkdnqGOS:research (1 remaining)
+2026-03-12T07:41:50.709Z [WS] Disconnected: HkdnqGOS:research (0 remaining)
+2026-03-12T07:41:50.761Z [WS] Connected: HkdnqGOS:_global (1 clients)
+2026-03-12T07:41:50.796Z [API] GET /s/HkdnqGOS/api/devices
+2026-03-12T07:41:50.980Z [API] GET /s/HkdnqGOS/api/devices/test-display/content
+2026-03-12T07:41:51.067Z [API] GET /s/HkdnqGOS/api/devices/research/content
+2026-03-12T07:41:55.097Z [WS] Connected: HkdnqGOS:research (1 clients)
+2026-03-12T07:41:55.130Z [API] GET /s/HkdnqGOS/api/devices/research/content
+2026-03-12T07:41:59.805Z [WS] Disconnected: HkdnqGOS:research (0 remaining)
+2026-03-12T07:41:59.809Z [WS] Connected: HkdnqGOS:test-display (1 clients)
+2026-03-12T07:41:59.865Z [API] GET /s/HkdnqGOS/api/devices/test-display/content
+2026-03-12T07:42:01.414Z [WS] Connected: HkdnqGOS:research (1 clients)
+2026-03-12T07:42:01.415Z [WS] Disconnected: HkdnqGOS:test-display (0 remaining)
+2026-03-12T07:42:01.458Z [API] GET /s/HkdnqGOS/api/devices/research/content
+2026-03-12T07:42:06.045Z [API] GET /s/HkdnqGOS/api/proxy
+2026-03-12T07:42:14.151Z [API] GET /s/HkdnqGOS/api/devices/research/content
+2026-03-12T07:42:19.893Z [WS] Disconnected: HkdnqGOS:_global (0 remaining)
+2026-03-12T07:42:19.896Z [WS] Disconnected: HkdnqGOS:research (0 remaining)
+2026-03-12T07:42:19.945Z [WS] Connected: HkdnqGOS:_global (1 clients)
+2026-03-12T07:42:19.978Z [API] GET /s/HkdnqGOS/api/devices
+2026-03-12T07:42:20.128Z [API] GET /s/HkdnqGOS/api/devices/test-display/content
+2026-03-12T07:42:20.207Z [API] GET /s/HkdnqGOS/api/devices/research/content
+2026-03-12T07:42:23.307Z [WS] Connected: HkdnqGOS:test-display (1 clients)
+2026-03-12T07:42:23.342Z [API] GET /s/HkdnqGOS/api/devices/test-display/content
+2026-03-12T07:42:24.408Z [WS] Disconnected: HkdnqGOS:test-display (0 remaining)
+2026-03-12T07:42:24.411Z [WS] Connected: HkdnqGOS:research (1 clients)
+2026-03-12T07:42:24.448Z [API] GET /s/HkdnqGOS/api/devices/research/content
+2026-03-12T07:42:29.271Z [API] GET /s/HkdnqGOS/api/proxy
+2026-03-12T07:44:01.690Z [WS] Disconnected: HkdnqGOS:_global (0 remaining)
+2026-03-12T07:44:01.692Z [WS] Disconnected: HkdnqGOS:research (0 remaining)
+2026-03-12T07:44:01.743Z [WS] Connected: HkdnqGOS:_global (1 clients)
+2026-03-12T07:44:01.781Z [API] GET /s/HkdnqGOS/api/devices
+2026-03-12T07:44:01.940Z [API] GET /s/HkdnqGOS/api/devices/test-display/content
+2026-03-12T07:44:02.023Z [API] GET /s/HkdnqGOS/api/devices/research/content
+2026-03-12T07:44:03.731Z [WS] Connected: HkdnqGOS:research (1 clients)
+2026-03-12T07:44:03.765Z [API] GET /s/HkdnqGOS/api/devices/research/content
+2026-03-12T07:44:08.205Z [WS] Disconnected: HkdnqGOS:_global (0 remaining)
+2026-03-12T07:44:08.206Z [WS] Disconnected: HkdnqGOS:research (0 remaining)
+2026-03-12T07:44:08.250Z [WS] Connected: HkdnqGOS:_global (1 clients)
+2026-03-12T07:44:08.288Z [API] GET /s/HkdnqGOS/api/devices
+2026-03-12T07:44:08.435Z [API] GET /s/HkdnqGOS/api/devices/test-display/content
+2026-03-12T07:44:08.522Z [API] GET /s/HkdnqGOS/api/devices/research/content
+2026-03-12T07:44:11.333Z [WS] Connected: HkdnqGOS:research (1 clients)
+2026-03-12T07:44:11.369Z [API] GET /s/HkdnqGOS/api/devices/research/content
+2026-03-12T07:44:34.808Z [WS] Disconnected: HkdnqGOS:_global (0 remaining)
+2026-03-12T07:44:34.810Z [WS] Disconnected: HkdnqGOS:research (0 remaining)
+2026-03-12T07:44:34.872Z [WS] Connected: HkdnqGOS:_global (1 clients)
+2026-03-12T07:44:34.906Z [API] GET /s/HkdnqGOS/api/devices
+2026-03-12T07:44:35.126Z [API] GET /s/HkdnqGOS/api/devices/test-display/content
+2026-03-12T07:44:35.224Z [API] GET /s/HkdnqGOS/api/devices/research/content
+2026-03-12T07:44:36.324Z [WS] Connected: HkdnqGOS:research (1 clients)
+2026-03-12T07:44:36.359Z [API] GET /s/HkdnqGOS/api/devices/research/content
+2026-03-12T07:45:02.411Z [WS] Connected: HkdnqGOS:_global (2 clients)
+2026-03-12T07:45:02.485Z [API] GET /s/HkdnqGOS/api/devices/test-display/content
+2026-03-12T07:45:02.703Z [API] GET /s/HkdnqGOS/api/devices/research/content
+2026-03-12T07:45:06.338Z [WS] Disconnected: HkdnqGOS:_global (1 remaining)
+2026-03-12T07:45:20.400Z [WS] Disconnected: HkdnqGOS:_global (0 remaining)
+2026-03-12T07:45:20.402Z [WS] Disconnected: HkdnqGOS:research (0 remaining)
+2026-03-12T07:45:20.447Z [WS] Connected: HkdnqGOS:_global (1 clients)
+2026-03-12T07:45:20.487Z [API] GET /s/HkdnqGOS/api/devices
+2026-03-12T07:45:20.625Z [API] GET /s/HkdnqGOS/api/devices/test-display/content
+2026-03-12T07:45:20.706Z [API] GET /s/HkdnqGOS/api/devices/research/content
+2026-03-12T07:45:22.769Z [WS] Connected: HkdnqGOS:research (1 clients)
+2026-03-12T07:45:22.807Z [API] GET /s/HkdnqGOS/api/devices/research/content
+2026-03-12T07:45:46.244Z [WS] Disconnected: HkdnqGOS:_global (0 remaining)
+2026-03-12T07:45:46.246Z [WS] Disconnected: HkdnqGOS:research (0 remaining)
+2026-03-12T07:45:46.292Z [WS] Connected: HkdnqGOS:_global (1 clients)
+2026-03-12T07:45:46.329Z [API] GET /s/HkdnqGOS/api/devices
+2026-03-12T07:45:46.498Z [API] GET /s/HkdnqGOS/api/devices/test-display/content
+2026-03-12T07:45:46.581Z [API] GET /s/HkdnqGOS/api/devices/research/content
+2026-03-12T07:45:48.006Z [WS] Connected: HkdnqGOS:research (1 clients)
+2026-03-12T07:45:48.045Z [API] GET /s/HkdnqGOS/api/devices/research/content
+2026-03-12T07:45:55.753Z [API] GET /s/HkdnqGOS/api/proxy
+2026-03-12T07:46:12.838Z [WS] Connected: HkdnqGOS:research (1 clients)
+2026-03-12T07:46:12.854Z [WS] Connected: HkdnqGOS:_global (1 clients)
+2026-03-12T07:46:14.817Z [API] GET /s/HkdnqGOS/api/proxy
+2026-03-12T07:46:29.897Z [WS] Disconnected: HkdnqGOS:research (0 remaining)
+2026-03-12T07:46:29.900Z [WS] Disconnected: HkdnqGOS:_global (0 remaining)
+2026-03-12T07:46:29.954Z [WS] Connected: HkdnqGOS:_global (1 clients)
+2026-03-12T07:46:29.999Z [API] GET /s/HkdnqGOS/api/devices
+2026-03-12T07:46:30.195Z [API] GET /s/HkdnqGOS/api/devices/test-display/content
+2026-03-12T07:46:30.284Z [API] GET /s/HkdnqGOS/api/devices/research/content
+2026-03-12T07:46:33.235Z [WS] Connected: HkdnqGOS:research (1 clients)
+2026-03-12T07:46:33.273Z [API] GET /s/HkdnqGOS/api/devices/research/content
+2026-03-12T07:46:55.304Z [WS] Disconnected: HkdnqGOS:_global (0 remaining)
+2026-03-12T07:46:55.306Z [WS] Disconnected: HkdnqGOS:research (0 remaining)
+2026-03-12T07:46:55.355Z [WS] Connected: HkdnqGOS:_global (1 clients)
+2026-03-12T07:46:55.394Z [API] GET /s/HkdnqGOS/api/devices
+2026-03-12T07:46:55.533Z [API] GET /s/HkdnqGOS/api/devices/test-display/content
+2026-03-12T07:46:55.657Z [API] GET /s/HkdnqGOS/api/devices/research/content
+2026-03-12T07:46:57.533Z [WS] Connected: HkdnqGOS:research (1 clients)
+2026-03-12T07:46:57.570Z [API] GET /s/HkdnqGOS/api/devices/research/content
+2026-03-12T07:47:52.480Z [WS] Connected: HkdnqGOS:research (1 clients)
+2026-03-12T07:47:52.493Z [WS] Connected: HkdnqGOS:_global (1 clients)
+2026-03-12T07:47:54.294Z [WS] Disconnected: HkdnqGOS:research (0 remaining)
+2026-03-12T07:47:54.295Z [WS] Disconnected: HkdnqGOS:_global (0 remaining)
+2026-03-12T07:47:54.339Z [WS] Connected: HkdnqGOS:_global (1 clients)
+2026-03-12T07:47:54.381Z [API] GET /s/HkdnqGOS/api/devices
+2026-03-12T07:47:54.561Z [API] GET /s/HkdnqGOS/api/devices/test-display/content
+2026-03-12T07:47:54.648Z [API] GET /s/HkdnqGOS/api/devices/research/content
+2026-03-12T07:47:56.399Z [WS] Connected: HkdnqGOS:research (1 clients)
+2026-03-12T07:47:56.435Z [API] GET /s/HkdnqGOS/api/devices/research/content
+2026-03-12T07:47:56.505Z [API] GET /s/HkdnqGOS/api/proxy
+2026-03-12T07:48:02.691Z [WS] Disconnected: HkdnqGOS:_global (0 remaining)
+2026-03-12T07:48:02.693Z [WS] Disconnected: HkdnqGOS:research (0 remaining)
+2026-03-12T07:48:02.739Z [WS] Connected: HkdnqGOS:_global (1 clients)
+2026-03-12T07:48:02.775Z [API] GET /s/HkdnqGOS/api/devices
+2026-03-12T07:48:02.910Z [API] GET /s/HkdnqGOS/api/devices/test-display/content
+2026-03-12T07:48:02.993Z [API] GET /s/HkdnqGOS/api/devices/research/content
+2026-03-12T07:48:04.651Z [WS] Connected: HkdnqGOS:research (1 clients)
+2026-03-12T07:48:04.688Z [API] GET /s/HkdnqGOS/api/devices/research/content
+2026-03-12T07:48:04.762Z [API] GET /s/HkdnqGOS/api/proxy
+2026-03-12T07:50:55.422Z [WS] Disconnected: HkdnqGOS:_global (0 remaining)
+2026-03-12T07:50:55.424Z [WS] Disconnected: HkdnqGOS:research (0 remaining)
+2026-03-12T07:50:55.500Z [WS] Connected: HkdnqGOS:_global (1 clients)
+2026-03-12T07:50:55.536Z [API] GET /s/HkdnqGOS/api/devices
+2026-03-12T07:50:55.735Z [API] GET /s/HkdnqGOS/api/devices/test-display/content
+2026-03-12T07:50:55.822Z [API] GET /s/HkdnqGOS/api/devices/research/content
+2026-03-12T07:50:58.184Z [WS] Connected: HkdnqGOS:research (1 clients)
+2026-03-12T07:50:58.223Z [API] GET /s/HkdnqGOS/api/devices/research/content
+2026-03-12T07:50:58.312Z [API] GET /s/HkdnqGOS/api/proxy
+2026-03-12T07:54:50.396Z [WS] Disconnected: HkdnqGOS:_global (0 remaining)
+2026-03-12T07:54:50.397Z [WS] Disconnected: HkdnqGOS:research (0 remaining)
+2026-03-12T07:54:50.536Z [WS] Connected: HkdnqGOS:_global (1 clients)
+2026-03-12T07:54:50.573Z [API] GET /s/HkdnqGOS/api/devices
+2026-03-12T07:54:50.727Z [API] GET /s/HkdnqGOS/api/devices/test-display/content
+2026-03-12T07:54:50.825Z [API] GET /s/HkdnqGOS/api/devices/research/content
+2026-03-12T07:54:53.377Z [WS] Connected: HkdnqGOS:research (1 clients)
+2026-03-12T07:54:53.411Z [API] GET /s/HkdnqGOS/api/devices/research/content
+2026-03-12T07:54:53.490Z [API] GET /s/HkdnqGOS/api/proxy
+2026-03-12T07:55:07.214Z [WS] Disconnected: HkdnqGOS:research (0 remaining)
+2026-03-12T07:55:07.253Z [WS] Connected: HkdnqGOS:test-display (1 clients)
+2026-03-12T07:55:07.285Z [API] GET /s/HkdnqGOS/api/devices/test-display/content
+2026-03-12T07:56:52.699Z [WS] Connected: Wg0_O-qB:_global (1 clients)
+2026-03-12T07:56:52.735Z [API] GET /s/Wg0_O-qB/api/devices
+2026-03-12T07:57:57.834Z [WS] Broadcast Wg0_O-qB:_global: device_created → 1 clients
+2026-03-12T07:57:57.881Z [API] GET /s/Wg0_O-qB/api/devices
+2026-03-12T07:57:57.921Z [WS] Broadcast Wg0_O-qB:research: content → 0 clients
+2026-03-12T07:57:57.921Z [WS] Broadcast Wg0_O-qB:_global: content_updated → 1 clients
+2026-03-12T07:57:57.928Z [WS] Connected: Wg0_O-qB:research (1 clients)
+2026-03-12T07:57:57.965Z [API] GET /s/Wg0_O-qB/api/devices/research/content
+2026-03-12T07:57:58.061Z [API] GET /s/Wg0_O-qB/api/proxy
+2026-03-12T07:57:58.089Z [WS] Connected: Wg0_O-qB:research (2 clients)
+2026-03-12T07:57:58.090Z [WS] Disconnected: Wg0_O-qB:research (1 remaining)
+2026-03-12T07:57:58.149Z [API] GET /s/Wg0_O-qB/api/devices/research/content
+2026-03-12T07:57:58.294Z [API] GET /s/Wg0_O-qB/api/proxy
+2026-03-12T07:57:59.107Z [WS] Connected: Wg0_O-qB:research (2 clients)
+2026-03-12T07:58:23.371Z [WS] Broadcast Wg0_O-qB:_global: device_created → 1 clients
+2026-03-12T07:58:23.408Z [API] GET /s/Wg0_O-qB/api/devices
+2026-03-12T07:58:23.448Z [WS] Broadcast Wg0_O-qB:wiki: content → 0 clients
+2026-03-12T07:58:23.449Z [WS] Broadcast Wg0_O-qB:_global: content_updated → 1 clients
+2026-03-12T07:58:23.451Z [WS] Disconnected: Wg0_O-qB:research (1 remaining)
+2026-03-12T07:58:23.483Z [WS] Connected: Wg0_O-qB:wiki (1 clients)
+2026-03-12T07:58:23.516Z [API] GET /s/Wg0_O-qB/api/devices/wiki/content
+2026-03-12T07:59:14.662Z [API] GET /s/Wg0_O-qB/api/proxy
+2026-03-12T07:59:40.200Z [API] GET /s/Wg0_O-qB/api/proxy
+2026-03-12T07:59:48.490Z [API] GET /s/Wg0_O-qB/api/proxy
+2026-03-12T08:00:44.125Z [WS] Connected: QUje-j7l:_global (1 clients)
+2026-03-12T08:00:44.171Z [API] GET /s/QUje-j7l/api/devices
+2026-03-12T08:01:10.129Z [WS] Broadcast QUje-j7l:_global: device_created → 1 clients
+2026-03-12T08:01:10.170Z [API] GET /s/QUje-j7l/api/devices
+2026-03-12T08:01:10.209Z [WS] Broadcast QUje-j7l:research: content → 0 clients
+2026-03-12T08:01:10.210Z [WS] Broadcast QUje-j7l:_global: content_updated → 1 clients
+2026-03-12T08:01:10.217Z [WS] Connected: QUje-j7l:research (1 clients)
+2026-03-12T08:01:10.253Z [API] GET /s/QUje-j7l/api/devices/research/content
+2026-03-12T08:01:10.319Z [WS] Disconnected: QUje-j7l:research (0 remaining)
+2026-03-12T08:01:10.324Z [WS] Connected: QUje-j7l:research (1 clients)
+2026-03-12T08:01:10.334Z [API] GET /s/QUje-j7l/api/proxy
+2026-03-12T08:01:10.367Z [API] GET /s/QUje-j7l/api/devices/research/content
+2026-03-12T08:01:10.446Z [API] GET /s/QUje-j7l/api/proxy
+2026-03-12T08:01:12.149Z [WS] Connected: QUje-j7l:research (2 clients)
+2026-03-12T08:01:31.048Z [WS] Broadcast QUje-j7l:_global: device_created → 1 clients
+2026-03-12T08:01:31.086Z [API] GET /s/QUje-j7l/api/devices
+2026-03-12T08:01:31.122Z [WS] Broadcast QUje-j7l:wiki: content → 0 clients
+2026-03-12T08:01:31.122Z [WS] Broadcast QUje-j7l:_global: content_updated → 1 clients
+2026-03-12T08:01:31.126Z [WS] Disconnected: QUje-j7l:research (1 remaining)
+2026-03-12T08:01:31.229Z [WS] Connected: QUje-j7l:wiki (1 clients)
+2026-03-12T08:01:31.231Z [WS] Disconnected: QUje-j7l:wiki (0 remaining)
+2026-03-12T08:01:31.246Z [WS] Connected: QUje-j7l:wiki (1 clients)
+2026-03-12T08:01:31.259Z [API] GET /s/QUje-j7l/api/devices/wiki/content
+2026-03-12T08:01:31.269Z [API] GET /s/QUje-j7l/api/devices/wiki/content
+2026-03-12T08:01:31.337Z [API] GET /s/QUje-j7l/api/proxy
+2026-03-12T08:01:31.487Z [API] GET /s/QUje-j7l/api/proxy
+2026-03-12T08:01:32.655Z [WS] Connected: QUje-j7l:wiki (2 clients)
+2026-03-12T08:01:39.740Z [WS] Disconnected: QUje-j7l:wiki (1 remaining)
+2026-03-12T08:01:39.818Z [WS] Connected: QUje-j7l:research (2 clients)
+2026-03-12T08:01:39.856Z [API] GET /s/QUje-j7l/api/devices/research/content
+2026-03-12T08:01:39.943Z [API] GET /s/QUje-j7l/api/proxy
+2026-03-12T08:01:41.395Z [WS] Disconnected: QUje-j7l:research (1 remaining)
+2026-03-12T08:01:41.460Z [WS] Connected: QUje-j7l:wiki (2 clients)
+2026-03-12T08:01:41.488Z [API] GET /s/QUje-j7l/api/devices/wiki/content
+2026-03-12T08:01:41.571Z [API] GET /s/QUje-j7l/api/proxy
+2026-03-12T08:01:58.983Z [WS] Broadcast QUje-j7l:_global: device_created → 1 clients
+2026-03-12T08:01:59.020Z [API] GET /s/QUje-j7l/api/devices
+2026-03-12T08:01:59.055Z [WS] Broadcast QUje-j7l:linkedin: content → 0 clients
+2026-03-12T08:01:59.056Z [WS] Broadcast QUje-j7l:_global: content_updated → 1 clients
+2026-03-12T08:01:59.059Z [WS] Disconnected: QUje-j7l:wiki (1 remaining)
+2026-03-12T08:01:59.184Z [WS] Connected: QUje-j7l:linkedin (1 clients)
+2026-03-12T08:01:59.185Z [WS] Disconnected: QUje-j7l:linkedin (0 remaining)
+2026-03-12T08:01:59.207Z [WS] Connected: QUje-j7l:linkedin (1 clients)
+2026-03-12T08:01:59.214Z [API] GET /s/QUje-j7l/api/devices/linkedin/content
+2026-03-12T08:01:59.219Z [API] GET /s/QUje-j7l/api/devices/linkedin/content
+2026-03-12T08:01:59.296Z [API] GET /s/QUje-j7l/api/proxy
+2026-03-12T08:01:59.301Z [API] GET /s/QUje-j7l/api/proxy
+2026-03-12T08:02:00.095Z [WS] Connected: QUje-j7l:linkedin (2 clients)
+2026-03-12T08:02:06.309Z [WS] Disconnected: QUje-j7l:linkedin (1 remaining)
+2026-03-12T08:02:06.867Z [WS] Connected: QUje-j7l:wiki (2 clients)
+2026-03-12T08:02:06.902Z [API] GET /s/QUje-j7l/api/devices/wiki/content
+2026-03-12T08:02:29.520Z [API] GET /s/QUje-j7l/api/proxy
+2026-03-12T08:02:36.510Z [API] GET /s/QUje-j7l/api/proxy
+2026-03-12T08:02:54.343Z [API] GET /s/QUje-j7l/api/proxy
+2026-03-12T08:03:01.813Z [API] GET /s/QUje-j7l/api/proxy
+2026-03-12T08:03:07.253Z [API] GET /s/QUje-j7l/api/proxy
+2026-03-12T08:05:15.035Z [API] DELETE /s/QUje-j7l/api/devices/linkedin
+2026-03-12T08:05:15.201Z [WS] Broadcast QUje-j7l:linkedin: clear → 0 clients
+2026-03-12T08:05:15.202Z [WS] Broadcast QUje-j7l:_global: device_deleted → 0 clients
+2026-03-12T08:05:48.001Z [WS] Connected: _Eb1UATR:_global (1 clients)
+2026-03-12T08:05:48.039Z [API] GET /s/_Eb1UATR/api/devices
+2026-03-12T08:06:23.271Z [WS] Broadcast _Eb1UATR:_global: device_created → 1 clients
+2026-03-12T08:06:23.317Z [API] GET /s/_Eb1UATR/api/devices
+2026-03-12T08:06:23.368Z [WS] Broadcast _Eb1UATR:linkedin: content → 0 clients
+2026-03-12T08:06:23.369Z [WS] Broadcast _Eb1UATR:_global: content_updated → 1 clients
+2026-03-12T08:06:23.377Z [WS] Connected: _Eb1UATR:linkedin (1 clients)
+2026-03-12T08:06:23.413Z [API] GET /s/_Eb1UATR/api/devices/linkedin/content
+2026-03-12T08:06:23.484Z [WS] Disconnected: _Eb1UATR:linkedin (0 remaining)
+2026-03-12T08:06:23.486Z [WS] Connected: _Eb1UATR:linkedin (1 clients)
+2026-03-12T08:06:23.507Z [API] GET /s/_Eb1UATR/api/proxy
+2026-03-12T08:06:23.536Z [API] GET /s/_Eb1UATR/api/devices/linkedin/content
+2026-03-12T08:06:23.614Z [API] GET /s/_Eb1UATR/api/proxy
+2026-03-12T08:06:24.614Z [WS] Connected: _Eb1UATR:linkedin (2 clients)
+2026-03-12T08:06:29.138Z [WS] Disconnected: _Eb1UATR:linkedin (1 remaining)
+2026-03-12T08:06:29.202Z [API] GET /s/_Eb1UATR/api/devices/linkedin/content
+2026-03-12T08:06:30.214Z [WS] Connected: _Eb1UATR:linkedin (2 clients)
+2026-03-12T08:06:30.250Z [API] GET /s/_Eb1UATR/api/devices/linkedin/content
+2026-03-12T08:06:30.337Z [API] GET /s/_Eb1UATR/api/proxy
+2026-03-12T08:06:46.468Z [WS] Broadcast _Eb1UATR:_global: device_created → 1 clients
+2026-03-12T08:06:46.521Z [API] GET /s/_Eb1UATR/api/devices
+2026-03-12T08:06:46.556Z [WS] Broadcast _Eb1UATR:wiki: content → 0 clients
+2026-03-12T08:06:46.557Z [WS] Broadcast _Eb1UATR:_global: content_updated → 1 clients
+2026-03-12T08:06:46.561Z [WS] Disconnected: _Eb1UATR:linkedin (1 remaining)
+2026-03-12T08:06:46.587Z [WS] Connected: _Eb1UATR:wiki (1 clients)
+2026-03-12T08:06:46.588Z [WS] Disconnected: _Eb1UATR:wiki (0 remaining)
+2026-03-12T08:06:46.613Z [WS] Connected: _Eb1UATR:wiki (1 clients)
+2026-03-12T08:06:46.619Z [API] GET /s/_Eb1UATR/api/devices/wiki/content
+2026-03-12T08:06:46.695Z [API] GET /s/_Eb1UATR/api/devices/wiki/content
+2026-03-12T08:06:46.701Z [API] GET /s/_Eb1UATR/api/proxy
+2026-03-12T08:06:46.782Z [API] GET /s/_Eb1UATR/api/proxy
+2026-03-12T08:06:47.915Z [WS] Connected: _Eb1UATR:wiki (2 clients)
+2026-03-12T08:07:19.931Z [WS] Broadcast _Eb1UATR:linkedin: clear → 1 clients
+2026-03-12T08:07:19.932Z [WS] Broadcast _Eb1UATR:_global: device_deleted → 1 clients
+2026-03-12T08:07:20.068Z [WS] Broadcast _Eb1UATR:wiki: clear → 2 clients
+2026-03-12T08:07:20.069Z [WS] Broadcast _Eb1UATR:_global: device_deleted → 1 clients
+2026-03-12T08:07:20.074Z [API] GET /s/_Eb1UATR/api/devices
+2026-03-12T08:07:20.148Z [API] GET /s/_Eb1UATR/api/devices
+2026-03-12T08:07:20.203Z [WS] Disconnected: _Eb1UATR:wiki (1 remaining)
+2026-03-12T08:08:42.220Z [WS] Disconnected: _Eb1UATR:_global (0 remaining)
+2026-03-12T08:08:42.222Z [WS] Disconnected: _Eb1UATR:wiki (0 remaining)
+2026-03-12T08:08:42.224Z [WS] Disconnected: _Eb1UATR:linkedin (0 remaining)
+2026-03-12T08:09:45.966Z [WS] Connected: FX4oWV6L:_global (1 clients)
+2026-03-12T08:09:46.000Z [API] GET /s/FX4oWV6L/api/devices
+2026-03-12T08:10:24.372Z [WS] Broadcast _Eb1UATR:_global: device_created → 0 clients
+2026-03-12T08:10:24.446Z [WS] Broadcast _Eb1UATR:photo: content → 0 clients
+2026-03-12T08:10:24.446Z [WS] Broadcast _Eb1UATR:_global: content_updated → 0 clients
+2026-03-12T08:10:48.683Z [WS] Broadcast FX4oWV6L:_global: device_created → 1 clients
+2026-03-12T08:10:48.730Z [API] GET /s/FX4oWV6L/api/devices
+2026-03-12T08:10:48.758Z [WS] Broadcast FX4oWV6L:photo: content → 0 clients
+2026-03-12T08:10:48.759Z [WS] Broadcast FX4oWV6L:_global: content_updated → 1 clients
+2026-03-12T08:10:48.766Z [WS] Connected: FX4oWV6L:photo (1 clients)
+2026-03-12T08:10:48.787Z [WS] Disconnected: FX4oWV6L:photo (0 remaining)
+2026-03-12T08:10:48.790Z [WS] Connected: FX4oWV6L:photo (1 clients)
+2026-03-12T08:10:48.805Z [API] GET /s/FX4oWV6L/api/devices/photo/content
+2026-03-12T08:10:48.901Z [API] GET /s/FX4oWV6L/api/devices/photo/content
+2026-03-12T08:10:49.813Z [WS] Connected: FX4oWV6L:photo (2 clients)
+2026-03-12T08:11:05.016Z [WS] Broadcast FX4oWV6L:_global: device_created → 1 clients
+2026-03-12T08:11:05.093Z [API] GET /s/FX4oWV6L/api/devices
+2026-03-12T08:11:05.094Z [WS] Broadcast FX4oWV6L:news: content → 0 clients
+2026-03-12T08:11:05.095Z [WS] Broadcast FX4oWV6L:_global: content_updated → 1 clients
+2026-03-12T08:11:05.099Z [WS] Disconnected: FX4oWV6L:photo (1 remaining)
+2026-03-12T08:11:05.103Z [WS] Connected: FX4oWV6L:news (1 clients)
+2026-03-12T08:11:05.132Z [WS] Disconnected: FX4oWV6L:news (0 remaining)
+2026-03-12T08:11:05.135Z [API] GET /s/FX4oWV6L/api/devices/news/content
+2026-03-12T08:11:05.138Z [WS] Connected: FX4oWV6L:news (1 clients)
+2026-03-12T08:11:05.212Z [API] GET /s/FX4oWV6L/api/devices/news/content
+2026-03-12T08:11:05.233Z [API] GET /s/FX4oWV6L/api/proxy
+2026-03-12T08:11:05.329Z [API] GET /s/FX4oWV6L/api/proxy
+2026-03-12T08:11:06.138Z [WS] Connected: FX4oWV6L:news (2 clients)
+2026-03-12T08:11:26.080Z [WS] Broadcast FX4oWV6L:_global: device_created → 1 clients
+2026-03-12T08:11:26.124Z [API] GET /s/FX4oWV6L/api/devices
+2026-03-12T08:11:26.160Z [WS] Broadcast FX4oWV6L:metrics: content → 0 clients
+2026-03-12T08:11:26.161Z [WS] Broadcast FX4oWV6L:_global: content_updated → 1 clients
+2026-03-12T08:11:26.164Z [WS] Disconnected: FX4oWV6L:news (1 remaining)
+2026-03-12T08:11:26.189Z [WS] Connected: FX4oWV6L:metrics (1 clients)
+2026-03-12T08:11:26.192Z [WS] Disconnected: FX4oWV6L:metrics (0 remaining)
+2026-03-12T08:11:26.205Z [WS] Connected: FX4oWV6L:metrics (1 clients)
+2026-03-12T08:11:26.220Z [API] GET /s/FX4oWV6L/api/devices/metrics/content
+2026-03-12T08:11:26.296Z [API] GET /s/FX4oWV6L/api/devices/metrics/content
+2026-03-12T08:11:27.176Z [WS] Connected: FX4oWV6L:metrics (2 clients)
+2026-03-12T08:11:43.116Z [WS] Broadcast FX4oWV6L:_global: device_created → 1 clients
+2026-03-12T08:11:43.154Z [API] GET /s/FX4oWV6L/api/devices
+2026-03-12T08:11:43.190Z [WS] Broadcast FX4oWV6L:todo: content → 0 clients
+2026-03-12T08:11:43.190Z [WS] Broadcast FX4oWV6L:_global: content_updated → 1 clients
+2026-03-12T08:11:43.193Z [WS] Disconnected: FX4oWV6L:metrics (1 remaining)
+2026-03-12T08:11:43.196Z [WS] Connected: FX4oWV6L:todo (1 clients)
+2026-03-12T08:11:43.201Z [WS] Disconnected: FX4oWV6L:todo (0 remaining)
+2026-03-12T08:11:43.208Z [WS] Connected: FX4oWV6L:todo (1 clients)
+2026-03-12T08:11:43.230Z [API] GET /s/FX4oWV6L/api/devices/todo/content
+2026-03-12T08:11:43.302Z [API] GET /s/FX4oWV6L/api/devices/todo/content
+2026-03-12T08:11:44.203Z [WS] Connected: FX4oWV6L:todo (2 clients)
+2026-03-12T08:11:47.370Z [API] DELETE /s/FX4oWV6L/api/devices/metrics
+2026-03-12T08:11:47.417Z [WS] Broadcast FX4oWV6L:metrics: clear → 1 clients
+2026-03-12T08:11:47.419Z [WS] Broadcast FX4oWV6L:_global: device_deleted → 1 clients
+2026-03-12T08:11:47.460Z [API] GET /s/FX4oWV6L/api/devices
+2026-03-12T08:11:47.532Z [API] GET /s/FX4oWV6L/api/devices
+2026-03-12T08:12:12.182Z [WS] Broadcast FX4oWV6L:_global: device_created → 1 clients
+2026-03-12T08:12:12.228Z [API] GET /s/FX4oWV6L/api/devices
+2026-03-12T08:12:12.264Z [WS] Broadcast FX4oWV6L:screening: content → 0 clients
+2026-03-12T08:12:12.264Z [WS] Broadcast FX4oWV6L:_global: content_updated → 1 clients
+2026-03-12T08:12:12.268Z [WS] Disconnected: FX4oWV6L:todo (1 remaining)
+2026-03-12T08:12:12.269Z [WS] Connected: FX4oWV6L:screening (1 clients)
+2026-03-12T08:12:12.271Z [WS] Disconnected: FX4oWV6L:screening (0 remaining)
+2026-03-12T08:12:12.291Z [WS] Connected: FX4oWV6L:screening (1 clients)
+2026-03-12T08:12:12.305Z [API] GET /s/FX4oWV6L/api/devices/screening/content
+2026-03-12T08:12:12.379Z [API] GET /s/FX4oWV6L/api/devices/screening/content
+2026-03-12T08:12:13.276Z [WS] Connected: FX4oWV6L:screening (2 clients)
+2026-03-12T08:12:15.039Z [WS] Disconnected: FX4oWV6L:screening (1 remaining)
+2026-03-12T08:12:15.042Z [WS] Connected: FX4oWV6L:todo (2 clients)
+2026-03-12T08:12:15.079Z [API] GET /s/FX4oWV6L/api/devices/todo/content
+2026-03-12T08:12:16.792Z [WS] Connected: FX4oWV6L:news (2 clients)
+2026-03-12T08:12:16.793Z [WS] Disconnected: FX4oWV6L:todo (1 remaining)
+2026-03-12T08:12:16.830Z [API] GET /s/FX4oWV6L/api/devices/news/content
+2026-03-12T08:12:16.916Z [API] GET /s/FX4oWV6L/api/proxy
+2026-03-12T08:12:18.451Z [WS] Disconnected: FX4oWV6L:news (1 remaining)
+2026-03-12T08:12:18.461Z [WS] Connected: FX4oWV6L:photo (2 clients)
+2026-03-12T08:12:18.492Z [API] GET /s/FX4oWV6L/api/devices/photo/content
+2026-03-12T08:12:59.042Z [WS] Broadcast FX4oWV6L:news: clear → 1 clients
+2026-03-12T08:12:59.044Z [WS] Broadcast FX4oWV6L:_global: device_deleted → 1 clients
+2026-03-12T08:12:59.088Z [API] GET /s/FX4oWV6L/api/devices
+2026-03-12T08:12:59.212Z [WS] Broadcast FX4oWV6L:todo: clear → 1 clients
+2026-03-12T08:12:59.213Z [WS] Broadcast FX4oWV6L:_global: device_deleted → 1 clients
+2026-03-12T08:12:59.252Z [API] GET /s/FX4oWV6L/api/devices
+2026-03-12T08:12:59.356Z [WS] Broadcast FX4oWV6L:screening: clear → 1 clients
+2026-03-12T08:12:59.356Z [WS] Broadcast FX4oWV6L:_global: device_deleted → 1 clients
+2026-03-12T08:12:59.396Z [API] GET /s/FX4oWV6L/api/devices
+2026-03-12T08:13:14.818Z [WS] Disconnected: FX4oWV6L:photo (1 remaining)
+2026-03-12T08:13:14.865Z [API] GET /s/FX4oWV6L/api/devices/photo/content
+2026-03-12T08:13:15.592Z [WS] Connected: FX4oWV6L:photo (2 clients)
+2026-03-12T08:13:15.634Z [API] GET /s/FX4oWV6L/api/devices/photo/content

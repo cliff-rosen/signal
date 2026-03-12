@@ -8,9 +8,11 @@ AI-Powered Virtual Display Platform
 
 Signal is a software platform that turns browser tabs into virtual ambient displays that Claude Code (or any MCP-compatible AI) can push content to in real-time. Instead of physical hardware, each "device" is a browser window showing live-updating content.
 
-The system consists of two processes and any number of browser-based display endpoints.
+The system consists of three processes and any number of browser-based display endpoints. It supports both local access (Claude Code via stdio) and remote access (Claude.ai via HTTP+SSE through a Cloudflare tunnel).
 
 ## Architecture Diagram
+
+### Local (Claude Code)
 
 ```
 ┌─────────────────┐         ┌──────────────────────┐         ┌──────────────────┐
@@ -24,10 +26,24 @@ The system consists of two processes and any number of browser-based display end
                                                           ▼          ▼          ▼
                                                      ┌────────┐ ┌────────┐ ┌────────┐
                                                      │Browser │ │Browser │ │Browser │
-                                                     │Tab 1   │ │Tab 2   │ │Tab 3   │
                                                      │/display │ │/display│ │/display│
                                                      │/dashboard│/kitchen│ │/office │
                                                      └────────┘ └────────┘ └────────┘
+```
+
+### Remote (Claude.ai / mobile)
+
+```
+┌─────────────────┐  HTTPS  ┌──────────────┐         ┌──────────────────────┐
+│  Claude.ai       ├────────►│  Cloudflare   ├────────►│  MCP Remote Server   │
+│  (web / phone)   │         │  Tunnel       │         │  mcp/remote.js :4889 │
+└─────────────────┘         └──────────────┘         └──────────┬───────────┘
+                                                                 │ HTTP
+                                                                 ▼
+                                                     ┌──────────────────────┐
+                                                     │  Signal Server :4888 │
+                                                     │  → store + broadcast │
+                                                     └──────────────────────┘
 ```
 
 ## The Two Processes
@@ -44,9 +60,9 @@ The persistent web server running on port 4888. It does four things:
 
 4. **Real-time broadcast** — when content is pushed via the API, the server immediately broadcasts to all WebSocket clients subscribed to that device. Displays update instantly.
 
-### Process 2: MCP Server (`mcp/index.js`)
+### Process 2: MCP Local Server (`mcp/index.js`)
 
-A lightweight bridge process that Claude Code spawns as a child process over stdio. It registers five tools:
+A lightweight bridge process that Claude Code spawns as a child process over stdio. It registers five tools (defined in the shared `mcp/tools.js` module):
 
 | Tool | Description |
 |------|-------------|
@@ -58,14 +74,23 @@ A lightweight bridge process that Claude Code spawns as a child process over std
 
 When Claude Code calls a tool, the MCP server translates it into an HTTP request to `localhost:4888` via `mcp/client.js`. It is completely stateless — just a protocol bridge.
 
-### Why Two Processes?
+### Process 3: MCP Remote Server (`mcp/remote.js`)
 
-Claude Code communicates with MCP servers over **stdio** (stdin/stdout). A process doing stdio cannot simultaneously be a web server listening on a port. Separating them means:
+An HTTP server on port 4889 that exposes the same 5 tools over the Streamable HTTP transport (HTTP+SSE). This is what Claude.ai connects to as a custom MCP connector.
 
-- The web server runs persistently, independent of Claude Code sessions
-- The MCP server is ephemeral, started/stopped by Claude Code automatically
-- Either can be restarted independently
-- Multiple Claude Code sessions can push to the same displays
+Key differences from the local MCP server:
+- Listens on a port instead of stdio
+- Manages multiple sessions — each `initialize` request creates a new `McpServer` + `StreamableHTTPServerTransport` pair, tracked by session ID
+- Requires a tunnel (Cloudflare Tunnel) to be reachable from the internet
+- Uses CORS headers to allow cross-origin requests from Claude.ai
+
+### Why Three Processes?
+
+- **Signal Server (:4888)** — persistent web server, serves displays, REST API, WebSocket broadcast
+- **MCP Local (stdio)** — ephemeral, spawned by Claude Code for local CLI usage
+- **MCP Remote (:4889)** — persistent, serves remote clients (Claude.ai, mobile) over HTTP+SSE
+
+The local and remote MCP servers share tool definitions via `mcp/tools.js` and both call the Signal Server's REST API via `mcp/client.js`.
 
 ## The Push Flow
 
@@ -111,7 +136,9 @@ signal/
     websocket.js            — WebSocket connection tracking + broadcast
 
   mcp/
-    index.js                — MCP server entry point (stdio transport)
+    index.js                — MCP server entry point (stdio transport, for Claude Code)
+    remote.js               — MCP remote server (HTTP+SSE transport, for Claude.ai)
+    tools.js                — Shared tool definitions (used by both index.js and remote.js)
     client.js               — HTTP client for calling the Signal server API
 
   public/
@@ -165,3 +192,46 @@ MCP configuration in `.claude/mcp.json`:
 ```
 
 When Claude Code starts in the signal project directory, it automatically launches the MCP server and makes the five tools available. The user simply describes what they want shown and where.
+
+## Remote Access (Claude.ai / Mobile)
+
+To access Signal from Claude.ai or a phone:
+
+### 1. Start the servers
+
+```bash
+npm start          # Signal server on :4888
+npm run mcp:remote # MCP remote server on :4889
+```
+
+### 2. Start a Cloudflare tunnel
+
+```bash
+cloudflared tunnel --url http://localhost:4889
+```
+
+This gives you a public URL like `https://something.trycloudflare.com`.
+
+### 3. Add as MCP connector in Claude.ai
+
+Go to **Settings → Connectors → Add custom MCP connector** and enter:
+
+```
+https://something.trycloudflare.com/mcp
+```
+
+Claude.ai will initialize a session, discover the 5 tools, and you can push content to your displays from anywhere.
+
+### MCP Request Flow
+
+| Step | Component | File |
+|------|-----------|------|
+| Client | Claude.ai (web/phone) | — |
+| Tunnel | Cloudflare | — |
+| Session routing | MCP remote server | `mcp/remote.js` |
+| Tool dispatch | MCP SDK + handlers | `mcp/tools.js` |
+| HTTP bridge | API client | `mcp/client.js` |
+| REST API | Express routes | `server/routes.js` |
+| Persistence | JSON file store | `server/store.js` |
+| Real-time push | WebSocket broadcast | `server/websocket.js` |
+| Display | Browser renderer | `public/js/display.js` |

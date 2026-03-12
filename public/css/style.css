@@ -91,6 +91,60 @@ body {
   justify-content: center;
 }
 
+.home-content {
+  width: 100%;
+  max-width: 1200px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ── Endpoint banner ── */
+.endpoint-banner {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px 24px;
+}
+
+.endpoint-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+.endpoint-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.endpoint-url {
+  flex: 1;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 0.9rem;
+  color: var(--accent);
+  font-family: monospace;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.btn-copy {
+  padding: 10px 20px;
+  flex-shrink: 0;
+}
+
+.endpoint-hint {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 10px;
+}
+
 .display-view {
   display: flex;
   align-items: center;
@@ -492,4 +546,76 @@ body {
 .btn-ghost {
   background: transparent;
   color: var(--text-muted);
+}
+
+.btn-large {
+  padding: 14px 40px;
+  font-size: 1.1rem;
+  border-radius: 10px;
+}
+
+/* ── Landing page ── */
+.landing-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+  text-align: center;
+}
+
+.landing-hero {
+  max-width: 560px;
+  margin-bottom: 60px;
+}
+
+.landing-hero h1 {
+  font-size: 3rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 16px;
+}
+
+.landing-hero .tagline {
+  font-size: 1.3rem;
+  color: var(--text);
+  margin-bottom: 12px;
+}
+
+.landing-hero .description {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  line-height: 1.7;
+  margin-bottom: 32px;
+}
+
+.landing-features {
+  display: flex;
+  gap: 32px;
+  max-width: 700px;
+}
+
+.feature {
+  flex: 1;
+  text-align: center;
+}
+
+.feature-title {
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--text);
+}
+
+.feature-desc {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+@media (max-width: 600px) {
+  .landing-features { flex-direction: column; gap: 24px; }
+  .landing-hero h1 { font-size: 2rem; }
 }

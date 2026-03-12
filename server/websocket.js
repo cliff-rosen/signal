@@ -2,30 +2,36 @@ const { WebSocketServer } = require('ws');
 
 function createWSServer(httpServer) {
   const wss = new WebSocketServer({ server: httpServer });
-  const clients = new Map(); // deviceId -> Set<ws>
+  const clients = new Map(); // "namespace:deviceId" -> Set<ws>
 
   wss.on('connection', (ws, req) => {
     const params = new URL(req.url, 'http://localhost').searchParams;
+    const namespace = params.get('namespace');
     const device = params.get('device');
-    if (!device) {
-      ws.close(1008, 'Missing device parameter');
+    if (!namespace || !device) {
+      ws.close(1008, 'Missing namespace or device parameter');
       return;
     }
 
-    if (!clients.has(device)) clients.set(device, new Set());
-    clients.get(device).add(ws);
+    const key = `${namespace}:${device}`;
+    if (!clients.has(key)) clients.set(key, new Set());
+    clients.get(key).add(ws);
+    console.log(`[WS] Connected: ${key} (${clients.get(key).size} clients)`);
 
     ws.on('close', () => {
-      const set = clients.get(device);
+      const set = clients.get(key);
       if (set) {
         set.delete(ws);
-        if (set.size === 0) clients.delete(device);
+        console.log(`[WS] Disconnected: ${key} (${set.size} remaining)`);
+        if (set.size === 0) clients.delete(key);
       }
     });
   });
 
-  function broadcast(deviceId, message) {
-    const set = clients.get(deviceId);
+  function broadcast(namespace, deviceId, message) {
+    const key = `${namespace}:${deviceId}`;
+    const set = clients.get(key);
+    console.log(`[WS] Broadcast ${key}: ${message.event} → ${set ? set.size : 0} clients`);
     if (!set) return;
     const data = JSON.stringify(message);
     for (const ws of set) {
@@ -33,8 +39,8 @@ function createWSServer(httpServer) {
     }
   }
 
-  function broadcastGlobal(message) {
-    broadcast('_global', message);
+  function broadcastGlobal(namespace, message) {
+    broadcast(namespace, '_global', message);
   }
 
   return { broadcast, broadcastGlobal };

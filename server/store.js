@@ -1,78 +1,108 @@
-const fs = require('fs');
-const path = require('path');
-
-const DATA_DIR = path.join(__dirname, '..', 'data');
-const DEVICES_FILE = path.join(DATA_DIR, 'devices.json');
-const CONTENT_DIR = path.join(DATA_DIR, 'content');
-
-function ensureDirs() {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
-  fs.mkdirSync(CONTENT_DIR, { recursive: true });
-}
+const { getPool } = require('./db');
+const { nanoid } = require('nanoid');
 
 function slugify(name) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 }
 
-function loadDevices() {
-  ensureDirs();
-  try {
-    return JSON.parse(fs.readFileSync(DEVICES_FILE, 'utf8'));
-  } catch {
-    return [];
-  }
+// ── Namespaces ──
+
+async function createNamespace() {
+  const db = getPool();
+  const id = nanoid(8);
+  await db.query('INSERT INTO namespaces (id) VALUES (?)', [id]);
+  return id;
 }
 
-function saveDevices(devices) {
-  ensureDirs();
-  fs.writeFileSync(DEVICES_FILE, JSON.stringify(devices, null, 2));
+async function getNamespace(id) {
+  const db = getPool();
+  const [rows] = await db.query('SELECT * FROM namespaces WHERE id = ?', [id]);
+  return rows[0] || null;
 }
 
-function createDevice(name) {
-  const devices = loadDevices();
+async function touchNamespace(id) {
+  const db = getPool();
+  await db.query('UPDATE namespaces SET last_active = NOW() WHERE id = ?', [id]);
+}
+
+// ── Devices ──
+
+async function loadDevices(namespace) {
+  const db = getPool();
+  const [rows] = await db.query(
+    'SELECT id, name, created_at as createdAt FROM devices WHERE namespace = ? ORDER BY created_at',
+    [namespace]
+  );
+  return rows;
+}
+
+async function createDevice(namespace, name) {
+  const db = getPool();
   const id = slugify(name);
-  if (devices.find(d => d.id === id)) {
-    return { exists: true, device: devices.find(d => d.id === id) };
+  const [existing] = await db.query(
+    'SELECT id, name, created_at as createdAt FROM devices WHERE namespace = ? AND id = ?',
+    [namespace, id]
+  );
+  if (existing.length > 0) {
+    return { exists: true, device: existing[0] };
   }
-  const device = { id, name, createdAt: new Date().toISOString() };
-  devices.push(device);
-  saveDevices(devices);
-  return { exists: false, device };
+  await db.query(
+    'INSERT INTO devices (id, namespace, name) VALUES (?, ?, ?)',
+    [id, namespace, name]
+  );
+  const [rows] = await db.query(
+    'SELECT id, name, created_at as createdAt FROM devices WHERE namespace = ? AND id = ?',
+    [namespace, id]
+  );
+  return { exists: false, device: rows[0] };
 }
 
-function deleteDevice(id) {
-  const devices = loadDevices();
-  const idx = devices.findIndex(d => d.id === id);
-  if (idx === -1) return false;
-  devices.splice(idx, 1);
-  saveDevices(devices);
-  const contentFile = path.join(CONTENT_DIR, `${id}.json`);
-  try { fs.unlinkSync(contentFile); } catch {}
-  return true;
+async function deleteDevice(namespace, id) {
+  const db = getPool();
+  const [result] = await db.query(
+    'DELETE FROM devices WHERE namespace = ? AND id = ?',
+    [namespace, id]
+  );
+  return result.affectedRows > 0;
 }
 
-function loadContent(deviceId) {
-  try {
-    return JSON.parse(fs.readFileSync(path.join(CONTENT_DIR, `${deviceId}.json`), 'utf8'));
-  } catch {
-    return null;
-  }
+// ── Content ──
+
+async function loadContent(namespace, deviceId) {
+  const db = getPool();
+  const [rows] = await db.query(
+    'SELECT type, body, updated_at as updatedAt FROM content WHERE namespace = ? AND device_id = ?',
+    [namespace, deviceId]
+  );
+  return rows[0] || null;
 }
 
-function saveContent(deviceId, content) {
-  ensureDirs();
-  const data = { ...content, updatedAt: new Date().toISOString() };
-  fs.writeFileSync(path.join(CONTENT_DIR, `${deviceId}.json`), JSON.stringify(data, null, 2));
-  return data;
+async function saveContent(namespace, deviceId, { type, body }) {
+  const db = getPool();
+  await db.query(
+    `INSERT INTO content (namespace, device_id, type, body) VALUES (?, ?, ?, ?)
+     ON DUPLICATE KEY UPDATE type = VALUES(type), body = VALUES(body), updated_at = NOW()`,
+    [namespace, deviceId, type, body]
+  );
+  const [rows] = await db.query(
+    'SELECT type, body, updated_at as updatedAt FROM content WHERE namespace = ? AND device_id = ?',
+    [namespace, deviceId]
+  );
+  return rows[0];
 }
 
-function deleteContent(deviceId) {
-  try {
-    fs.unlinkSync(path.join(CONTENT_DIR, `${deviceId}.json`));
-    return true;
-  } catch {
-    return false;
-  }
+async function deleteContent(namespace, deviceId) {
+  const db = getPool();
+  const [result] = await db.query(
+    'DELETE FROM content WHERE namespace = ? AND device_id = ?',
+    [namespace, deviceId]
+  );
+  return result.affectedRows > 0;
 }
 
-module.exports = { loadDevices, createDevice, deleteDevice, loadContent, saveContent, deleteContent, slugify };
+module.exports = {
+  createNamespace, getNamespace, touchNamespace,
+  loadDevices, createDevice, deleteDevice,
+  loadContent, saveContent, deleteContent,
+  slugify,
+};

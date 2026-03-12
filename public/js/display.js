@@ -1,15 +1,20 @@
-const deviceName = window.location.pathname.split('/display/')[1];
+// URL: /s/:namespace/display/:device
+const pathParts = window.location.pathname.split('/');
+const namespace = pathParts[2];
+const deviceName = pathParts[4];
+
 const deviceLabel = document.getElementById('device-name');
 const waitingEl = document.getElementById('waiting');
 const contentEl = document.getElementById('content');
 
+const API_BASE = `/s/${namespace}/api`;
+
 deviceLabel.textContent = decodeURIComponent(deviceName);
 document.title = `Signal — ${decodeURIComponent(deviceName)}`;
 
-// Fetch current content on load
 async function fetchCurrent() {
   try {
-    const res = await fetch(`/api/devices/${deviceName}/content`);
+    const res = await fetch(`${API_BASE}/devices/${deviceName}/content`);
     if (res.ok) {
       const data = await res.json();
       renderContent(data);
@@ -17,13 +22,12 @@ async function fetchCurrent() {
   } catch {}
 }
 
-// WebSocket connection with reconnect
 let ws;
 let reconnectDelay = 1000;
 
 function connect() {
   const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-  ws = new WebSocket(`${proto}://${location.host}/ws?device=${deviceName}`);
+  ws = new WebSocket(`${proto}://${location.host}/ws?namespace=${namespace}&device=${deviceName}`);
 
   ws.onopen = () => { reconnectDelay = 1000; };
 

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Signal — AI-Powered Ambient Displays</title>
+  <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body>
+  <div class="landing-page">
+    <div class="landing-hero">
+      <h1>Signal</h1>
+      <p class="tagline">Tell your AI what to show. It shows up.</p>
+      <p class="description">Signal turns browser tabs into ambient displays that your AI can push content to — weather, dashboards, lists, photos, anything — using natural language.</p>
+      <button class="btn btn-primary btn-large" id="get-started">Get Started</button>
+    </div>
+    <div class="landing-features">
+      <div class="feature">
+        <div class="feature-title">No sign-up</div>
+        <div class="feature-desc">Get a unique URL instantly. That's your Signal.</div>
+      </div>
+      <div class="feature">
+        <div class="feature-title">Works with Claude</div>
+        <div class="feature-desc">Add your MCP endpoint as a connector. Push content from any conversation.</div>
+      </div>
+      <div class="feature">
+        <div class="feature-title">7 content types</div>
+        <div class="feature-desc">Text, markdown, HTML, URLs, images, lists, and dashboard cards.</div>
+      </div>
+    </div>
+  </div>
+  <script>
+    document.getElementById('get-started').onclick = async () => {
+      const res = await fetch('/api/namespaces', { method: 'POST' });
+      const { url } = await res.json();
+      window.location.href = url;
+    };
+  </script>
+</body>
+</html>

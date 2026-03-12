@@ -1,6 +1,10 @@
 const tabBar = document.getElementById('tab-bar');
 const main = document.getElementById('main');
 
+// Extract namespace from URL: /s/a7f3x9k2
+const namespace = window.location.pathname.split('/')[2];
+const API_BASE = `/s/${namespace}/api`;
+
 let devices = [];
 let activeTab = 'home';
 let ws = null;
@@ -10,7 +14,7 @@ let reconnectDelay = 1000;
 // ── Tab bar ──
 
 async function loadDevices() {
-  const res = await fetch('/api/devices');
+  const res = await fetch(`${API_BASE}/devices`);
   devices = await res.json();
   renderTabs();
 }
@@ -60,6 +64,23 @@ async function renderHome() {
   main.innerHTML = '';
   main.className = 'main home-view';
 
+  const homeContent = document.createElement('div');
+  homeContent.className = 'home-content';
+
+  // MCP endpoint banner
+  const mcpUrl = `${location.origin}/s/${namespace}/mcp`;
+  const banner = document.createElement('div');
+  banner.className = 'endpoint-banner';
+  banner.innerHTML = `
+    <div class="endpoint-label">MCP Endpoint</div>
+    <div class="endpoint-row">
+      <code class="endpoint-url" id="mcp-url">${mcpUrl}</code>
+      <button class="btn btn-primary btn-copy" id="copy-btn">Copy</button>
+    </div>
+    <div class="endpoint-hint">Add this URL as a custom MCP connector in Claude.ai Settings → Connectors</div>
+  `;
+  homeContent.appendChild(banner);
+
   const grid = document.createElement('div');
   grid.className = 'device-grid';
 
@@ -76,7 +97,7 @@ async function renderHome() {
     preview.className = 'card-preview';
 
     try {
-      const contentRes = await fetch(`/api/devices/${d.id}/content`);
+      const contentRes = await fetch(`${API_BASE}/devices/${d.id}/content`);
       if (contentRes.ok) {
         const data = await contentRes.json();
         header.innerHTML += `<div class="status has-content">Live</div>`;
@@ -95,7 +116,17 @@ async function renderHome() {
     grid.appendChild(card);
   }
 
-  main.appendChild(grid);
+  homeContent.appendChild(grid);
+  main.appendChild(homeContent);
+
+  // Copy button handler
+  document.getElementById('copy-btn').onclick = () => {
+    navigator.clipboard.writeText(mcpUrl).then(() => {
+      const btn = document.getElementById('copy-btn');
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy', 2000);
+    });
+  };
 }
 
 function renderPreview(el, data) {
@@ -173,7 +204,7 @@ function renderDisplay(deviceId) {
 
 async function fetchContent(deviceId) {
   try {
-    const res = await fetch(`/api/devices/${deviceId}/content`);
+    const res = await fetch(`${API_BASE}/devices/${deviceId}/content`);
     if (res.ok) {
       const data = await res.json();
       showContent(data);
@@ -184,7 +215,7 @@ async function fetchContent(deviceId) {
 function connectWS(deviceId) {
   reconnectDelay = 1000;
   const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-  ws = new WebSocket(`${proto}://${location.host}/ws?device=${deviceId}`);
+  ws = new WebSocket(`${proto}://${location.host}/ws?namespace=${namespace}&device=${deviceId}`);
 
   ws.onopen = () => { reconnectDelay = 1000; };
 
@@ -337,7 +368,7 @@ function showModal() {
   async function doCreate() {
     const name = input.value.trim();
     if (!name) return;
-    await fetch('/api/devices', {
+    await fetch(`${API_BASE}/devices`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name })
@@ -355,7 +386,7 @@ function showModal() {
 
 function connectGlobalWS() {
   const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-  globalWs = new WebSocket(`${proto}://${location.host}/ws?device=_global`);
+  globalWs = new WebSocket(`${proto}://${location.host}/ws?namespace=${namespace}&device=_global`);
 
   globalWs.onmessage = async (e) => {
     const msg = JSON.parse(e.data);

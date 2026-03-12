@@ -551,7 +551,14 @@ function connectGlobalWS() {
       else if (activeTab === 'home') renderHome();
       else renderTabs();
     } else if (msg.event === 'content_updated') {
-      switchTab(msg.deviceId);
+      if (activeTab === msg.deviceId) {
+        // Already on this tab — just update the content directly
+        showContent(msg.data);
+      } else {
+        // Switch to the tab, then show content after render
+        switchTab(msg.deviceId);
+        if (msg.data) showContent(msg.data);
+      }
     } else if (msg.event === 'content_cleared') {
       if (activeTab === 'home') renderHome();
     }

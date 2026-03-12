@@ -7,10 +7,10 @@ function slugify(name) {
 
 // ── Namespaces ──
 
-async function createNamespace() {
+async function createNamespace(ip) {
   const db = getPool();
   const id = nanoid(8);
-  await db.query('INSERT INTO namespaces (id) VALUES (?)', [id]);
+  await db.query('INSERT INTO namespaces (id, ip_address) VALUES (?, ?)', [id, ip || null]);
   return id;
 }
 

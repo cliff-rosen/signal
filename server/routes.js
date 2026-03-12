@@ -1,18 +1,19 @@
 const express = require('express');
 const store = require('./store');
+const { getPool } = require('./db');
 
 function createRouter(broadcast, broadcastGlobal) {
   const router = express.Router({ mergeParams: true });
 
-  const fs = require('fs');
-  const path = require('path');
-  const LOG_FILE = path.join(__dirname, '..', 'botbeam.log');
-
-  // Log all API calls
+  // Log all API calls to DB
   router.use((req, res, next) => {
-    const msg = `[API] ${req.method} /s/${req.namespace}/api${req.path}`;
-    fs.appendFileSync(LOG_FILE, `${new Date().toISOString()} ${msg}\n`);
-    console.log(msg);
+    const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress;
+    const path = req.path;
+    getPool().query(
+      'INSERT INTO api_log (namespace, method, path, ip_address) VALUES (?, ?, ?, ?)',
+      [req.namespace, req.method, path, ip]
+    ).catch(() => {});
+    console.log(`[API] ${req.method} /s/${req.namespace}/api${path}`);
     next();
   });
 

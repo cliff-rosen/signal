@@ -22,8 +22,20 @@ async function initDB() {
   await db.query(`
     CREATE TABLE IF NOT EXISTS namespaces (
       id VARCHAR(12) PRIMARY KEY,
+      ip_address VARCHAR(45),
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS api_log (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      namespace VARCHAR(12),
+      method VARCHAR(10) NOT NULL,
+      path VARCHAR(500) NOT NULL,
+      ip_address VARCHAR(45),
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
   `);
 
@@ -49,6 +61,11 @@ async function initDB() {
       FOREIGN KEY (namespace, device_id) REFERENCES devices(namespace, id) ON DELETE CASCADE
     )
   `);
+
+  // Add ip_address column if missing (safe for existing tables)
+  await db.query(`
+    ALTER TABLE namespaces ADD COLUMN IF NOT EXISTS ip_address VARCHAR(45) AFTER id
+  `).catch(() => {});
 
   console.log('  Database initialized.');
 }

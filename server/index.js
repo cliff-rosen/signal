@@ -63,7 +63,13 @@ app.get('/', (req, res) => {
 
 // ── Create namespace ──
 app.post('/api/namespaces', async (req, res) => {
-  const id = await store.createNamespace();
+  const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress;
+  const id = await store.createNamespace(ip);
+  const { getPool } = require('./db');
+  getPool().query(
+    'INSERT INTO api_log (namespace, method, path, ip_address) VALUES (?, ?, ?, ?)',
+    [id, 'POST', '/api/namespaces', ip]
+  ).catch(() => {});
   res.status(201).json({ id, url: `/s/${id}` });
 });
 

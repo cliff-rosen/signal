@@ -6,9 +6,13 @@ export default defineConfig(({ mode }) => ({
   base: mode === 'development' ? '/' : '/app/',
   server: {
     port: 5173,
+    host: true,
+    watch: {
+      usePolling: true,
+    },
     proxy: {
       // Only proxy API/MCP calls under /s, not page loads
-      '/s': {
+      '/s/': {
         target: 'http://localhost:4888',
         bypass(req) {
           if (!req.url?.match(/\/(api|mcp)\//)) {

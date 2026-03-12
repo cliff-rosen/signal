@@ -83,20 +83,21 @@ export function BotBeamProvider({ children }: { children: ReactNode }) {
   // Global WebSocket
   useEffect(() => {
     if (!namespace) return;
+    const ns = namespace;
 
     let reconnectTimer: ReturnType<typeof setTimeout>;
     let ws: WebSocket;
 
     function connect() {
       const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-      ws = new WebSocket(`${proto}://${location.host}/ws?namespace=${namespace}&device=_global`);
+      ws = new WebSocket(`${proto}://${location.host}/ws?namespace=${ns}&device=_global`);
       wsRef.current = ws;
 
       ws.onmessage = (e) => {
         const msg: WSEvent = JSON.parse(e.data);
 
         if (msg.event === 'device_created') {
-          botbeamApi.getDevices(namespace).then(setDevices);
+          botbeamApi.getDevices(ns).then(setDevices);
         } else if (msg.event === 'device_deleted') {
           setDevices(prev => prev.filter(d => d.id !== msg.deviceId));
           setActiveTab(prev => prev === msg.deviceId ? 'home' : prev);

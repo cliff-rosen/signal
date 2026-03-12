@@ -168,13 +168,13 @@ async function renderHome() {
     </div>
     <div class="setup-try">
       <div class="setup-try-heading">Try it out</div>
-      <p>Once connected, try starting a conversation like this:</p>
+      <p>Once connected, just paste one of these into your AI chat:</p>
       <div class="setup-prompts">
-        <div class="setup-prompt-example">"I want to learn about X. List the key topics and beam them to me, then we'll go through each one."</div>
-        <div class="setup-prompt-example">"Help me prep for my interview — give me a topic list, then a cheat sheet tab for each as we discuss them."</div>
-        <div class="setup-prompt-example">"Research these 5 companies and create a tab for each with a summary."</div>
+        <div class="setup-prompt-example">"Teach me about Docker. Start by beaming me a roadmap of topics, then walk me through each one — send a cheat sheet each time."</div>
+        <div class="setup-prompt-example">"I'm prepping for a product manager interview. Give me a list of common question categories, then quiz me on each one and beam me the key points after."</div>
+        <div class="setup-prompt-example">"Compare AWS, GCP, and Azure for a small startup. Beam me a tab for each with pricing, strengths, and gotchas."</div>
       </div>
-      <p class="setup-try-hint">As you talk, your AI builds out tabs — each topic becomes its own reference card. By the end you have a complete, personalized workspace.</p>
+      <p class="setup-try-hint">Tabs are created automatically as your AI needs them. As you keep talking, new tabs appear — by the end you have a full reference you can keep open.</p>
     </div>
   `;
   homeContent.appendChild(setup);

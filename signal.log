@@ -1,0 +1,91 @@
+2026-03-12T05:29:15.227Z [WS] Disconnected: fFAkfXUd:_global (0 remaining)
+2026-03-12T05:29:15.570Z [WS] Connected: fFAkfXUd:_global (1 clients)
+2026-03-12T05:29:15.614Z [API] GET /s/fFAkfXUd/api/devices
+2026-03-12T05:29:34.550Z [WS] Connected: 8GouP4cp:_global (1 clients)
+2026-03-12T05:29:34.567Z [WS] Disconnected: fFAkfXUd:_global (0 remaining)
+2026-03-12T05:29:34.625Z [API] GET /s/8GouP4cp/api/devices
+2026-03-12T05:29:34.956Z [API] GET /s/8GouP4cp/api/devices/dashboard/content
+2026-03-12T05:29:35.057Z [API] GET /s/8GouP4cp/api/devices/live-test/content
+2026-03-12T05:29:37.552Z [WS] Connected: 8GouP4cp:dashboard (1 clients)
+2026-03-12T05:29:37.596Z [API] GET /s/8GouP4cp/api/devices/dashboard/content
+2026-03-12T05:29:38.727Z [WS] Disconnected: 8GouP4cp:dashboard (0 remaining)
+2026-03-12T05:29:38.734Z [WS] Connected: 8GouP4cp:live-test (1 clients)
+2026-03-12T05:29:38.773Z [API] GET /s/8GouP4cp/api/devices/live-test/content
+2026-03-12T05:29:42.138Z [API] GET /s/8GouP4cp/api/devices
+2026-03-12T05:29:54.325Z [API] POST /s/8GouP4cp/api/devices/dashboard/content
+2026-03-12T05:29:54.462Z [WS] Broadcast 8GouP4cp:dashboard: content → 0 clients
+2026-03-12T05:29:54.463Z [WS] Broadcast 8GouP4cp:_global: content_updated → 1 clients
+2026-03-12T05:29:54.470Z [WS] Disconnected: 8GouP4cp:live-test (0 remaining)
+2026-03-12T05:29:54.476Z [WS] Connected: 8GouP4cp:dashboard (1 clients)
+2026-03-12T05:29:54.520Z [API] GET /s/8GouP4cp/api/devices/dashboard/content
+2026-03-12T05:30:31.085Z [API] POST /s/8GouP4cp/api/devices/dashboard/content
+2026-03-12T05:30:31.196Z [WS] Broadcast 8GouP4cp:dashboard: content → 1 clients
+2026-03-12T05:30:31.197Z [WS] Broadcast 8GouP4cp:_global: content_updated → 1 clients
+2026-03-12T05:30:31.227Z [WS] Disconnected: 8GouP4cp:dashboard (0 remaining)
+2026-03-12T05:30:31.242Z [WS] Connected: 8GouP4cp:dashboard (1 clients)
+2026-03-12T05:30:31.285Z [API] GET /s/8GouP4cp/api/devices/dashboard/content
+2026-03-12T05:30:32.241Z [WS] Connected: 8GouP4cp:dashboard (2 clients)
+2026-03-12T05:31:07.453Z [WS] Disconnected: 8GouP4cp:dashboard (1 remaining)
+2026-03-12T05:31:07.497Z [API] GET /s/8GouP4cp/api/devices/dashboard/content
+2026-03-12T05:31:07.601Z [API] GET /s/8GouP4cp/api/devices/live-test/content
+2026-03-12T05:31:09.695Z [WS] Connected: 8GouP4cp:dashboard (2 clients)
+2026-03-12T05:31:09.738Z [API] GET /s/8GouP4cp/api/devices/dashboard/content
+2026-03-12T05:31:26.015Z [API] DELETE /s/8GouP4cp/api/devices/dashboard
+2026-03-12T05:31:26.055Z [WS] Broadcast 8GouP4cp:dashboard: clear → 2 clients
+2026-03-12T05:31:26.058Z [WS] Broadcast 8GouP4cp:_global: device_deleted → 1 clients
+2026-03-12T05:31:26.124Z [API] GET /s/8GouP4cp/api/devices
+2026-03-12T05:31:26.168Z [WS] Disconnected: 8GouP4cp:dashboard (1 remaining)
+2026-03-12T05:31:26.206Z [API] GET /s/8GouP4cp/api/devices/live-test/content
+2026-03-12T05:31:26.241Z [API] DELETE /s/8GouP4cp/api/devices/live-test
+2026-03-12T05:31:26.421Z [WS] Broadcast 8GouP4cp:live-test: clear → 0 clients
+2026-03-12T05:31:26.439Z [WS] Broadcast 8GouP4cp:_global: device_deleted → 1 clients
+2026-03-12T05:31:26.499Z [API] GET /s/8GouP4cp/api/devices
+2026-03-12T05:31:49.490Z [API] POST /s/8GouP4cp/api/devices
+2026-03-12T05:31:49.620Z [WS] Broadcast 8GouP4cp:_global: device_created → 1 clients
+2026-03-12T05:31:49.664Z [API] GET /s/8GouP4cp/api/devices
+2026-03-12T05:31:49.720Z [WS] Connected: 8GouP4cp:tasks (1 clients)
+2026-03-12T05:31:49.767Z [API] GET /s/8GouP4cp/api/devices/tasks/content
+2026-03-12T05:31:50.771Z [API] POST /s/8GouP4cp/api/devices/tasks/content
+2026-03-12T05:31:50.917Z [WS] Broadcast 8GouP4cp:tasks: content → 1 clients
+2026-03-12T05:31:50.919Z [WS] Broadcast 8GouP4cp:_global: content_updated → 1 clients
+2026-03-12T05:31:50.924Z [WS] Disconnected: 8GouP4cp:tasks (0 remaining)
+2026-03-12T05:31:50.927Z [WS] Connected: 8GouP4cp:tasks (1 clients)
+2026-03-12T05:31:50.975Z [API] GET /s/8GouP4cp/api/devices/tasks/content
+2026-03-12T05:31:51.931Z [WS] Connected: 8GouP4cp:tasks (2 clients)
+2026-03-12T05:32:04.768Z [API] POST /s/8GouP4cp/api/devices
+2026-03-12T05:32:04.881Z [WS] Broadcast 8GouP4cp:_global: device_created → 1 clients
+2026-03-12T05:32:04.923Z [API] GET /s/8GouP4cp/api/devices
+2026-03-12T05:32:04.977Z [WS] Disconnected: 8GouP4cp:tasks (1 remaining)
+2026-03-12T05:32:04.983Z [WS] Connected: 8GouP4cp:photo (1 clients)
+2026-03-12T05:32:05.025Z [API] GET /s/8GouP4cp/api/devices/photo/content
+2026-03-12T05:32:06.058Z [API] POST /s/8GouP4cp/api/devices/photo/content
+2026-03-12T05:32:06.170Z [WS] Broadcast 8GouP4cp:photo: content → 1 clients
+2026-03-12T05:32:06.171Z [WS] Broadcast 8GouP4cp:_global: content_updated → 1 clients
+2026-03-12T05:32:06.183Z [WS] Disconnected: 8GouP4cp:photo (0 remaining)
+2026-03-12T05:32:06.195Z [WS] Connected: 8GouP4cp:photo (1 clients)
+2026-03-12T05:32:06.239Z [API] GET /s/8GouP4cp/api/devices/photo/content
+2026-03-12T05:32:07.197Z [WS] Connected: 8GouP4cp:photo (2 clients)
+2026-03-12T05:33:31.191Z [WS] Disconnected: 8GouP4cp:photo (1 remaining)
+2026-03-12T05:33:31.241Z [API] GET /s/8GouP4cp/api/devices/tasks/content
+2026-03-12T05:33:31.339Z [API] GET /s/8GouP4cp/api/devices/photo/content
+2026-03-12T05:33:39.071Z [WS] Disconnected: 8GouP4cp:_global (0 remaining)
+2026-03-12T05:33:39.084Z [WS] Disconnected: 8GouP4cp:photo (0 remaining)
+2026-03-12T05:33:39.085Z [WS] Disconnected: 8GouP4cp:tasks (0 remaining)
+2026-03-12T05:33:39.087Z [WS] Disconnected: 8GouP4cp:dashboard (0 remaining)
+2026-03-12T05:33:52.439Z [WS] Connected: 0JdANqs4:_global (1 clients)
+2026-03-12T05:33:52.489Z [API] GET /s/0JdANqs4/api/devices
+2026-03-12T05:35:10.704Z [API] GET /s/8GouP4cp/api/devices/photo/content
+2026-03-12T05:35:19.266Z [WS] Disconnected: 0JdANqs4:_global (0 remaining)
+2026-03-12T05:35:20.552Z [WS] Connected: 8GouP4cp:_global (1 clients)
+2026-03-12T05:35:20.653Z [API] GET /s/8GouP4cp/api/devices
+2026-03-12T05:35:21.000Z [API] GET /s/8GouP4cp/api/devices/tasks/content
+2026-03-12T05:35:21.123Z [API] GET /s/8GouP4cp/api/devices/photo/content
+2026-03-12T05:35:23.134Z [WS] Connected: 8GouP4cp:photo (1 clients)
+2026-03-12T05:35:23.173Z [API] GET /s/8GouP4cp/api/devices/photo/content
+2026-03-12T05:35:34.518Z [API] POST /s/8GouP4cp/api/devices/photo/content
+2026-03-12T05:35:34.630Z [WS] Broadcast 8GouP4cp:photo: content → 1 clients
+2026-03-12T05:35:34.631Z [WS] Broadcast 8GouP4cp:_global: content_updated → 1 clients
+2026-03-12T05:35:34.647Z [WS] Disconnected: 8GouP4cp:photo (0 remaining)
+2026-03-12T05:35:34.655Z [WS] Connected: 8GouP4cp:photo (1 clients)
+2026-03-12T05:35:34.695Z [API] GET /s/8GouP4cp/api/devices/photo/content
+2026-03-12T05:35:35.657Z [WS] Connected: 8GouP4cp:photo (2 clients)

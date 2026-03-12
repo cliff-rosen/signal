@@ -4,9 +4,15 @@ const store = require('./store');
 function createRouter(broadcast, broadcastGlobal) {
   const router = express.Router({ mergeParams: true });
 
+  const fs = require('fs');
+  const path = require('path');
+  const LOG_FILE = path.join(__dirname, '..', 'signal.log');
+
   // Log all API calls
   router.use((req, res, next) => {
-    console.log(`[API] ${req.method} /s/${req.namespace}/api${req.path}`);
+    const msg = `[API] ${req.method} /s/${req.namespace}/api${req.path}`;
+    fs.appendFileSync(LOG_FILE, `${new Date().toISOString()} ${msg}\n`);
+    console.log(msg);
     next();
   });
 

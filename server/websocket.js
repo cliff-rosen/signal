@@ -1,4 +1,13 @@
 const { WebSocketServer } = require('ws');
+const fs = require('fs');
+const path = require('path');
+
+const LOG_FILE = path.join(__dirname, '..', 'signal.log');
+function log(msg) {
+  const line = `${new Date().toISOString()} ${msg}\n`;
+  fs.appendFileSync(LOG_FILE, line);
+  console.log(msg);
+}
 
 function createWSServer(httpServer) {
   const wss = new WebSocketServer({ server: httpServer });
@@ -16,13 +25,13 @@ function createWSServer(httpServer) {
     const key = `${namespace}:${device}`;
     if (!clients.has(key)) clients.set(key, new Set());
     clients.get(key).add(ws);
-    console.log(`[WS] Connected: ${key} (${clients.get(key).size} clients)`);
+    log(`[WS] Connected: ${key} (${clients.get(key).size} clients)`);
 
     ws.on('close', () => {
       const set = clients.get(key);
       if (set) {
         set.delete(ws);
-        console.log(`[WS] Disconnected: ${key} (${set.size} remaining)`);
+        log(`[WS] Disconnected: ${key} (${set.size} remaining)`);
         if (set.size === 0) clients.delete(key);
       }
     });
@@ -31,7 +40,7 @@ function createWSServer(httpServer) {
   function broadcast(namespace, deviceId, message) {
     const key = `${namespace}:${deviceId}`;
     const set = clients.get(key);
-    console.log(`[WS] Broadcast ${key}: ${message.event} → ${set ? set.size : 0} clients`);
+    log(`[WS] Broadcast ${key}: ${message.event} → ${set ? set.size : 0} clients`);
     if (!set) return;
     const data = JSON.stringify(message);
     for (const ws of set) {

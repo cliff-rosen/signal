@@ -4,7 +4,8 @@
       "command": "node",
       "args": ["C:\\code\\signal\\mcp\\index.js"],
       "env": {
-        "BOTBEAM_SERVER_URL": "http://localhost:4888"
+        "BOTBEAM_SERVER_URL": "http://localhost:4888",
+        "BOTBEAM_NAMESPACE": "G-whmSpT"
       }
     }
   }

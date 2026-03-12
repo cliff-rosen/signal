@@ -869,6 +869,17 @@ body:has(.app) {
   color: var(--accent);
 }
 
+.setup-note {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-top: 8px;
+  padding: 10px 14px;
+  background: var(--bg);
+  border-radius: 6px;
+  border-left: 3px solid var(--accent);
+  line-height: 1.5;
+}
+
 .setup-codeblock {
   background: var(--bg);
   border: 1px solid var(--border);
@@ -916,6 +927,13 @@ body:has(.app) {
   font-size: 0.85rem;
   color: var(--text-muted);
   font-style: italic;
+}
+
+.setup-try-hint {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-top: 12px;
+  line-height: 1.5;
 }
 
 /* ── Back to landing link ── */

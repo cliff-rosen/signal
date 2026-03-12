@@ -130,19 +130,23 @@ async function renderHome() {
     </div>
     <div class="setup-panel" id="setup-chatgpt">
       <ol class="setup-steps">
-        <li>Open <strong>ChatGPT</strong> and go to <strong>Settings</strong></li>
-        <li>Navigate to <strong>Connectors</strong> (under your profile)</li>
-        <li>Click <strong>"Add connector"</strong> and paste your MCP endpoint URL</li>
-        <li>Save, then start a new chat. ChatGPT can now push content to your displays!</li>
+        <li>Open <strong>ChatGPT</strong> and start a new chat</li>
+        <li>Click the <strong>tools icon</strong> (hammer) in the message bar, then <strong>"Add more tools"</strong></li>
+        <li>Select <strong>"Add MCP server"</strong></li>
+        <li>Paste your MCP endpoint URL and give it a name (e.g. "BotBeam")</li>
+        <li>When asked about authentication, select <strong>"None"</strong></li>
       </ol>
+      <div class="setup-note">No authentication is needed — your namespace URL is your access key. Anyone with the link can push to your displays, but each namespace is isolated and URLs are unguessable.</div>
     </div>
     <div class="setup-panel" id="setup-claude" style="display:none">
       <ol class="setup-steps">
-        <li>Open <a href="https://claude.ai" target="_blank">claude.ai</a> and click your name → <strong>Settings</strong></li>
-        <li>Go to the <strong>Connectors</strong> section</li>
-        <li>Click <strong>"Add connector"</strong> and paste your MCP endpoint URL</li>
-        <li>Save, then start a new conversation. Claude can now push content to your displays!</li>
+        <li>Open <a href="https://claude.ai" target="_blank">claude.ai</a> and go to <strong>Settings</strong></li>
+        <li>Navigate to <strong>Integrations</strong></li>
+        <li>Click <strong>"Add integration"</strong> and select <strong>MCP</strong></li>
+        <li>Paste your MCP endpoint URL and give it a name (e.g. "BotBeam")</li>
+        <li>When asked about authentication, select <strong>"None"</strong></li>
       </ol>
+      <div class="setup-note">No authentication is needed — your namespace URL is your access key. Anyone with the link can push to your displays, but each namespace is isolated and URLs are unguessable.</div>
     </div>
     <div class="setup-panel" id="setup-claude-code" style="display:none">
       <ol class="setup-steps">
@@ -164,12 +168,13 @@ async function renderHome() {
     </div>
     <div class="setup-try">
       <div class="setup-try-heading">Try it out</div>
-      <p>Once connected, try saying something like:</p>
+      <p>Once connected, try starting a conversation like this:</p>
       <div class="setup-prompts">
-        <div class="setup-prompt-example">"Pull up Sarah's LinkedIn in the research tab and draft a reach-out email in the outreach tab"</div>
-        <div class="setup-prompt-example">"Summarize this article and show it in the notes tab"</div>
-        <div class="setup-prompt-example">"Show a pros and cons list for each vendor in the comparison tab"</div>
+        <div class="setup-prompt-example">"I want to learn about X. List the key topics and beam them to me, then we'll go through each one."</div>
+        <div class="setup-prompt-example">"Help me prep for my interview — give me a topic list, then a cheat sheet tab for each as we discuss them."</div>
+        <div class="setup-prompt-example">"Research these 5 companies and create a tab for each with a summary."</div>
       </div>
+      <p class="setup-try-hint">As you talk, your AI builds out tabs — each topic becomes its own reference card. By the end you have a complete, personalized workspace.</p>
     </div>
   `;
   homeContent.appendChild(setup);
@@ -524,11 +529,21 @@ function confirmDeleteDevice(device) {
   overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
 
   document.getElementById('confirm-delete-btn').onclick = async () => {
-    await fetch(`${API_BASE}/devices/${device.id}`, { method: 'DELETE' });
     overlay.remove();
-    if (activeTab === device.id) activeTab = 'home';
-    await loadDevices();
-    if (activeTab === 'home') renderHome();
+    // Optimistically update UI before the API call
+    const wasActive = activeTab === device.id;
+    if (wasActive && ws) { ws.close(); ws = null; }
+    devices = devices.filter(d => d.id !== device.id);
+    if (wasActive) {
+      activeTab = 'home';
+      renderTabs();
+      renderHome();
+    } else {
+      renderTabs();
+      if (activeTab === 'home') renderHome();
+    }
+    // Fire the API call — the WS event will arrive but devices list is already updated
+    await fetch(`${API_BASE}/devices/${device.id}`, { method: 'DELETE' });
   };
 }
 
@@ -542,24 +557,38 @@ function connectGlobalWS() {
     const msg = JSON.parse(e.data);
 
     if (msg.event === 'device_created') {
+      // Add the tab without disrupting the user's current view
       await loadDevices();
-      switchTab(msg.device.id);
+      // Only switch if user is on home (they're not busy with another tab)
+      if (activeTab === 'home') renderHome();
+
     } else if (msg.event === 'device_deleted') {
       const wasActive = activeTab === msg.deviceId;
+      // Close the per-device WS if we're on the deleted tab
+      if (wasActive && ws) { ws.close(); ws = null; }
       await loadDevices();
-      if (wasActive) switchTab('home');
-      else if (activeTab === 'home') renderHome();
-      else renderTabs();
-    } else if (msg.event === 'content_updated') {
-      if (activeTab === msg.deviceId) {
-        // Already on this tab — just update the content directly
-        showContent(msg.data);
+      if (wasActive) {
+        activeTab = 'home';
+        renderTabs();
+        renderHome();
+      } else if (activeTab === 'home') {
+        renderHome();
       } else {
-        // Switch to the tab, then show content after render
-        switchTab(msg.deviceId);
-        if (msg.data) showContent(msg.data);
+        renderTabs();
       }
+
+    } else if (msg.event === 'content_updated') {
+      // If we're on the target tab, the per-device WS handles it — skip
+      if (activeTab === msg.deviceId) return;
+      // If we're on home, refresh the card previews
+      if (activeTab === 'home') {
+        renderHome();
+      }
+      // Don't force-switch the user to a different tab
+
     } else if (msg.event === 'content_cleared') {
+      // If we're on the cleared tab, the per-device WS handles it — skip
+      if (activeTab === msg.deviceId) return;
       if (activeTab === 'home') renderHome();
     }
   };

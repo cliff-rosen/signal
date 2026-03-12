@@ -7,6 +7,17 @@ const store = require('./store');
 const { logAPI, getIP } = require('./log');
 
 const sessions = new Map();
+const SESSION_TTL = 30 * 60 * 1000; // 30 minutes
+
+// Evict stale sessions every 5 minutes
+setInterval(() => {
+  const now = Date.now();
+  for (const [id, session] of sessions) {
+    if (now - session.lastActivity > SESSION_TTL) {
+      sessions.delete(id);
+    }
+  }
+}, 5 * 60 * 1000);
 
 function createDirectClient(broadcast, broadcastGlobal, ip) {
   return {
@@ -75,7 +86,7 @@ function createRouter(broadcast, broadcastGlobal) {
         const transport = new StreamableHTTPServerTransport({
           sessionIdGenerator: () => crypto.randomUUID(),
           onsessioninitialized: (id) => {
-            sessions.set(id, { transport, server: mcpServer, namespace });
+            sessions.set(id, { transport, server: mcpServer, namespace, lastActivity: Date.now() });
           },
         });
 
@@ -84,14 +95,18 @@ function createRouter(broadcast, broadcastGlobal) {
         await mcpServer.connect(transport);
         await transport.handleRequest(req, res, body);
       } else if (sessionId && sessions.has(sessionId)) {
-        await sessions.get(sessionId).transport.handleRequest(req, res, body);
+        const session = sessions.get(sessionId);
+        session.lastActivity = Date.now();
+        await session.transport.handleRequest(req, res, body);
       } else {
         res.writeHead(400, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ jsonrpc: '2.0', error: { code: -32600, message: 'Invalid session' }, id: null }));
       }
     } else if (req.method === 'GET') {
       if (sessionId && sessions.has(sessionId)) {
-        await sessions.get(sessionId).transport.handleRequest(req, res);
+        const session = sessions.get(sessionId);
+        session.lastActivity = Date.now();
+        await session.transport.handleRequest(req, res);
       } else {
         res.writeHead(400, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ jsonrpc: '2.0', error: { code: -32600, message: 'Invalid session' }, id: null }));

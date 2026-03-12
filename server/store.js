@@ -2,7 +2,7 @@ const { getPool } = require('./db');
 const { nanoid } = require('nanoid');
 
 const MAX_BODY_BYTES = 512 * 1024; // 500KB
-const VALID_CONTENT_TYPES = new Set(['url', 'image', 'markdown', 'dashboard', 'list']);
+const VALID_CONTENT_TYPES = new Set(['text', 'html', 'url', 'image', 'markdown', 'dashboard', 'list']);
 
 function slugify(name) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
@@ -72,22 +72,15 @@ async function createDevice(namespace, name) {
   if (!id) throw new Error('Device name must contain at least one alphanumeric character');
 
   try {
-    const [existing] = await db.query(
-      'SELECT id, name, created_at as createdAt FROM devices WHERE namespace = ? AND id = ?',
-      [namespace, id]
-    );
-    if (existing.length > 0) {
-      return { exists: true, device: existing[0] };
-    }
-    await db.query(
-      'INSERT INTO devices (id, namespace, name) VALUES (?, ?, ?)',
+    const [result] = await db.query(
+      'INSERT IGNORE INTO devices (id, namespace, name) VALUES (?, ?, ?)',
       [id, namespace, name]
     );
     const [rows] = await db.query(
       'SELECT id, name, created_at as createdAt FROM devices WHERE namespace = ? AND id = ?',
       [namespace, id]
     );
-    return { exists: false, device: rows[0] };
+    return { exists: result.affectedRows === 0, device: rows[0] };
   } catch (err) {
     logError('createDevice', err, { namespace, name });
     throw err;

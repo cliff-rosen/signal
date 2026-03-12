@@ -99,8 +99,8 @@ function createRouter(broadcast, broadcastGlobal) {
         session.lastActivity = Date.now();
         await session.transport.handleRequest(req, res, body);
       } else {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ jsonrpc: '2.0', error: { code: -32600, message: 'Invalid session' }, id: null }));
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ jsonrpc: '2.0', error: { code: -32600, message: 'Session not found' }, id: null }));
       }
     } else if (req.method === 'GET') {
       if (sessionId && sessions.has(sessionId)) {
@@ -108,8 +108,8 @@ function createRouter(broadcast, broadcastGlobal) {
         session.lastActivity = Date.now();
         await session.transport.handleRequest(req, res);
       } else {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ jsonrpc: '2.0', error: { code: -32600, message: 'Invalid session' }, id: null }));
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ jsonrpc: '2.0', error: { code: -32600, message: 'Session not found' }, id: null }));
       }
     } else if (req.method === 'DELETE') {
       if (sessionId && sessions.has(sessionId)) {

@@ -6,7 +6,7 @@ const path = require('path');
 const express = require('express');
 const { McpServer } = require('@modelcontextprotocol/sdk/server/mcp.js');
 const { StreamableHTTPServerTransport } = require('@modelcontextprotocol/sdk/server/streamableHttp.js');
-const { initDB } = require('./db');
+const { initDB, getPool } = require('./db');
 const { createWSServer } = require('./websocket');
 const { createRouter } = require('./routes');
 const { namespaceMiddleware } = require('./namespace');
@@ -20,35 +20,59 @@ const server = http.createServer(app);
 // WebSocket
 const { broadcast, broadcastGlobal } = createWSServer(server);
 
-// Direct client for MCP tools — calls store + broadcast with no HTTP roundtrip
-const directClient = {
-  listDevices: (ns) => store.loadDevices(ns),
-  deleteDevice: async (ns, id) => {
-    const ok = await store.deleteDevice(ns, id);
-    if (ok) {
+// API logging helper
+function normalizeIP(ip) {
+  if (!ip) return null;
+  if (ip === '::1' || ip === '::ffff:127.0.0.1') return '127.0.0.1';
+  if (ip.startsWith('::ffff:')) return ip.slice(7);
+  return ip;
+}
+
+function logAPI(namespace, action, { device, contentType, body, ip } = {}) {
+  const bodyStr = body ? (typeof body === 'string' ? body : JSON.stringify(body)) : null;
+  getPool().query(
+    'INSERT INTO api_log (namespace, action, device, content_type, body, ip_address) VALUES (?, ?, ?, ?, ?, ?)',
+    [namespace, action, device || null, contentType || null, bodyStr, normalizeIP(ip)]
+  ).catch(() => {});
+}
+
+// Direct client factory — creates a client bound to a specific IP for logging
+function createDirectClient(ip) {
+  return {
+    listDevices: (ns) => {
+      logAPI(ns, 'list_devices', { ip });
+      return store.loadDevices(ns);
+    },
+    deleteDevice: async (ns, id) => {
+      logAPI(ns, 'delete_device', { device: id, ip });
+      const ok = await store.deleteDevice(ns, id);
+      if (ok) {
+        broadcast(ns, id, { event: 'clear' });
+        broadcastGlobal(ns, { event: 'device_deleted', deviceId: id });
+      }
+      return { ok };
+    },
+    pushContent: async (ns, deviceId, type, body) => {
+      logAPI(ns, 'push_content', { device: deviceId, contentType: type, body, ip });
+      const devices = await store.loadDevices(ns);
+      if (!devices.find(d => d.id === deviceId)) {
+        const { device } = await store.createDevice(ns, deviceId);
+        broadcastGlobal(ns, { event: 'device_created', device });
+      }
+      const content = await store.saveContent(ns, deviceId, { type, body });
+      broadcast(ns, deviceId, { event: 'content', data: content });
+      broadcastGlobal(ns, { event: 'content_updated', deviceId, data: content });
+      return content;
+    },
+    clearDevice: async (ns, id) => {
+      logAPI(ns, 'clear_device', { device: id, ip });
+      await store.deleteContent(ns, id);
       broadcast(ns, id, { event: 'clear' });
-      broadcastGlobal(ns, { event: 'device_deleted', deviceId: id });
-    }
-    return { ok };
-  },
-  pushContent: async (ns, deviceId, type, body) => {
-    const devices = await store.loadDevices(ns);
-    if (!devices.find(d => d.id === deviceId)) {
-      const { device } = await store.createDevice(ns, deviceId);
-      broadcastGlobal(ns, { event: 'device_created', device });
-    }
-    const content = await store.saveContent(ns, deviceId, { type, body });
-    broadcast(ns, deviceId, { event: 'content', data: content });
-    broadcastGlobal(ns, { event: 'content_updated', deviceId, data: content });
-    return content;
-  },
-  clearDevice: async (ns, id) => {
-    await store.deleteContent(ns, id);
-    broadcast(ns, id, { event: 'clear' });
-    broadcastGlobal(ns, { event: 'content_cleared', deviceId: id });
-    return { ok: true };
-  },
-};
+      broadcastGlobal(ns, { event: 'content_cleared', deviceId: id });
+      return { ok: true };
+    },
+  };
+}
 
 // Middleware
 app.use(express.json());
@@ -64,12 +88,8 @@ app.get('/', (req, res) => {
 // ── Create namespace ──
 app.post('/api/namespaces', async (req, res) => {
   const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress;
-  const id = await store.createNamespace(ip);
-  const { getPool } = require('./db');
-  getPool().query(
-    'INSERT INTO api_log (namespace, method, path, ip_address) VALUES (?, ?, ?, ?)',
-    [id, 'POST', '/api/namespaces', ip]
-  ).catch(() => {});
+  const id = await store.createNamespace(normalizeIP(ip));
+  logAPI(id, 'create_namespace', { ip });
   res.status(201).json({ id, url: `/s/${id}` });
 });
 
@@ -99,6 +119,9 @@ async function handleMCP(req, res) {
       : body.method === 'initialize';
 
     if (isInit) {
+      const mcpIP = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress;
+      const client = createDirectClient(mcpIP);
+
       const transport = new StreamableHTTPServerTransport({
         sessionIdGenerator: () => crypto.randomUUID(),
         onsessioninitialized: (id) => {
@@ -107,7 +130,7 @@ async function handleMCP(req, res) {
       });
 
       const mcpServer = new McpServer({ name: 'botbeam', version: '0.2.0' });
-      registerTools(mcpServer, namespace, directClient);
+      registerTools(mcpServer, namespace, client);
       await mcpServer.connect(transport);
       await transport.handleRequest(req, res, body);
     } else if (sessionId && mcpSessions.has(sessionId)) {

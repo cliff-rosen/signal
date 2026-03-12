@@ -32,8 +32,10 @@ async function initDB() {
     CREATE TABLE IF NOT EXISTS api_log (
       id INT AUTO_INCREMENT PRIMARY KEY,
       namespace VARCHAR(12),
-      method VARCHAR(10) NOT NULL,
-      path VARCHAR(500) NOT NULL,
+      action VARCHAR(50) NOT NULL,
+      device VARCHAR(100),
+      content_type VARCHAR(20),
+      body LONGTEXT,
       ip_address VARCHAR(45),
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )

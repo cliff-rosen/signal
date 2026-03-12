@@ -5,15 +5,22 @@ const { getPool } = require('./db');
 function createRouter(broadcast, broadcastGlobal) {
   const router = express.Router({ mergeParams: true });
 
-  // Log all API calls to DB
+  // Log write API calls to DB (skip GETs — those are just browser fetches)
   router.use((req, res, next) => {
-    const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress;
-    const path = req.path;
-    getPool().query(
-      'INSERT INTO api_log (namespace, method, path, ip_address) VALUES (?, ?, ?, ?)',
-      [req.namespace, req.method, path, ip]
-    ).catch(() => {});
-    console.log(`[API] ${req.method} /s/${req.namespace}/api${path}`);
+    if (req.method === 'POST' || req.method === 'DELETE') {
+      let ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress;
+      if (ip === '::1' || ip === '::ffff:127.0.0.1') ip = '127.0.0.1';
+      else if (ip && ip.startsWith('::ffff:')) ip = ip.slice(7);
+      const action = `${req.method} ${req.path}`;
+      const device = req.params.id || null;
+      const contentType = req.body?.type || null;
+      const body = req.body && Object.keys(req.body).length > 0 ? JSON.stringify(req.body) : null;
+      getPool().query(
+        'INSERT INTO api_log (namespace, action, device, content_type, body, ip_address) VALUES (?, ?, ?, ?, ?, ?)',
+        [req.namespace, action, device, contentType, body, ip]
+      ).catch(() => {});
+    }
+    console.log(`[API] ${req.method} /s/${req.namespace}/api${req.path}`);
     next();
   });
 

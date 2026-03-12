@@ -869,6 +869,21 @@ body:has(.app) {
   color: var(--accent);
 }
 
+.setup-codeblock {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  overflow-x: auto;
+  margin: 8px 0 12px;
+}
+
+.btn-copy-config {
+  margin-bottom: 12px;
+}
+
 .setup-try {
   margin-top: 20px;
   padding-top: 16px;

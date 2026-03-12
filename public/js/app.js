@@ -126,6 +126,7 @@ async function renderHome() {
     <div class="setup-tabs">
       <button class="setup-tab active" data-target="chatgpt">ChatGPT</button>
       <button class="setup-tab" data-target="claude">Claude</button>
+      <button class="setup-tab" data-target="claude-code">Claude Code</button>
     </div>
     <div class="setup-panel" id="setup-chatgpt">
       <ol class="setup-steps">
@@ -141,6 +142,24 @@ async function renderHome() {
         <li>Go to the <strong>Connectors</strong> section</li>
         <li>Click <strong>"Add connector"</strong> and paste your MCP endpoint URL</li>
         <li>Save, then start a new conversation. Claude can now push content to your displays!</li>
+      </ol>
+    </div>
+    <div class="setup-panel" id="setup-claude-code" style="display:none">
+      <ol class="setup-steps">
+        <li>Open your project directory in a terminal</li>
+        <li>Add this to <strong>.claude/mcp.json</strong> in your project (create the file if needed):</li>
+      </ol>
+      <pre class="setup-codeblock"><code id="claude-code-config">{
+  "mcpServers": {
+    "botbeam": {
+      "type": "url",
+      "url": "${mcpUrl}"
+    }
+  }
+}</code></pre>
+      <button class="btn btn-primary btn-copy btn-copy-config" id="copy-config-btn">Copy config</button>
+      <ol class="setup-steps" start="3">
+        <li>Restart Claude Code. It will pick up the MCP server automatically.</li>
       </ol>
     </div>
     <div class="setup-try">
@@ -193,12 +212,21 @@ async function renderHome() {
   homeContent.appendChild(grid);
   main.appendChild(homeContent);
 
-  // Copy button handler
+  // Copy button handlers
   document.getElementById('copy-btn').onclick = () => {
     navigator.clipboard.writeText(mcpUrl).then(() => {
       const btn = document.getElementById('copy-btn');
       btn.textContent = 'Copied!';
       setTimeout(() => btn.textContent = 'Copy', 2000);
+    });
+  };
+
+  document.getElementById('copy-config-btn').onclick = () => {
+    const config = document.getElementById('claude-code-config').textContent;
+    navigator.clipboard.writeText(config).then(() => {
+      const btn = document.getElementById('copy-config-btn');
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy config', 2000);
     });
   };
 

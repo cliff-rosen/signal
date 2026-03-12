@@ -1,31 +1,20 @@
 import { useState } from 'react';
 import { useBotBeam } from '../context/BotBeamContext';
-import { settings } from '../config/settings';
 
 type SetupTab = 'chatgpt' | 'claude' | 'claude-code';
 
 export default function SetupInstructions({ mcpUrl }: { mcpUrl: string }) {
   const { namespace } = useBotBeam();
   const [tab, setTab] = useState<SetupTab>('chatgpt');
-  const [configCopied, setConfigCopied] = useState(false);
+  const [copied, setCopied] = useState(false);
 
-  const claudeCodeConfig = JSON.stringify({
-    mcpServers: {
-      botbeam: {
-        command: 'npx',
-        args: ['-y', 'botbeam@latest'],
-        env: {
-          BOTBEAM_NAMESPACE: namespace,
-          BOTBEAM_SERVER_URL: settings.apiUrl || window.location.origin,
-        },
-      },
-    },
-  }, null, 2);
+  const serverUrl = mcpUrl.replace(/\/s\/.*/, '');
+  const claudeCodeCommand = `claude mcp add --transport stdio -e BOTBEAM_NAMESPACE=${namespace} -e BOTBEAM_SERVER_URL=${serverUrl} botbeam -- npx -y botbeam@latest`;
 
-  function copyConfig() {
-    navigator.clipboard.writeText(claudeCodeConfig).then(() => {
-      setConfigCopied(true);
-      setTimeout(() => setConfigCopied(false), 2000);
+  function copy(text: string) {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     });
   }
 
@@ -78,17 +67,17 @@ export default function SetupInstructions({ mcpUrl }: { mcpUrl: string }) {
       {tab === 'claude-code' && (
         <div className="setup-panel">
           <ol className="setup-steps">
-            <li>Add this to <strong>.claude/mcp.json</strong> in your project (create the file if needed):</li>
+            <li>Run this command in your terminal:</li>
           </ol>
-          <pre className="setup-codeblock"><code>{claudeCodeConfig}</code></pre>
-          <button className="btn btn-primary btn-copy btn-copy-config" onClick={copyConfig}>
-            {configCopied ? 'Copied!' : 'Copy config'}
+          <pre className="setup-codeblock"><code>{claudeCodeCommand}</code></pre>
+          <button className="btn btn-primary btn-copy btn-copy-config" onClick={() => copy(claudeCodeCommand)}>
+            {copied ? 'Copied!' : 'Copy command'}
           </button>
           <ol className="setup-steps" start={2}>
-            <li>Restart Claude Code. It will pick up the MCP server automatically.</li>
+            <li>Restart Claude Code to pick up the new MCP server.</li>
           </ol>
           <div className="setup-note">
-            Claude Code spawns the MCP server as a local process that communicates over stdio. The namespace and server URL are passed as environment variables.
+            This registers BotBeam as a stdio MCP server. Claude Code spawns it as a local process and communicates over stdin/stdout.
           </div>
         </div>
       )}

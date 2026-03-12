@@ -1,8 +1,8 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from 'react';
 import type { Device, Content, WSEvent } from '../types';
-import * as botbeam from '../lib/botbeam';
+import { botbeamApi } from '../lib/api/botbeamApi';
 
-interface BotBeamState {
+interface BotBeamContextType {
   namespace: string | null;
   devices: Device[];
   activeTab: string;
@@ -15,12 +15,15 @@ interface BotBeamState {
   proxyUrl: (url: string) => string;
 }
 
-const BotBeamContext = createContext<BotBeamState | null>(null);
+const BotBeamContext = createContext<BotBeamContextType | undefined>(undefined);
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useBotBeam() {
-  const ctx = useContext(BotBeamContext);
-  if (!ctx) throw new Error('useBotBeam must be used within BotBeamProvider');
-  return ctx;
+  const context = useContext(BotBeamContext);
+  if (!context) {
+    throw new Error('useBotBeam must be used within a BotBeamProvider');
+  }
+  return context;
 }
 
 export function BotBeamProvider({ children }: { children: ReactNode }) {
@@ -31,13 +34,13 @@ export function BotBeamProvider({ children }: { children: ReactNode }) {
   const wsRef = useRef<WebSocket | null>(null);
 
   const getStarted = useCallback(async () => {
-    const { url } = await botbeam.createNamespace();
+    const { url } = await botbeamApi.createNamespace();
     window.location.href = url;
   }, []);
 
   const refreshDevices = useCallback(async () => {
     if (!namespace) return;
-    const list = await botbeam.getDevices(namespace);
+    const list = await botbeamApi.getDevices(namespace);
     setDevices(list);
   }, [namespace]);
 
@@ -47,31 +50,35 @@ export function BotBeamProvider({ children }: { children: ReactNode }) {
 
   const addDevice = useCallback(async (name: string) => {
     if (!namespace) throw new Error('No namespace');
-    const device = await botbeam.createDevice(namespace, name);
-    return device;
-  }, [namespace]);
-
-  const getContent = useCallback(async (deviceId: string) => {
-    if (!namespace) return null;
-    return botbeam.getContent(namespace, deviceId);
-  }, [namespace]);
-
-  const proxyUrl = useCallback((url: string) => {
-    if (!namespace) return url;
-    return botbeam.proxyUrl(namespace, url);
+    return botbeamApi.createDevice(namespace, name);
   }, [namespace]);
 
   const removeDevice = useCallback(async (id: string) => {
     if (!namespace) return;
     setDevices(prev => prev.filter(d => d.id !== id));
     setActiveTab(prev => prev === id ? 'home' : prev);
-    await botbeam.deleteDevice(namespace, id);
+    await botbeamApi.deleteDevice(namespace, id);
+  }, [namespace]);
+
+  const getContent = useCallback(async (deviceId: string) => {
+    if (!namespace) return null;
+    return botbeamApi.getContent(namespace, deviceId);
+  }, [namespace]);
+
+  const proxyUrl = useCallback((url: string) => {
+    if (!namespace) return url;
+    return botbeamApi.proxyUrl(namespace, url);
   }, [namespace]);
 
   // Load devices on mount
   useEffect(() => {
-    if (namespace) refreshDevices();
-  }, [namespace, refreshDevices]);
+    if (!namespace) return;
+    let cancelled = false;
+    botbeamApi.getDevices(namespace).then(list => {
+      if (!cancelled) setDevices(list);
+    });
+    return () => { cancelled = true; };
+  }, [namespace]);
 
   // Global WebSocket
   useEffect(() => {
@@ -89,7 +96,7 @@ export function BotBeamProvider({ children }: { children: ReactNode }) {
         const msg: WSEvent = JSON.parse(e.data);
 
         if (msg.event === 'device_created') {
-          botbeam.getDevices(namespace).then(setDevices);
+          botbeamApi.getDevices(namespace).then(setDevices);
         } else if (msg.event === 'device_deleted') {
           setDevices(prev => prev.filter(d => d.id !== msg.deviceId));
           setActiveTab(prev => prev === msg.deviceId ? 'home' : prev);
@@ -111,8 +118,21 @@ export function BotBeamProvider({ children }: { children: ReactNode }) {
     };
   }, [namespace]);
 
+  const value: BotBeamContextType = {
+    namespace,
+    devices,
+    activeTab,
+    getStarted,
+    switchTab,
+    addDevice,
+    removeDevice,
+    refreshDevices,
+    getContent,
+    proxyUrl,
+  };
+
   return (
-    <BotBeamContext.Provider value={{ namespace, devices, activeTab, getStarted, switchTab, addDevice, removeDevice, refreshDevices, getContent, proxyUrl }}>
+    <BotBeamContext.Provider value={value}>
       {children}
     </BotBeamContext.Provider>
   );

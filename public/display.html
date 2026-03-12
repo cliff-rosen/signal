@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Signal Display</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+  <div class="display" id="display">
+    <div class="waiting" id="waiting">
+      <div class="device-name" id="device-name"></div>
+      <p><span class="pulse"></span>Waiting for content...</p>
+    </div>
+    <div class="content" id="content" style="display:none"></div>
+  </div>
+  <script src="/js/display.js"></script>
+</body>
+</html>

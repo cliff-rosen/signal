@@ -1,0 +1,301 @@
+:root {
+  --bg: #0a0a0a;
+  --surface: #141414;
+  --border: #222;
+  --text: #e0e0e0;
+  --text-muted: #777;
+  --accent: #4fc3f7;
+  --accent-dim: #1a3a4a;
+  --success: #66bb6a;
+  --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  min-height: 100vh;
+}
+
+/* ── Landing page ── */
+.landing {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 60px 24px;
+}
+
+.landing h1 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+
+.landing .subtitle {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-bottom: 48px;
+}
+
+.device-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.device-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  text-decoration: none;
+  color: var(--text);
+  transition: border-color 0.2s, transform 0.2s;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.device-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.device-card .name {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.device-card .status {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.device-card .status.has-content {
+  color: var(--success);
+}
+
+.add-device {
+  background: var(--surface);
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.add-device:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ── Display page ── */
+.display {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  overflow: auto;
+}
+
+.display .content {
+  width: 100%;
+  max-width: 900px;
+  animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Text */
+.content-text {
+  font-size: clamp(1.2rem, 3vw, 2rem);
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+/* Markdown */
+.content-markdown h1 { font-size: 2rem; margin-bottom: 16px; color: var(--accent); }
+.content-markdown h2 { font-size: 1.5rem; margin: 24px 0 12px; color: var(--text); }
+.content-markdown h3 { font-size: 1.2rem; margin: 20px 0 8px; }
+.content-markdown p { margin-bottom: 12px; line-height: 1.7; }
+.content-markdown ul, .content-markdown ol { margin: 12px 0; padding-left: 24px; }
+.content-markdown li { margin-bottom: 6px; line-height: 1.6; }
+.content-markdown code { background: var(--surface); padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+.content-markdown pre { background: var(--surface); padding: 16px; border-radius: 8px; overflow-x: auto; margin: 16px 0; }
+.content-markdown pre code { background: none; padding: 0; }
+.content-markdown blockquote { border-left: 3px solid var(--accent); padding-left: 16px; color: var(--text-muted); margin: 16px 0; }
+.content-markdown table { border-collapse: collapse; width: 100%; margin: 16px 0; }
+.content-markdown th, .content-markdown td { border: 1px solid var(--border); padding: 8px 12px; text-align: left; }
+.content-markdown th { background: var(--surface); }
+.content-markdown a { color: var(--accent); }
+
+/* List */
+.content-list { list-style: none; font-size: 1.1rem; }
+.content-list li {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.content-list li .check {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border);
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+.content-list li.checked .check {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+/* Dashboard cards */
+.content-dashboard {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.dash-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.dash-card .title {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.dash-card .value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.dash-card .subtitle {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* Waiting state */
+.waiting {
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.waiting .device-name {
+  font-size: 1.4rem;
+  color: var(--text);
+  margin-bottom: 8px;
+  text-transform: capitalize;
+}
+
+.waiting .pulse {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: var(--accent);
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+  margin-right: 8px;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+/* HTML iframe */
+.content-html {
+  width: 100%;
+  height: 80vh;
+  border: none;
+  border-radius: 8px;
+  background: white;
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 32px;
+  min-width: 320px;
+}
+
+.modal h2 {
+  font-size: 1.1rem;
+  margin-bottom: 16px;
+}
+
+.modal input {
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 1rem;
+  outline: none;
+  margin-bottom: 16px;
+}
+
+.modal input:focus {
+  border-color: var(--accent);
+}
+
+.modal .actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.btn {
+  padding: 8px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #000;
+  font-weight: 600;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-muted);
+}

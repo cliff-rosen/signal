@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "signal": {
+      "command": "node",
+      "args": ["C:\\code\\signal\\mcp\\index.js"],
+      "env": {
+        "SIGNAL_SERVER_URL": "http://localhost:4888"
+      }
+    }
+  }
+}

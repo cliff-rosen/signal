@@ -1,0 +1,14 @@
+{
+  "name": "signal",
+  "version": "0.1.0",
+  "description": "AI-powered virtual ambient display platform",
+  "scripts": {
+    "start": "node server/index.js",
+    "mcp": "node mcp/index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.27.0",
+    "express": "^5.1.0",
+    "ws": "^8.18.0"
+  }
+}

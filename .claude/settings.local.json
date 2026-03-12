@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm view:*)",
+      "Bash(winget --version 2>&1)",
+      "Read(//c/code/signal/$HOME/.claude/**)",
+      "Read(//c/code/signal/$APPDATA/Claude/**)",
+      "Bash(taskkill //PID 8604 //F 2>&1)",
+      "Bash(curl -s -X POST http://localhost:4888/api/devices/dashboard/content \\\\\n  -H \"Content-Type: application/json\" \\\\\n  -d '{\n    \"type\": \"list\",\n    \"body\": \"[\\\\\"Build Signal MCP server\\\\\",{\\\\\"text\\\\\":\\\\\"Upgrade Node.js to v24\\\\\",\\\\\"checked\\\\\":true},{\\\\\"text\\\\\":\\\\\"Create web server + WebSocket\\\\\",\\\\\"checked\\\\\":true},{\\\\\"text\\\\\":\\\\\"Build browser display UI\\\\\",\\\\\"checked\\\\\":true},{\\\\\"text\\\\\":\\\\\"Wire up MCP tools\\\\\",\\\\\"checked\\\\\":true},\\\\\"Test MCP integration with Claude Code\\\\\",\\\\\"Add more virtual displays\\\\\",\\\\\"Try dashboard content type\\\\\",\\\\\"Share Signal with others\\\\\"]\"\n  }' 2>&1)",
+      "WebFetch(domain:wttr.in)"
+    ]
+  }
+}

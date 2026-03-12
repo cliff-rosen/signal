@@ -11,30 +11,57 @@
     <div class="landing-hero">
       <h1>BotBeam</h1>
       <p class="tagline">Tell your AI what to show. It shows up.</p>
-      <p class="description">BotBeam turns browser tabs into ambient displays that your AI can push content to — weather, dashboards, lists, photos, anything — using natural language.</p>
+      <p class="description">BotBeam gives your AI a set of browser tabs it can push content to. Research a person, draft an email, pull up a webpage — each one appears in its own tab, in real time. Works with ChatGPT and Claude.</p>
       <button class="btn btn-primary btn-large" id="get-started">Get Started</button>
     </div>
-    <div class="landing-features">
-      <div class="feature">
-        <div class="feature-title">No sign-up</div>
-        <div class="feature-desc">Get a unique URL instantly. That's your BotBeam.</div>
+
+    <div class="landing-example-conversation">
+      <div class="example-convo-label">Example conversation</div>
+      <div class="example-convo">
+        <div class="convo-bubble user">"Pull up John's LinkedIn in the research tab and draft a reach-out email in the outreach tab"</div>
+        <div class="convo-bubble ai">Done — I've loaded John's LinkedIn profile in <strong>research</strong> and written a personalized intro email in <strong>outreach</strong>. Both tabs are live now.</div>
       </div>
-      <div class="feature">
-        <div class="feature-title">Works with Claude</div>
-        <div class="feature-desc">Add your MCP endpoint as a connector. Push content from any conversation.</div>
-      </div>
-      <div class="feature">
-        <div class="feature-title">7 content types</div>
-        <div class="feature-desc">Text, markdown, HTML, URLs, images, lists, and dashboard cards.</div>
+      <div class="example-more">
+        <div class="example-more-label">More things you can say:</div>
+        <div class="example-prompt-pill">"Summarize this article and show it in the notes tab"</div>
+        <div class="example-prompt-pill">"Show the company's homepage in the research tab"</div>
+        <div class="example-prompt-pill">"Put a pros/cons list in the comparison tab"</div>
       </div>
     </div>
+
+    <div class="landing-how-it-works">
+      <h2 class="how-heading">How it works</h2>
+      <div class="steps-row">
+        <div class="step">
+          <div class="step-number">1</div>
+          <div class="step-title">Get your URL</div>
+          <div class="step-desc">Click "Get Started" — you'll get a unique BotBeam link. Bookmark it. No account needed.</div>
+        </div>
+        <div class="step-arrow">&#x2192;</div>
+        <div class="step">
+          <div class="step-number">2</div>
+          <div class="step-title">Connect your AI</div>
+          <div class="step-desc">Copy the MCP endpoint from your dashboard and add it as a connector in ChatGPT or Claude.</div>
+        </div>
+        <div class="step-arrow">&#x2192;</div>
+        <div class="step">
+          <div class="step-number">3</div>
+          <div class="step-title">Just ask</div>
+          <div class="step-desc">Tell your AI what to show and where. It creates tabs and pushes content automatically.</div>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn btn-primary btn-large" id="get-started-bottom">Get Started</button>
   </div>
   <script>
-    document.getElementById('get-started').onclick = async () => {
+    async function getStarted() {
       const res = await fetch('/api/namespaces', { method: 'POST' });
       const { url } = await res.json();
       window.location.href = url;
-    };
+    }
+    document.getElementById('get-started').onclick = getStarted;
+    document.getElementById('get-started-bottom').onclick = getStarted;
   </script>
 </body>
 </html>

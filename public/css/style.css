@@ -17,6 +17,13 @@ body {
   color: var(--text);
   font-family: var(--font);
   height: 100vh;
+}
+
+body:has(.landing-page) {
+  overflow: auto;
+}
+
+body:has(.app) {
   overflow: hidden;
 }
 
@@ -560,8 +567,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 40px 24px;
+  padding: 80px 24px 40px;
   text-align: center;
 }
 
@@ -596,6 +602,7 @@ body {
   display: flex;
   gap: 32px;
   max-width: 700px;
+  margin-bottom: 48px;
 }
 
 .feature {
@@ -615,7 +622,280 @@ body {
   line-height: 1.5;
 }
 
+/* ── Landing: Example conversation ── */
+.landing-example-conversation {
+  max-width: 560px;
+  width: 100%;
+  margin-bottom: 60px;
+  text-align: left;
+}
+
+.example-convo-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.example-convo {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.convo-bubble {
+  padding: 14px 18px;
+  border-radius: 12px;
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+
+.convo-bubble.user {
+  background: var(--accent-dim);
+  border: 1px solid var(--accent);
+  color: var(--text);
+  font-style: italic;
+  align-self: flex-end;
+  max-width: 90%;
+}
+
+.convo-bubble.ai {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  align-self: flex-start;
+  max-width: 90%;
+}
+
+.example-more {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.example-more-label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  width: 100%;
+  margin-bottom: 2px;
+}
+
+.example-prompt-pill {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 8px 14px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* ── Landing: How it works ── */
+.how-heading {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--text);
+  text-align: center;
+}
+
+.landing-how-it-works {
+  max-width: 800px;
+  width: 100%;
+  margin-bottom: 48px;
+}
+
+.steps-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.step {
+  flex: 1;
+  text-align: center;
+}
+
+.step-number {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--accent-dim);
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.step-title {
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.step-desc {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.step-arrow {
+  color: var(--text-muted);
+  font-size: 1.3rem;
+  padding-top: 8px;
+  flex-shrink: 0;
+}
+
+/* ── Landing: Bottom CTA ── */
+.landing-cta-bottom {
+  margin-bottom: 60px;
+}
+
+/* ── Bookmark banner ── */
+.bookmark-banner {
+  background: var(--accent-dim);
+  border: 1px solid var(--accent);
+  border-radius: 12px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.bookmark-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.bookmark-text {
+  flex: 1;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.bookmark-dismiss {
+  flex-shrink: 0;
+}
+
+/* ── Setup instructions ── */
+.setup-instructions {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.setup-heading {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.setup-intro {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+
+.setup-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 16px;
+}
+
+.setup-tab {
+  padding: 8px 20px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-muted);
+  font-family: var(--font);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.setup-tab:hover {
+  color: var(--text);
+  border-color: var(--text-muted);
+}
+
+.setup-tab.active {
+  background: var(--accent-dim);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.setup-steps {
+  padding-left: 20px;
+  font-size: 0.88rem;
+  line-height: 1.8;
+  color: var(--text);
+}
+
+.setup-steps a {
+  color: var(--accent);
+}
+
+.setup-try {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.setup-try-heading {
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-bottom: 6px;
+}
+
+.setup-try p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+.setup-prompts {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.setup-prompt-example {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* ── Back to landing link ── */
+.back-link {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  text-decoration: none;
+  padding: 8px 14px;
+  margin-right: auto;
+  transition: color 0.2s;
+}
+
+.back-link:hover {
+  color: var(--accent);
+}
+
 @media (max-width: 600px) {
   .landing-features { flex-direction: column; gap: 24px; }
   .landing-hero h1 { font-size: 2rem; }
+  .steps-row { flex-direction: column; gap: 24px; }
+  .step-arrow { display: none; }
 }

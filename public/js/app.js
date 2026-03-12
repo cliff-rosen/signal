@@ -22,10 +22,17 @@ async function loadDevices() {
 function renderTabs() {
   tabBar.innerHTML = '';
 
-  // Signal/Home tab
+  // Back to landing
+  const backLink = document.createElement('a');
+  backLink.className = 'back-link';
+  backLink.href = '/';
+  backLink.textContent = 'BotBeam';
+  tabBar.appendChild(backLink);
+
+  // Home tab
   const homeTab = document.createElement('button');
   homeTab.className = `tab ${activeTab === 'home' ? 'active' : ''}`;
-  homeTab.textContent = 'BotBeam';
+  homeTab.textContent = 'Home';
   homeTab.onclick = () => switchTab('home');
   tabBar.appendChild(homeTab);
 
@@ -67,19 +74,72 @@ async function renderHome() {
   const homeContent = document.createElement('div');
   homeContent.className = 'home-content';
 
+  // Bookmark reminder
+  const bookmarkBanner = document.createElement('div');
+  bookmarkBanner.className = 'bookmark-banner';
+  bookmarkBanner.id = 'bookmark-banner';
+  const dismissed = localStorage.getItem(`botbeam-bookmark-${namespace}`);
+  if (!dismissed) {
+    bookmarkBanner.innerHTML = `
+      <div class="bookmark-icon">&#x1f516;</div>
+      <div class="bookmark-text">
+        <strong>Bookmark this page!</strong> This URL is your BotBeam — it's how you get back to your displays. There's no login, so if you lose this link, you lose access.
+      </div>
+      <button class="btn btn-ghost bookmark-dismiss" id="bookmark-dismiss">Got it</button>
+    `;
+    homeContent.appendChild(bookmarkBanner);
+  }
+
   // MCP endpoint banner
   const mcpUrl = `${location.origin}/s/${namespace}/mcp`;
   const banner = document.createElement('div');
   banner.className = 'endpoint-banner';
   banner.innerHTML = `
-    <div class="endpoint-label">MCP Endpoint</div>
+    <div class="endpoint-label">Your MCP Endpoint</div>
     <div class="endpoint-row">
       <code class="endpoint-url" id="mcp-url">${mcpUrl}</code>
       <button class="btn btn-primary btn-copy" id="copy-btn">Copy</button>
     </div>
-    <div class="endpoint-hint">Add this URL as a custom MCP connector in Claude.ai Settings → Connectors</div>
   `;
   homeContent.appendChild(banner);
+
+  // Setup instructions
+  const setup = document.createElement('div');
+  setup.className = 'setup-instructions';
+  setup.innerHTML = `
+    <div class="setup-heading">Connect your AI</div>
+    <p class="setup-intro">Copy the MCP endpoint above, then add it as a connector in ChatGPT or Claude. Once connected, just tell your AI what to show and which tab to put it in — it handles the rest.</p>
+    <div class="setup-tabs">
+      <button class="setup-tab active" data-target="chatgpt">ChatGPT</button>
+      <button class="setup-tab" data-target="claude">Claude</button>
+    </div>
+    <div class="setup-panel" id="setup-chatgpt">
+      <ol class="setup-steps">
+        <li>Open <strong>ChatGPT</strong> and go to <strong>Settings</strong></li>
+        <li>Navigate to <strong>Connectors</strong> (under your profile)</li>
+        <li>Click <strong>"Add connector"</strong> and paste your MCP endpoint URL</li>
+        <li>Save, then start a new chat. ChatGPT can now push content to your displays!</li>
+      </ol>
+    </div>
+    <div class="setup-panel" id="setup-claude" style="display:none">
+      <ol class="setup-steps">
+        <li>Open <a href="https://claude.ai" target="_blank">claude.ai</a> and click your name → <strong>Settings</strong></li>
+        <li>Go to the <strong>Connectors</strong> section</li>
+        <li>Click <strong>"Add connector"</strong> and paste your MCP endpoint URL</li>
+        <li>Save, then start a new conversation. Claude can now push content to your displays!</li>
+      </ol>
+    </div>
+    <div class="setup-try">
+      <div class="setup-try-heading">Try it out</div>
+      <p>Once connected, try saying something like:</p>
+      <div class="setup-prompts">
+        <div class="setup-prompt-example">"Pull up Sarah's LinkedIn in the research tab and draft a reach-out email in the outreach tab"</div>
+        <div class="setup-prompt-example">"Summarize this article and show it in the notes tab"</div>
+        <div class="setup-prompt-example">"Show a pros and cons list for each vendor in the comparison tab"</div>
+      </div>
+    </div>
+  `;
+  homeContent.appendChild(setup);
 
   const grid = document.createElement('div');
   grid.className = 'device-grid';
@@ -127,6 +187,25 @@ async function renderHome() {
       setTimeout(() => btn.textContent = 'Copy', 2000);
     });
   };
+
+  // Bookmark dismiss handler
+  const dismissBtn = document.getElementById('bookmark-dismiss');
+  if (dismissBtn) {
+    dismissBtn.onclick = () => {
+      localStorage.setItem(`botbeam-bookmark-${namespace}`, '1');
+      document.getElementById('bookmark-banner').remove();
+    };
+  }
+
+  // Setup tab switching
+  document.querySelectorAll('.setup-tab').forEach(tab => {
+    tab.onclick = () => {
+      document.querySelectorAll('.setup-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.setup-panel').forEach(p => p.style.display = 'none');
+      tab.classList.add('active');
+      document.getElementById('setup-' + tab.dataset.target).style.display = '';
+    };
+  });
 }
 
 function renderPreview(el, data) {

@@ -5,9 +5,9 @@ const path = require('path');
 const express = require('express');
 const { initDB } = require('./db');
 const { createWSServer } = require('./websocket');
-const { createRouter } = require('./routes');
+const { createRouter: createAPIRouter } = require('./routes');
+const { createRouter: createMCPRouter } = require('./mcp');
 const { namespaceMiddleware } = require('./namespace');
-const { mountMCP } = require('./mcp');
 const { logAPI, normalizeIP, getIP } = require('./log');
 const store = require('./store');
 
@@ -36,11 +36,9 @@ app.post('/api/namespaces', async (req, res) => {
   res.status(201).json({ id, url: `/s/${id}` });
 });
 
-// MCP endpoint
-mountMCP(app, { store, broadcast, broadcastGlobal });
-
-// REST API
-app.use('/s/:namespace/api', namespaceMiddleware, createRouter(broadcast, broadcastGlobal));
+// Two paths to the same core logic (store.js):
+app.use('/s/:namespace/mcp', namespaceMiddleware, createMCPRouter(broadcast, broadcastGlobal));
+app.use('/s/:namespace/api', namespaceMiddleware, createAPIRouter(broadcast, broadcastGlobal));
 
 // HTML pages
 app.get('/s/:namespace/display/:device', (req, res) => {

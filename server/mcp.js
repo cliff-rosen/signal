@@ -1,12 +1,14 @@
 const crypto = require('crypto');
+const express = require('express');
 const { McpServer } = require('@modelcontextprotocol/sdk/server/mcp.js');
 const { StreamableHTTPServerTransport } = require('@modelcontextprotocol/sdk/server/streamableHttp.js');
 const { registerTools } = require('../mcp/tools');
+const store = require('./store');
 const { logAPI, getIP } = require('./log');
 
 const sessions = new Map();
 
-function createDirectClient(store, broadcast, broadcastGlobal, ip) {
+function createDirectClient(broadcast, broadcastGlobal, ip) {
   return {
     listDevices: (ns) => {
       logAPI(ns, 'list_devices', { ip });
@@ -43,11 +45,11 @@ function createDirectClient(store, broadcast, broadcastGlobal, ip) {
   };
 }
 
-function mountMCP(app, { store, broadcast, broadcastGlobal }) {
-  app.all('/s/:namespace/mcp', async (req, res) => {
-    const namespace = req.params.namespace;
-    const ns = await store.getNamespace(namespace);
-    if (!ns) { res.writeHead(404); res.end('Namespace not found'); return; }
+function createRouter(broadcast, broadcastGlobal) {
+  const router = express.Router({ mergeParams: true });
+
+  router.all('/', async (req, res) => {
+    const namespace = req.namespace;
 
     // CORS
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -68,7 +70,7 @@ function mountMCP(app, { store, broadcast, broadcastGlobal }) {
 
       if (isInit) {
         const ip = getIP(req);
-        const client = createDirectClient(store, broadcast, broadcastGlobal, ip);
+        const client = createDirectClient(broadcast, broadcastGlobal, ip);
 
         const transport = new StreamableHTTPServerTransport({
           sessionIdGenerator: () => crypto.randomUUID(),
@@ -104,6 +106,8 @@ function mountMCP(app, { store, broadcast, broadcastGlobal }) {
       }
     }
   });
+
+  return router;
 }
 
-module.exports = { mountMCP };
+module.exports = { createRouter };

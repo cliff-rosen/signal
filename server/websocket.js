@@ -1,5 +1,4 @@
 const { WebSocketServer } = require('ws');
-const url = require('url');
 
 function createWSServer(httpServer) {
   const wss = new WebSocketServer({ server: httpServer });
@@ -34,7 +33,11 @@ function createWSServer(httpServer) {
     }
   }
 
-  return { broadcast };
+  function broadcastGlobal(message) {
+    broadcast('_global', message);
+  }
+
+  return { broadcast, broadcastGlobal };
 }
 
 module.exports = { createWSServer };

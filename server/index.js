@@ -9,13 +9,13 @@ const app = express();
 const server = http.createServer(app);
 
 // WebSocket
-const { broadcast } = createWSServer(server);
+const { broadcast, broadcastGlobal } = createWSServer(server);
 
 // Middleware
 app.use(express.json());
 
 // API
-app.use('/api', createRouter(broadcast));
+app.use('/api', createRouter(broadcast, broadcastGlobal));
 
 // Display route — serves display.html for /display/:deviceName
 app.get('/display/:device', (req, res) => {

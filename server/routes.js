@@ -1,7 +1,7 @@
 const express = require('express');
 const store = require('./store');
 
-function createRouter(broadcast) {
+function createRouter(broadcast, broadcastGlobal) {
   const router = express.Router();
 
   // List devices
@@ -14,6 +14,7 @@ function createRouter(broadcast) {
     const { name } = req.body;
     if (!name) return res.status(400).json({ error: 'name is required' });
     const { exists, device } = store.createDevice(name);
+    if (!exists) broadcastGlobal({ event: 'device_created', device });
     res.status(exists ? 200 : 201).json(device);
   });
 
@@ -22,6 +23,7 @@ function createRouter(broadcast) {
     const ok = store.deleteDevice(req.params.id);
     if (!ok) return res.status(404).json({ error: 'Device not found' });
     broadcast(req.params.id, { event: 'clear' });
+    broadcastGlobal({ event: 'device_deleted', deviceId: req.params.id });
     res.status(204).end();
   });
 
@@ -45,6 +47,7 @@ function createRouter(broadcast) {
 
     const content = store.saveContent(req.params.id, { type, body });
     broadcast(req.params.id, { event: 'content', data: content });
+    broadcastGlobal({ event: 'content_updated', deviceId: req.params.id, data: content });
     res.json(content);
   });
 
@@ -52,6 +55,7 @@ function createRouter(broadcast) {
   router.delete('/devices/:id/content', (req, res) => {
     store.deleteContent(req.params.id);
     broadcast(req.params.id, { event: 'clear' });
+    broadcastGlobal({ event: 'content_cleared', deviceId: req.params.id });
     res.status(204).end();
   });
 

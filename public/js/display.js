@@ -69,6 +69,27 @@ function renderContent(data) {
       contentEl.appendChild(iframe);
       break;
 
+    case 'url': {
+      contentEl.innerHTML = '';
+      const urlFrame = document.createElement('iframe');
+      urlFrame.className = 'content-url';
+      urlFrame.src = data.body;
+      urlFrame.setAttribute('allowfullscreen', '');
+      contentEl.appendChild(urlFrame);
+      break;
+    }
+
+    case 'image': {
+      contentEl.innerHTML = '';
+      contentEl.className += ' content-image-wrap';
+      const img = document.createElement('img');
+      img.className = 'content-image';
+      img.src = data.body;
+      img.alt = 'Signal display';
+      contentEl.appendChild(img);
+      break;
+    }
+
     case 'list': {
       contentEl.innerHTML = '';
       const items = JSON.parse(data.body);

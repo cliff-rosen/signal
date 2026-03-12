@@ -35,11 +35,11 @@ function registerTools(server) {
 
   server.tool(
     'push_content',
-    'Push content to a virtual display. Types: text, markdown, html, list (JSON array), dashboard (JSON array of {title, value, subtitle?})',
+    'Push content to a virtual display. Types: text, markdown, html, url (renders a URL in an iframe — works with websites, Google Docs, etc.), image (renders an image from a URL), list (JSON array), dashboard (JSON array of {title, value, subtitle?})',
     {
       device: z.string().describe('Device ID or name'),
-      type: z.enum(['text', 'markdown', 'html', 'list', 'dashboard']).describe('Content type'),
-      body: z.string().describe('Content body. For list/dashboard types, provide a JSON string.'),
+      type: z.enum(['text', 'markdown', 'html', 'url', 'image', 'list', 'dashboard']).describe('Content type'),
+      body: z.string().describe('Content body. For url/image types, provide the URL. For list/dashboard types, provide a JSON string.'),
     },
     async ({ device, type, body }) => {
       const slug = device.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');

@@ -1,5 +1,4 @@
 import { useBotBeam } from '../context/BotBeamContext';
-import { useDeviceWebSocket } from '../hooks/useDeviceWebSocket';
 import ContentRenderer from './ContentRenderer';
 
 interface Props {
@@ -7,20 +6,9 @@ interface Props {
 }
 
 export default function DeviceView({ deviceId }: Props) {
-  const { devices } = useBotBeam();
-  const { content, loading } = useDeviceWebSocket(deviceId);
+  const { devices, contentMap } = useBotBeam();
   const device = devices.find(d => d.id === deviceId);
-
-  if (loading && !content) {
-    return (
-      <div className="main display-view">
-        <div className="waiting">
-          <div className="device-name">{device?.name ?? deviceId}</div>
-          <p><span className="pulse" />Waiting for content...</p>
-        </div>
-      </div>
-    );
-  }
+  const content = contentMap[deviceId] ?? null;
 
   if (!content) {
     return (

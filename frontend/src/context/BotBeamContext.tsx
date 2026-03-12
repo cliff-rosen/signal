@@ -7,13 +7,12 @@ interface BotBeamContextType {
   namespace: string | null;
   devices: Device[];
   activeTab: string;
+  contentMap: Record<string, Content | null>;
 
   getStarted: () => Promise<void>;
   switchTab: (id: string) => void;
   addDevice: (name: string) => Promise<void>;
   removeDevice: (id: string) => Promise<void>;
-  refreshDevices: () => Promise<void>;
-  getContent: (deviceId: string) => Promise<Content | null>;
   proxyUrl: (url: string) => string;
 }
 
@@ -31,6 +30,7 @@ export function BotBeamProvider({ children }: { children: ReactNode }) {
   const [namespace, setNamespace] = useState<string | null>(match?.[1] ?? null);
   const [devices, setDevices] = useState<Device[]>([]);
   const [activeTab, setActiveTab] = useState('home');
+  const [contentMap, setContentMap] = useState<Record<string, Content | null>>({});
   const wsRef = useRef<WebSocket | null>(null);
 
   // --- Actions ---
@@ -40,11 +40,6 @@ export function BotBeamProvider({ children }: { children: ReactNode }) {
     window.history.pushState(null, '', url);
     setNamespace(id);
   }, []);
-
-  const refreshDevices = useCallback(async () => {
-    if (!namespace) return;
-    setDevices(await botbeamApi.getDevices(namespace));
-  }, [namespace]);
 
   const switchTab = useCallback((id: string) => {
     setActiveTab(id);
@@ -60,13 +55,9 @@ export function BotBeamProvider({ children }: { children: ReactNode }) {
   const removeDevice = useCallback(async (id: string) => {
     if (!namespace) return;
     setDevices(prev => prev.filter(d => d.id !== id));
+    setContentMap(prev => { const next = { ...prev }; delete next[id]; return next; });
     setActiveTab(prev => prev === id ? 'home' : prev);
     await botbeamApi.deleteDevice(namespace, id);
-  }, [namespace]);
-
-  const getContent = useCallback(async (deviceId: string) => {
-    if (!namespace) return null;
-    return botbeamApi.getContent(namespace, deviceId);
   }, [namespace]);
 
   const proxyUrl = useCallback((url: string) => {
@@ -74,13 +65,21 @@ export function BotBeamProvider({ children }: { children: ReactNode }) {
     return botbeamApi.proxyUrl(namespace, url);
   }, [namespace]);
 
-  // --- Load devices when namespace is set ---
+  // --- Load devices + content when namespace is set ---
 
   useEffect(() => {
     if (!namespace) return;
+    const ns = namespace;
     let cancelled = false;
-    botbeamApi.getDevices(namespace).then(list => {
-      if (!cancelled) setDevices(list);
+    botbeamApi.getDevices(ns).then(async list => {
+      if (cancelled) return;
+      setDevices(list);
+      const entries = await Promise.all(
+        list.map(async d => [d.id, await botbeamApi.getContent(ns, d.id)] as const)
+      );
+      if (!cancelled) {
+        setContentMap(Object.fromEntries(entries));
+      }
     });
     return () => { cancelled = true; };
   }, [namespace]);
@@ -102,12 +101,16 @@ export function BotBeamProvider({ children }: { children: ReactNode }) {
         const msg: WSEvent = JSON.parse(e.data);
 
         if (msg.event === 'device_created') {
-          botbeamApi.getDevices(ns).then(setDevices);
+          setDevices(prev => [...prev, msg.device]);
+          setActiveTab(msg.device.id);
         } else if (msg.event === 'device_deleted') {
           setDevices(prev => prev.filter(d => d.id !== msg.deviceId));
+          setContentMap(prev => { const next = { ...prev }; delete next[msg.deviceId]; return next; });
           setActiveTab(prev => prev === msg.deviceId ? 'home' : prev);
-        } else if (msg.event === 'content_updated' || msg.event === 'content_cleared') {
-          setDevices(prev => [...prev]);
+        } else if (msg.event === 'content_updated') {
+          setContentMap(prev => ({ ...prev, [msg.deviceId]: msg.data }));
+        } else if (msg.event === 'content_cleared') {
+          setContentMap(prev => ({ ...prev, [msg.deviceId]: null }));
         }
       };
 
@@ -130,12 +133,11 @@ export function BotBeamProvider({ children }: { children: ReactNode }) {
     namespace,
     devices,
     activeTab,
+    contentMap,
     getStarted,
     switchTab,
     addDevice,
     removeDevice,
-    refreshDevices,
-    getContent,
     proxyUrl,
   };
 

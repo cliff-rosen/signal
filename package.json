@@ -4,7 +4,8 @@
   "description": "AI-powered virtual ambient display platform",
   "scripts": {
     "start": "node server/index.js",
-    "mcp": "node mcp/index.js"
+    "mcp": "node mcp/index.js",
+    "mcp:remote": "node mcp/remote.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.27.0",

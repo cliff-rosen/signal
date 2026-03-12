@@ -3,16 +3,25 @@ import type { Device, Content, WSEvent } from '../types';
 import { botbeamApi } from '../lib/api/botbeamApi';
 import { settings } from '../config/settings';
 
+interface LogEntry {
+  time: string;
+  event: string;
+  detail: string;
+}
+
 interface BotBeamContextType {
   namespace: string | null;
   devices: Device[];
   activeTab: string;
   contentMap: Record<string, Content | null>;
+  wsLog: LogEntry[];
+  showDebug: boolean;
 
   getStarted: () => Promise<void>;
   switchTab: (id: string) => void;
   addDevice: (name: string) => Promise<void>;
   removeDevice: (id: string) => Promise<void>;
+  toggleDebug: () => void;
   proxyUrl: (url: string) => string;
 }
 
@@ -31,6 +40,8 @@ export function BotBeamProvider({ children }: { children: ReactNode }) {
   const [devices, setDevices] = useState<Device[]>([]);
   const [activeTab, setActiveTab] = useState('home');
   const [contentMap, setContentMap] = useState<Record<string, Content | null>>({});
+  const [wsLog, setWsLog] = useState<LogEntry[]>([]);
+  const [showDebug, setShowDebug] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
 
   // --- Actions ---
@@ -47,18 +58,17 @@ export function BotBeamProvider({ children }: { children: ReactNode }) {
 
   const addDevice = useCallback(async (name: string) => {
     if (!namespace) return;
-    const device = await botbeamApi.createDevice(namespace, name);
-    setDevices(await botbeamApi.getDevices(namespace));
-    setActiveTab(device.id);
+    await botbeamApi.createDevice(namespace, name);
   }, [namespace]);
 
   const removeDevice = useCallback(async (id: string) => {
     if (!namespace) return;
-    setDevices(prev => prev.filter(d => d.id !== id));
-    setContentMap(prev => { const next = { ...prev }; delete next[id]; return next; });
-    setActiveTab(prev => prev === id ? 'home' : prev);
     await botbeamApi.deleteDevice(namespace, id);
   }, [namespace]);
+
+  const toggleDebug = useCallback(() => {
+    setShowDebug(prev => !prev);
+  }, []);
 
   const proxyUrl = useCallback((url: string) => {
     if (!namespace) return url;
@@ -99,18 +109,23 @@ export function BotBeamProvider({ children }: { children: ReactNode }) {
 
       ws.onmessage = (e) => {
         const msg: WSEvent = JSON.parse(e.data);
+        const time = new Date().toLocaleTimeString();
 
         if (msg.event === 'device_created') {
           setDevices(prev => [...prev, msg.device]);
           setActiveTab(msg.device.id);
+          setWsLog(prev => [...prev, { time, event: msg.event, detail: msg.device.name }]);
         } else if (msg.event === 'device_deleted') {
           setDevices(prev => prev.filter(d => d.id !== msg.deviceId));
           setContentMap(prev => { const next = { ...prev }; delete next[msg.deviceId]; return next; });
           setActiveTab(prev => prev === msg.deviceId ? 'home' : prev);
+          setWsLog(prev => [...prev, { time, event: msg.event, detail: msg.deviceId }]);
         } else if (msg.event === 'content_updated') {
           setContentMap(prev => ({ ...prev, [msg.deviceId]: msg.data }));
+          setWsLog(prev => [...prev, { time, event: msg.event, detail: `${msg.deviceId} (${msg.data.type})` }]);
         } else if (msg.event === 'content_cleared') {
           setContentMap(prev => ({ ...prev, [msg.deviceId]: null }));
+          setWsLog(prev => [...prev, { time, event: msg.event, detail: msg.deviceId }]);
         }
       };
 
@@ -134,10 +149,13 @@ export function BotBeamProvider({ children }: { children: ReactNode }) {
     devices,
     activeTab,
     contentMap,
+    wsLog,
+    showDebug,
     getStarted,
     switchTab,
     addDevice,
     removeDevice,
+    toggleDebug,
     proxyUrl,
   };
 

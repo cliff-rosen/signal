@@ -3,11 +3,10 @@ import TabBar from './components/TabBar';
 import Home from './components/Home';
 import DeviceView from './components/DeviceView';
 import Landing from './components/Landing';
+import DebugPanel from './components/DebugPanel';
 
 function AppContent() {
   const { namespace, activeTab } = useBotBeam();
-
-  console.log('Current namespace:', namespace);
 
   if (!namespace) return <Landing />;
 
@@ -15,6 +14,7 @@ function AppContent() {
     <div className="app">
       <TabBar />
       {activeTab === 'home' ? <Home /> : <DeviceView key={activeTab} deviceId={activeTab} />}
+      <DebugPanel />
     </div>
   );
 }

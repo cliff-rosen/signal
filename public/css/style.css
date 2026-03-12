@@ -75,6 +75,24 @@ body:has(.app) {
   border-bottom-color: var(--accent);
 }
 
+.tab-close {
+  margin-left: 8px;
+  font-size: 1rem;
+  line-height: 1;
+  color: var(--text-muted);
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s;
+  pointer-events: auto;
+}
+
+.tab:hover .tab-close {
+  opacity: 1;
+}
+
+.tab-close:hover {
+  color: #e55;
+}
+
 .tab-add {
   color: var(--text-muted);
   font-size: 1.1rem;
@@ -553,6 +571,12 @@ body:has(.app) {
 .btn-ghost {
   background: transparent;
   color: var(--text-muted);
+}
+
+.btn-danger {
+  background: #e55;
+  color: #fff;
+  font-weight: 600;
 }
 
 .btn-large {

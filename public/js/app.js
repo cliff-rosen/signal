@@ -40,7 +40,21 @@ function renderTabs() {
   for (const d of devices) {
     const tab = document.createElement('button');
     tab.className = `tab ${activeTab === d.id ? 'active' : ''}`;
-    tab.textContent = d.name;
+
+    const label = document.createElement('span');
+    label.textContent = d.name;
+    tab.appendChild(label);
+
+    const close = document.createElement('span');
+    close.className = 'tab-close';
+    close.textContent = '\u00d7';
+    close.title = 'Delete tab';
+    close.onclick = (e) => {
+      e.stopPropagation();
+      confirmDeleteDevice(d);
+    };
+    tab.appendChild(close);
+
     tab.onclick = () => switchTab(d.id);
     tabBar.appendChild(tab);
   }
@@ -459,6 +473,35 @@ function showModal() {
 
   create.onclick = doCreate;
   input.onkeydown = (e) => { if (e.key === 'Enter') doCreate(); };
+}
+
+// ── Delete device confirmation ──
+
+function confirmDeleteDevice(device) {
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal">
+      <h2>Delete "${device.name}"?</h2>
+      <p style="color:var(--text-muted);margin:0 0 20px">This will remove the tab and its content. This can't be undone.</p>
+      <div class="actions">
+        <button class="btn btn-ghost" id="cancel-delete-btn">Cancel</button>
+        <button class="btn btn-danger" id="confirm-delete-btn">Delete</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  document.getElementById('cancel-delete-btn').onclick = () => overlay.remove();
+  overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+
+  document.getElementById('confirm-delete-btn').onclick = async () => {
+    await fetch(`${API_BASE}/devices/${device.id}`, { method: 'DELETE' });
+    overlay.remove();
+    if (activeTab === device.id) activeTab = 'home';
+    await loadDevices();
+    if (activeTab === 'home') renderHome();
+  };
 }
 
 // ── Global WebSocket (watches for device/content changes) ──

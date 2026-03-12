@@ -17,3 +17,28 @@
 2026-03-12T06:44:30.446Z [API] GET /s/G-whmSpT/api/devices/demo/content
 2026-03-12T06:44:34.939Z [WS] Connected: G-whmSpT:demo (2 clients)
 2026-03-12T06:44:34.979Z [API] GET /s/G-whmSpT/api/devices/demo/content
+2026-03-12T06:51:15.754Z [WS] Disconnected: G-whmSpT:_global (0 remaining)
+2026-03-12T06:51:15.757Z [WS] Disconnected: G-whmSpT:demo (1 remaining)
+2026-03-12T06:51:15.757Z [WS] Disconnected: G-whmSpT:demo (0 remaining)
+2026-03-12T06:51:15.880Z [WS] Connected: G-whmSpT:_global (1 clients)
+2026-03-12T06:51:15.914Z [API] GET /s/G-whmSpT/api/devices
+2026-03-12T06:51:16.079Z [API] GET /s/G-whmSpT/api/devices/demo/content
+2026-03-12T06:51:18.233Z [WS] Connected: G-whmSpT:demo (1 clients)
+2026-03-12T06:51:18.266Z [API] GET /s/G-whmSpT/api/devices/demo/content
+2026-03-12T06:51:26.801Z [WS] Disconnected: G-whmSpT:_global (0 remaining)
+2026-03-12T06:51:26.804Z [WS] Disconnected: G-whmSpT:demo (0 remaining)
+2026-03-12T06:51:26.839Z [WS] Connected: G-whmSpT:_global (1 clients)
+2026-03-12T06:51:26.873Z [API] GET /s/G-whmSpT/api/devices
+2026-03-12T06:51:27.009Z [API] GET /s/G-whmSpT/api/devices/demo/content
+2026-03-12T06:51:28.768Z [WS] Connected: G-whmSpT:demo (1 clients)
+2026-03-12T06:51:28.807Z [API] GET /s/G-whmSpT/api/devices/demo/content
+2026-03-12T06:51:32.178Z [WS] Disconnected: G-whmSpT:demo (0 remaining)
+2026-03-12T06:51:32.180Z [WS] Connected: G-whmSpT:demo (1 clients)
+2026-03-12T06:51:32.215Z [API] GET /s/G-whmSpT/api/devices/demo/content
+2026-03-12T06:51:33.183Z [WS] Connected: G-whmSpT:demo (2 clients)
+2026-03-12T06:51:39.020Z [API] DELETE /s/G-whmSpT/api/devices/demo
+2026-03-12T06:51:39.061Z [WS] Broadcast G-whmSpT:demo: clear → 2 clients
+2026-03-12T06:51:39.062Z [WS] Broadcast G-whmSpT:_global: device_deleted → 1 clients
+2026-03-12T06:51:39.102Z [API] GET /s/G-whmSpT/api/devices
+2026-03-12T06:51:39.140Z [WS] Disconnected: G-whmSpT:demo (1 remaining)
+2026-03-12T06:51:39.176Z [API] GET /s/G-whmSpT/api/devices

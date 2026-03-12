@@ -1,0 +1,109 @@
+const crypto = require('crypto');
+const { McpServer } = require('@modelcontextprotocol/sdk/server/mcp.js');
+const { StreamableHTTPServerTransport } = require('@modelcontextprotocol/sdk/server/streamableHttp.js');
+const { registerTools } = require('../mcp/tools');
+const { logAPI, getIP } = require('./log');
+
+const sessions = new Map();
+
+function createDirectClient(store, broadcast, broadcastGlobal, ip) {
+  return {
+    listDevices: (ns) => {
+      logAPI(ns, 'list_devices', { ip });
+      return store.loadDevices(ns);
+    },
+    deleteDevice: async (ns, id) => {
+      logAPI(ns, 'delete_device', { device: id, ip });
+      const ok = await store.deleteDevice(ns, id);
+      if (ok) {
+        broadcast(ns, id, { event: 'clear' });
+        broadcastGlobal(ns, { event: 'device_deleted', deviceId: id });
+      }
+      return { ok };
+    },
+    pushContent: async (ns, deviceId, type, body) => {
+      logAPI(ns, 'push_content', { device: deviceId, contentType: type, body, ip });
+      const devices = await store.loadDevices(ns);
+      if (!devices.find(d => d.id === deviceId)) {
+        const { device } = await store.createDevice(ns, deviceId);
+        broadcastGlobal(ns, { event: 'device_created', device });
+      }
+      const content = await store.saveContent(ns, deviceId, { type, body });
+      broadcast(ns, deviceId, { event: 'content', data: content });
+      broadcastGlobal(ns, { event: 'content_updated', deviceId, data: content });
+      return content;
+    },
+    clearDevice: async (ns, id) => {
+      logAPI(ns, 'clear_device', { device: id, ip });
+      await store.deleteContent(ns, id);
+      broadcast(ns, id, { event: 'clear' });
+      broadcastGlobal(ns, { event: 'content_cleared', deviceId: id });
+      return { ok: true };
+    },
+  };
+}
+
+function mountMCP(app, { store, broadcast, broadcastGlobal }) {
+  app.all('/s/:namespace/mcp', async (req, res) => {
+    const namespace = req.params.namespace;
+    const ns = await store.getNamespace(namespace);
+    if (!ns) { res.writeHead(404); res.end('Namespace not found'); return; }
+
+    // CORS
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Accept, Mcp-Session-Id');
+    res.setHeader('Access-Control-Expose-Headers', 'Mcp-Session-Id');
+
+    if (req.method === 'OPTIONS') { res.writeHead(204); res.end(); return; }
+
+    const sessionId = req.headers['mcp-session-id'];
+
+    if (req.method === 'POST') {
+      const body = req.body;
+
+      const isInit = Array.isArray(body)
+        ? body.some(m => m.method === 'initialize')
+        : body.method === 'initialize';
+
+      if (isInit) {
+        const ip = getIP(req);
+        const client = createDirectClient(store, broadcast, broadcastGlobal, ip);
+
+        const transport = new StreamableHTTPServerTransport({
+          sessionIdGenerator: () => crypto.randomUUID(),
+          onsessioninitialized: (id) => {
+            sessions.set(id, { transport, server: mcpServer, namespace });
+          },
+        });
+
+        const mcpServer = new McpServer({ name: 'botbeam', version: '0.2.0' });
+        registerTools(mcpServer, namespace, client);
+        await mcpServer.connect(transport);
+        await transport.handleRequest(req, res, body);
+      } else if (sessionId && sessions.has(sessionId)) {
+        await sessions.get(sessionId).transport.handleRequest(req, res, body);
+      } else {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ jsonrpc: '2.0', error: { code: -32600, message: 'Invalid session' }, id: null }));
+      }
+    } else if (req.method === 'GET') {
+      if (sessionId && sessions.has(sessionId)) {
+        await sessions.get(sessionId).transport.handleRequest(req, res);
+      } else {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ jsonrpc: '2.0', error: { code: -32600, message: 'Invalid session' }, id: null }));
+      }
+    } else if (req.method === 'DELETE') {
+      if (sessionId && sessions.has(sessionId)) {
+        const session = sessions.get(sessionId);
+        await session.transport.handleRequest(req, res);
+        sessions.delete(sessionId);
+      } else {
+        res.writeHead(204); res.end();
+      }
+    }
+  });
+}
+
+module.exports = { mountMCP };

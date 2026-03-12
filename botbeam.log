@@ -651,3 +651,15 @@
 2026-03-12T22:19:18.577Z [WS] Disconnected: 3lVuiqs2:_global (0 remaining)
 2026-03-12T22:19:18.589Z [WS] Connected: 3lVuiqs2:_global (1 clients)
 2026-03-12T22:19:20.574Z [WS] Connected: 3lVuiqs2:_global (2 clients)
+2026-03-12T22:30:40.003Z [WS] Broadcast 3lVuiqs2:_global: device_created → 2 clients
+2026-03-12T22:30:40.083Z [WS] Broadcast 3lVuiqs2:weather: content → 0 clients
+2026-03-12T22:30:40.084Z [WS] Broadcast 3lVuiqs2:_global: content_updated → 2 clients
+2026-03-12T22:31:03.337Z [WS] Connected: 3lVuiqs2:weather (1 clients)
+2026-03-12T22:31:03.341Z [WS] Disconnected: 3lVuiqs2:weather (0 remaining)
+2026-03-12T22:31:03.361Z [WS] Connected: 3lVuiqs2:weather (1 clients)
+2026-03-12T22:31:59.242Z [WS] Disconnected: 3lVuiqs2:weather (0 remaining)
+2026-03-12T22:32:03.126Z [WS] Broadcast 3lVuiqs2:weather: clear → 0 clients
+2026-03-12T22:32:03.128Z [WS] Broadcast 3lVuiqs2:_global: device_deleted → 2 clients
+2026-03-12T22:45:05.594Z [WS] Broadcast 3lVuiqs2:_global: device_created → 2 clients
+2026-03-12T22:45:05.677Z [WS] Broadcast 3lVuiqs2:test: content → 0 clients
+2026-03-12T22:45:05.678Z [WS] Broadcast 3lVuiqs2:_global: content_updated → 2 clients

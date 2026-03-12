@@ -1,31 +1,12 @@
 import { useState } from 'react';
-import { useBotBeam } from '../context/BotBeamContext';
 
 type SetupTab = 'chatgpt' | 'claude' | 'claude-code';
-type Platform = 'mac' | 'windows';
-
-function detectPlatform(): Platform {
-  return navigator.platform.toLowerCase().includes('win') ? 'windows' : 'mac';
-}
 
 export default function SetupInstructions({ mcpUrl }: { mcpUrl: string }) {
-  const { namespace } = useBotBeam();
   const [tab, setTab] = useState<SetupTab>('chatgpt');
-  const [platform, setPlatform] = useState<Platform>(detectPlatform);
   const [copied, setCopied] = useState(false);
 
-  const serverUrl = mcpUrl.replace(/\/s\/.*/, '');
-
-  const commands = {
-    mac: `claude mcp add botbeam --transport stdio \\
-  -e BOTBEAM_NAMESPACE=${namespace} \\
-  -e BOTBEAM_SERVER_URL=${serverUrl} \\
-  -- npx -y botbeam@latest`,
-    windows: `claude mcp add botbeam --transport stdio ^
-  -e BOTBEAM_NAMESPACE=${namespace} ^
-  -e "BOTBEAM_SERVER_URL=${serverUrl}" ^
-  -- cmd /c npx -y botbeam@latest`,
-  };
+  const claudeCodeCommand = `claude mcp add botbeam --transport http ${mcpUrl}`;
 
   function copy(text: string) {
     navigator.clipboard.writeText(text).then(() => {
@@ -86,13 +67,8 @@ export default function SetupInstructions({ mcpUrl }: { mcpUrl: string }) {
             <li>Run this command in your terminal:</li>
           </ol>
 
-          <div className="setup-tabs" style={{ marginBottom: 8 }}>
-            <button className={`setup-tab ${platform === 'mac' ? 'active' : ''}`} onClick={() => setPlatform('mac')}>macOS / Linux</button>
-            <button className={`setup-tab ${platform === 'windows' ? 'active' : ''}`} onClick={() => setPlatform('windows')}>Windows</button>
-          </div>
-
-          <pre className="setup-codeblock"><code>{commands[platform]}</code></pre>
-          <button className="btn btn-primary btn-copy btn-copy-config" onClick={() => copy(commands[platform])}>
+          <pre className="setup-codeblock"><code>{claudeCodeCommand}</code></pre>
+          <button className="btn btn-primary btn-copy btn-copy-config" onClick={() => copy(claudeCodeCommand)}>
             {copied ? 'Copied!' : 'Copy command'}
           </button>
 
@@ -100,7 +76,7 @@ export default function SetupInstructions({ mcpUrl }: { mcpUrl: string }) {
             <li>Restart Claude Code to pick up the new MCP server.</li>
           </ol>
           <div className="setup-note">
-            This registers BotBeam as a stdio MCP server. Claude Code spawns it as a local process and communicates over stdin/stdout.
+            Claude Code connects directly to your BotBeam endpoint over HTTP — no local install needed.
           </div>
         </div>
       )}

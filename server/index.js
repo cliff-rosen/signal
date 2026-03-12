@@ -20,8 +20,11 @@ const { broadcast, broadcastGlobal } = createWSServer(server);
 // Middleware
 app.use(express.json());
 
-// Static assets
+// Static assets (legacy: landing page, display page, CSS, favicon)
 app.use('/assets', express.static(path.join(__dirname, '..', 'public')));
+
+// React app build (Vite output)
+app.use('/app', express.static(path.join(__dirname, '..', 'frontend', 'dist')));
 
 // Landing page
 app.get('/', (req, res) => {
@@ -46,7 +49,7 @@ app.get('/s/:namespace/display/:device', (req, res) => {
 });
 
 app.get('/s/:namespace', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
+  res.sendFile(path.join(__dirname, '..', 'frontend', 'dist', 'index.html'));
 });
 
 // Health check

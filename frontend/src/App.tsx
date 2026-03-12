@@ -7,6 +7,8 @@ import Landing from './components/Landing';
 function AppContent() {
   const { namespace, activeTab } = useBotBeam();
 
+  console.log('Current namespace:', namespace);
+
   if (!namespace) return <Landing />;
 
   return (

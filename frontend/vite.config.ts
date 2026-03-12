@@ -10,18 +10,5 @@ export default defineConfig(({ mode }) => ({
     watch: {
       usePolling: true,
     },
-    proxy: {
-      // Only proxy API/MCP calls under /s, not page loads
-      '/s/': {
-        target: 'http://localhost:4888',
-        bypass(req) {
-          if (!req.url?.match(/\/(api|mcp)\//)) {
-            return req.url;
-          }
-        },
-      },
-      '/api': 'http://localhost:4888',
-      '/ws': { target: 'ws://localhost:4888', ws: true },
-    },
   },
 }))

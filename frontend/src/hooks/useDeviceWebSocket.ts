@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Content, WSEvent } from '../types';
 import { useBotBeam } from '../context/BotBeamContext';
+import { settings } from '../config/settings';
 
 /**
  * Manages a per-device WebSocket connection.
@@ -30,8 +31,7 @@ export function useDeviceWebSocket(deviceId: string) {
 
     // Open WebSocket for live updates
     function connect() {
-      const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-      const ws = new WebSocket(`${proto}://${location.host}/ws?namespace=${namespace}&device=${deviceId}`);
+      const ws = new WebSocket(`${settings.wsUrl}/ws?namespace=${namespace}&device=${deviceId}`);
       wsRef.current = ws;
 
       ws.onopen = () => { reconnectDelay = 1000; };

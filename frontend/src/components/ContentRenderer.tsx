@@ -37,6 +37,7 @@ export default function ContentRenderer({ content }: Props) {
           <iframe
             className="content-url"
             src={proxyUrl(content.body)}
+            sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
             allowFullScreen
           />
         </div>

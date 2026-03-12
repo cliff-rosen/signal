@@ -1,4 +1,5 @@
 import { get, post, del } from './index';
+import { settings } from '../../config/settings';
 import type { Device, Content } from '../../types';
 
 function base(namespace: string) {
@@ -39,6 +40,6 @@ export const botbeamApi = {
   // Utilities
 
   proxyUrl(namespace: string, url: string) {
-    return `${base(namespace)}/proxy?url=${encodeURIComponent(url)}`;
+    return `${settings.apiUrl}${base(namespace)}/proxy?url=${encodeURIComponent(url)}`;
   },
 };

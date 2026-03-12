@@ -123,13 +123,10 @@ function createRouter(broadcast, broadcastGlobal) {
       const contentType = response.headers.get('content-type') || 'text/html';
       const html = await response.text();
 
-      // Strip scripts to prevent frame-busting, auth redirects, and browser hangs
-      let cleaned = html.replace(/<script[\s\S]*?<\/script>/gi, '');
-
       // Inject a <base> tag so relative URLs resolve against the original site's origin
       const origin = new URL(url).origin;
       const baseTag = `<base href="${origin}/">`;
-      const patched = cleaned.replace(/<head([^>]*)>/i, `<head$1>${baseTag}`);
+      const patched = html.replace(/<head([^>]*)>/i, `<head$1>${baseTag}`);
 
       res.setHeader('Content-Type', contentType);
       res.send(patched);

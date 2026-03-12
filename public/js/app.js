@@ -172,9 +172,9 @@ async function renderHome() {
       <div class="setup-try-heading">Try it out</div>
       <p>Once connected, just paste one of these into your AI chat:</p>
       <div class="setup-prompts">
-        <div class="setup-prompt-example">"Teach me about Docker. Start by beaming me a roadmap of topics, then walk me through each one — send a cheat sheet each time."</div>
-        <div class="setup-prompt-example">"I'm prepping for a product manager interview. Give me a list of common question categories, then quiz me on each one and beam me the key points after."</div>
-        <div class="setup-prompt-example">"Compare AWS, GCP, and Azure for a small startup. Beam me a tab for each with pricing, strengths, and gotchas."</div>
+        <div class="setup-prompt-example">"Teach me about Docker. Start by botbeaming me a roadmap of topics, then walk me through each one — send a cheat sheet each time."</div>
+        <div class="setup-prompt-example">"I'm prepping for a product manager interview. Give me a list of common question categories, then quiz me on each one and botbeam me the key points after."</div>
+        <div class="setup-prompt-example">"Compare AWS, GCP, and Azure for a small startup. Botbeam me a tab for each with pricing, strengths, and gotchas."</div>
       </div>
       <p class="setup-try-hint">Tabs are created automatically as your AI needs them. As you keep talking, new tabs appear — by the end you have a full reference you can keep open.</p>
     </div>
@@ -551,24 +551,19 @@ function confirmDeleteDevice(device) {
 
 // ── Global WebSocket (watches for device/content changes) ──
 
-function connectGlobalWS() {
-  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-  globalWs = new WebSocket(`${proto}://${location.host}/ws?namespace=${namespace}&device=_global`);
+// Serialize global WS message handling so async handlers don't interleave
+let globalMsgQueue = Promise.resolve();
 
-  globalWs.onmessage = async (e) => {
-    const msg = JSON.parse(e.data);
-
-    if (msg.event === 'device_created') {
-      // Add the tab without disrupting the user's current view
-      await loadDevices();
-      // Only switch if user is on home (they're not busy with another tab)
+function handleGlobalMessage(msg) {
+  if (msg.event === 'device_created') {
+    return loadDevices().then(() => {
       if (activeTab === 'home') renderHome();
+    });
 
-    } else if (msg.event === 'device_deleted') {
-      const wasActive = activeTab === msg.deviceId;
-      // Close the per-device WS if we're on the deleted tab
-      if (wasActive && ws) { ws.close(); ws = null; }
-      await loadDevices();
+  } else if (msg.event === 'device_deleted') {
+    const wasActive = activeTab === msg.deviceId;
+    if (wasActive && ws) { ws.close(); ws = null; }
+    return loadDevices().then(() => {
       if (wasActive) {
         activeTab = 'home';
         renderTabs();
@@ -578,24 +573,43 @@ function connectGlobalWS() {
       } else {
         renderTabs();
       }
+    });
 
-    } else if (msg.event === 'content_updated') {
-      // If we're on the target tab, the per-device WS handles it — skip
-      if (activeTab === msg.deviceId) return;
-      // If we're on home, refresh the card previews
-      if (activeTab === 'home') {
-        renderHome();
-      }
-      // Don't force-switch the user to a different tab
+  } else if (msg.event === 'content_updated') {
+    if (activeTab === msg.deviceId) return Promise.resolve();
+    if (activeTab === 'home') renderHome();
+    return Promise.resolve();
 
-    } else if (msg.event === 'content_cleared') {
-      // If we're on the cleared tab, the per-device WS handles it — skip
-      if (activeTab === msg.deviceId) return;
-      if (activeTab === 'home') renderHome();
-    }
+  } else if (msg.event === 'content_cleared') {
+    if (activeTab === msg.deviceId) return Promise.resolve();
+    if (activeTab === 'home') renderHome();
+    return Promise.resolve();
+  }
+
+  return Promise.resolve();
+}
+
+function connectGlobalWS() {
+  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+  globalWs = new WebSocket(`${proto}://${location.host}/ws?namespace=${namespace}&device=_global`);
+
+  globalWs.onopen = () => {
+    console.log('[BotBeam] Global WebSocket connected');
+  };
+
+  globalWs.onmessage = (e) => {
+    const msg = JSON.parse(e.data);
+    console.log('[BotBeam] Global WS event:', msg.event, msg);
+    // Queue each message so handlers run one at a time
+    globalMsgQueue = globalMsgQueue.then(() => handleGlobalMessage(msg)).catch(console.error);
+  };
+
+  globalWs.onerror = (e) => {
+    console.error('[BotBeam] Global WebSocket error', e);
   };
 
   globalWs.onclose = () => {
+    console.log('[BotBeam] Global WebSocket closed, reconnecting in 2s');
     setTimeout(connectGlobalWS, 2000);
   };
 }

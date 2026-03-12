@@ -1,237 +1,250 @@
-# Signal — Architecture Overview
+# BotBeam — Architecture & Deployment
 
-AI-Powered Virtual Display Platform
+## What BotBeam Does
 
----
+BotBeam gives AI chatbots (ChatGPT, Claude, Claude Code) a set of browser tabs they can push content to in real time. A user opens their BotBeam URL in a browser, connects their AI via MCP, and then tells the AI what to show. The AI creates tabs and pushes content — markdown, images, webpages, dashboards, lists — and the browser updates instantly via WebSocket.
 
-## System Overview
-
-Signal is a software platform that turns browser tabs into virtual ambient displays that Claude Code (or any MCP-compatible AI) can push content to in real-time. Instead of physical hardware, each "device" is a browser window showing live-updating content.
-
-The system consists of three processes and any number of browser-based display endpoints. It supports both local access (Claude Code via stdio) and remote access (Claude.ai via HTTP+SSE through a Cloudflare tunnel).
-
-## Architecture Diagram
-
-### Local (Claude Code)
+## Three Actors
 
 ```
-┌─────────────────┐         ┌──────────────────────┐         ┌──────────────────┐
-│  Claude Code     │  stdio  │  MCP Server           │  HTTP   │  Signal Server    │
-│  (AI assistant)  ├────────►│  mcp/index.js         ├────────►│  server/index.js  │
-│                  │         │  5 tools registered   │  :4888  │  Express + WS     │
-└─────────────────┘         └──────────────────────┘         └──────┬───────────┘
-                                                                     │
-                                                          ┌──────────┼──────────┐
-                                                          │ WebSocket broadcast  │
-                                                          ▼          ▼          ▼
-                                                     ┌────────┐ ┌────────┐ ┌────────┐
-                                                     │Browser │ │Browser │ │Browser │
-                                                     │/display │ │/display│ │/display│
-                                                     │/dashboard│/kitchen│ │/office │
-                                                     └────────┘ └────────┘ └────────┘
+Person (browser)  ──►  BotBeam Server  ◄──  Chatbot (MCP client)
+                         ├─ store.js (MySQL)
+                         ├─ websocket.js (real-time push)
+                         └─ routes.js / mcp.js (two entry points)
 ```
 
-### Remote (Claude.ai / mobile)
+- **Person** — opens `https://botbeam.ironcliff.ai/s/{namespace}` in a browser. Sees tabs, receives content via WebSocket.
+- **Chatbot** — connects to `https://botbeam.ironcliff.ai/s/{namespace}/mcp` via MCP protocol. Calls tools like `push_content`, `list_devices`, `clear_device`.
+- **Server** — one Node.js process running Express + WebSocket. Stores everything in MySQL. Two paths reach the same core logic (`store.js`):
+  - **Browser path**: `routes.js` — REST API at `/s/{namespace}/api/...`
+  - **Chatbot path**: `mcp.js` — MCP JSON-RPC at `/s/{namespace}/mcp`
+
+## Server File Structure
 
 ```
-┌─────────────────┐  HTTPS  ┌──────────────┐         ┌──────────────────────┐
-│  Claude.ai       ├────────►│  Cloudflare   ├────────►│  MCP Remote Server   │
-│  (web / phone)   │         │  Tunnel       │         │  mcp/remote.js :4889 │
-└─────────────────┘         └──────────────┘         └──────────┬───────────┘
-                                                                 │ HTTP
-                                                                 ▼
-                                                     ┌──────────────────────┐
-                                                     │  Signal Server :4888 │
-                                                     │  → store + broadcast │
-                                                     └──────────────────────┘
+server/
+  index.js        — Wiring: creates Express app, mounts both routers, starts server
+  store.js        — All MySQL queries. Validation (type whitelist, size cap, name checks)
+  routes.js       — REST API router (browser-facing). Also has the URL proxy endpoint
+  mcp.js          — MCP router (chatbot-facing). DirectClient calls store.js directly
+  websocket.js    — WebSocket connection tracking + broadcast/broadcastGlobal
+  namespace.js    — Middleware: validates namespace exists, touches last_active
+  log.js          — API logging to api_log table
+  db.js           — MySQL connection pool + table creation
+
+mcp/
+  index.js        — Stdio MCP server (for Claude Code local usage)
+  tools.js        — Tool definitions shared by mcp.js and mcp/index.js
+  client.js       — HTTP client (only used by stdio server)
+
+public/
+  landing.html    — Marketing landing page
+  index.html      — App shell (loads app.js)
+  display.html    — Standalone display page (loads display.js)
+  js/app.js       — Main app: tabs, content rendering, WebSocket, setup instructions
+  js/display.js   — Single-device display viewer
+  css/style.css   — Dark theme
+  favicon.svg     — Beam/screen icon
 ```
 
-## The Two Processes
+## How Mounting Works
 
-### Process 1: Signal Server (`npm start` / `server/index.js`)
+Both sides are mounted identically in `index.js`:
 
-The persistent web server running on port 4888. It does four things:
-
-1. **Serves the browser UI** — static HTML/CSS/JS files from `public/`, including the landing page dashboard and individual display pages.
-
-2. **REST API at `/api/devices`** — full CRUD for device management (create, list, delete) and content management (push, get, clear). All state is stored as JSON files in `data/`. No database required.
-
-3. **WebSocket server** on the same port — browser tabs connect via `ws://localhost:4888/ws?device=NAME`. The server tracks connections per device using a `Map<deviceId, Set<WebSocket>>`.
-
-4. **Real-time broadcast** — when content is pushed via the API, the server immediately broadcasts to all WebSocket clients subscribed to that device. Displays update instantly.
-
-### Process 2: MCP Local Server (`mcp/index.js`)
-
-A lightweight bridge process that Claude Code spawns as a child process over stdio. It registers five tools (defined in the shared `mcp/tools.js` module):
-
-| Tool | Description |
-|------|-------------|
-| `create_device` | Register a new named virtual display |
-| `list_devices` | Return all registered devices |
-| `push_content` | Send content to a named display |
-| `clear_device` | Clear a display's content |
-| `delete_device` | Remove a display entirely |
-
-When Claude Code calls a tool, the MCP server translates it into an HTTP request to `localhost:4888` via `mcp/client.js`. It is completely stateless — just a protocol bridge.
-
-### Process 3: MCP Remote Server (`mcp/remote.js`)
-
-An HTTP server on port 4889 that exposes the same 5 tools over the Streamable HTTP transport (HTTP+SSE). This is what Claude.ai connects to as a custom MCP connector.
-
-Key differences from the local MCP server:
-- Listens on a port instead of stdio
-- Manages multiple sessions — each `initialize` request creates a new `McpServer` + `StreamableHTTPServerTransport` pair, tracked by session ID
-- Requires a tunnel (Cloudflare Tunnel) to be reachable from the internet
-- Uses CORS headers to allow cross-origin requests from Claude.ai
-
-### Why Three Processes?
-
-- **Signal Server (:4888)** — persistent web server, serves displays, REST API, WebSocket broadcast
-- **MCP Local (stdio)** — ephemeral, spawned by Claude Code for local CLI usage
-- **MCP Remote (:4889)** — persistent, serves remote clients (Claude.ai, mobile) over HTTP+SSE
-
-The local and remote MCP servers share tool definitions via `mcp/tools.js` and both call the Signal Server's REST API via `mcp/client.js`.
-
-## The Push Flow
-
-When a user says "show the weather on the dashboard":
-
-```
-1. Claude Code receives the user's request
-2. Claude Code gathers the needed data (e.g., fetches weather from an API)
-3. Claude Code calls push_content MCP tool
-       { device: "dashboard", type: "markdown", body: "# Castle Rock..." }
-4. MCP server POSTs to http://localhost:4888/api/devices/dashboard/content
-5. server/routes.js writes to data/content/dashboard.json
-6. server/websocket.js broadcasts to all WebSocket clients watching "dashboard"
-7. Browser tab receives the WebSocket message
-8. display.js renders the content based on type
+```js
+app.use('/s/:namespace/mcp', namespaceMiddleware, createMCPRouter(broadcast, broadcastGlobal));
+app.use('/s/:namespace/api', namespaceMiddleware, createAPIRouter(broadcast, broadcastGlobal));
 ```
 
-The entire flow from tool call to screen update takes milliseconds.
+Both routers:
+- Export `createRouter(broadcast, broadcastGlobal)` returning an Express Router
+- Use `req.namespace` set by the shared `namespaceMiddleware`
+- `require('./store')` internally (store is a singleton module)
+- Only `broadcast` and `broadcastGlobal` are injected (they're created at runtime from the WebSocket server)
 
 ## Content Types
 
-The display renderer (`public/js/display.js`) supports five content types:
+| Type | Body | Rendering |
+|------|------|-----------|
+| `markdown` | Markdown string | Rendered via marked.js |
+| `url` | URL string | Proxied through server to bypass CSP/X-Frame-Options |
+| `image` | Image URL | `<img>` tag |
+| `dashboard` | JSON array of `{title, value, subtitle?}` | Card grid |
+| `list` | JSON array of strings or `{text, checked}` | Checklist |
+| `text` | Plain string | Literal text |
+| `html` | HTML string | Sandboxed iframe |
 
-| Type | Body format | Use case |
-|------|-------------|----------|
-| **text** | Plain string | Simple messages, notifications |
-| **markdown** | Markdown string (rendered via marked.js) | Rich info display — headings, tables, lists, code |
-| **html** | HTML string (sandboxed in iframe) | Custom visualizations |
-| **list** | JSON array of strings or `{text, checked}` objects | To-do lists, grocery lists, chore boards |
-| **dashboard** | JSON array of `{title, value, subtitle?}` objects | KPIs, stats, at-a-glance metrics |
+Validated in `store.js`. Max body size: 500KB.
 
-## File Structure
+## Database (MySQL on RDS)
+
+Instance: `chatter.c0guz2wkpcod.us-east-2.rds.amazonaws.com`
+Database name: `signal`
+
+Tables (created automatically by `db.js` on startup):
+
+- **namespaces** — `id` (nanoid 8), `ip_address`, `created_at`, `last_active`
+- **devices** — `id` (slugified name), `namespace` (FK), `name`, `created_at`
+- **content** — `namespace` + `device_id` (composite PK, FK), `type`, `body` (LONGTEXT), `updated_at`
+- **api_log** — `namespace`, `action`, `device`, `content_type`, `body` (LONGTEXT), `ip_address`, `created_at`
+
+---
+
+# Deployment
+
+## Infrastructure Overview
 
 ```
-signal/
-  package.json              — Dependencies: express, ws, @modelcontextprotocol/sdk
-  .gitignore                — Excludes node_modules/ and data/
-
-  server/
-    index.js                — Main entry: Express + WebSocket + static files
-    store.js                — JSON file storage layer (devices + content)
-    routes.js               — REST API route definitions
-    websocket.js            — WebSocket connection tracking + broadcast
-
-  mcp/
-    index.js                — MCP server entry point (stdio transport, for Claude Code)
-    remote.js               — MCP remote server (HTTP+SSE transport, for Claude.ai)
-    tools.js                — Shared tool definitions (used by both index.js and remote.js)
-    client.js               — HTTP client for calling the Signal server API
-
-  public/
-    index.html              — Landing page (device grid)
-    display.html            — Single display viewer
-    css/style.css           — Dark ambient theme
-    js/dashboard.js         — Landing page logic
-    js/display.js           — WebSocket client + multi-format renderer
-
-  data/                     — Created at runtime, gitignored
-    devices.json            — Device registry
-    content/                — One JSON file per device with current content
-
-  .claude/
-    mcp.json                — MCP server configuration for Claude Code
+                   HTTPS                          MySQL
+Browser/Chatbot ──────►  ALB ──► ECS Fargate ──────────► RDS
+                         │        (1 task)                (chatter)
+                         │
+                    ACM cert
+                 (botbeam.ironcliff.ai)
 ```
 
-## Storage
+| Component | What it is | How to find it |
+|-----------|-----------|----------------|
+| **ECR** | Docker image registry | AWS Console → ECR → `botbeam/web` |
+| **ECS Cluster** | Container orchestration | `botbeam-prod-Cluster-RF1huELGViqb` |
+| **ECS Service** | Keeps 1 task running | Service `botbeam-prod-web` in that cluster |
+| **ALB** | Load balancer, terminates HTTPS | `botbea-Publi-0ZimuF1UCfov-125301842.us-east-2.elb.amazonaws.com` |
+| **ACM** | SSL certificate | Cert for `botbeam.ironcliff.ai` |
+| **Route 53** | DNS | `botbeam.ironcliff.ai` CNAME → ALB |
+| **RDS** | MySQL database | `chatter.c0guz2wkpcod.us-east-2.rds.amazonaws.com` |
+| **SSM Parameter Store** | DB password (encrypted) | `/copilot/botbeam/prod/secrets/db_password` |
 
-All state is flat JSON files in `data/`:
+## AWS Copilot Structure
 
-- **`devices.json`** — Array of `{id, name, createdAt}`. Device IDs are slugified from names (e.g., "Kitchen Display" → "kitchen-display").
-- **`content/{device-id}.json`** — Current content: `{type, body, updatedAt}`. Pushing new content replaces the old.
-
-No database setup, directly inspectable, perfectly adequate for a local tool.
-
-## Browser UI
-
-Vanilla HTML/CSS/JS, no build step.
-
-**Landing page** (`localhost:4888`) — Grid of registered devices with status. "Add Device" button opens a modal. Each card links to its display page.
-
-**Display page** (`localhost:4888/display/{name}`) — Full-viewport ambient display. WebSocket for real-time updates. REST fallback on load. Auto-reconnection with exponential backoff. Dark theme (#0a0a0a background, #4fc3f7 accent) with smooth fade-in transitions.
-
-## Claude Code Integration
-
-MCP configuration in `.claude/mcp.json`:
-
-```json
-{
-  "mcpServers": {
-    "signal": {
-      "command": "node",
-      "args": ["C:\\code\\signal\\mcp\\index.js"],
-      "env": {
-        "SIGNAL_SERVER_URL": "http://localhost:4888"
-      }
-    }
-  }
-}
+```
+copilot/
+  .workspace              — app: botbeam
+  environments/prod/
+    manifest.yml           — env: prod
+  web/
+    manifest.yml           — service: web (Load Balanced Web Service)
 ```
 
-When Claude Code starts in the signal project directory, it automatically launches the MCP server and makes the five tools available. The user simply describes what they want shown and where.
+The service manifest (`copilot/web/manifest.yml`) defines:
+- Image: built from `Dockerfile`, port 4888
+- Resources: 256 CPU, 512 MB memory, 1 instance
+- Health check: `GET /health` every 30s
+- Stickiness: enabled (for WebSocket affinity)
+- Environment variables: `PORT`, `DB_HOST`, `DB_USER`, `DB_NAME`
+- Secrets: `DB_PASSWORD` from SSM Parameter Store
+- Network: public VPC placement
 
-## Remote Access (Claude.ai / Mobile)
-
-To access Signal from Claude.ai or a phone:
-
-### 1. Start the servers
+## How to Deploy
 
 ```bash
-npm start          # Signal server on :4888
-npm run mcp:remote # MCP remote server on :4889
+AWS_PROFILE=copilot copilot svc deploy --name web --env prod
 ```
 
-### 2. Start a Cloudflare tunnel
+This command:
+1. Builds the Docker image locally
+2. Pushes it to ECR (`botbeam/web:latest`)
+3. Updates the ECS task definition
+4. ECS rolls out the new task (starts new, waits for health check, drains old)
+
+Typical deploy time: ~4 minutes.
+
+### Post-Deploy: Update RDS Security Group
+
+**Important:** RDS and ECS are in different VPCs. The ECS task connects to RDS via its public IP, which changes on every deploy. After deploying, update the RDS security group:
 
 ```bash
-cloudflared tunnel --url http://localhost:4889
+# Get the new ECS task's public IP
+TASK_ARN=$(AWS_PROFILE=copilot aws ecs list-tasks \
+  --cluster botbeam-prod-Cluster-RF1huELGViqb \
+  --region us-east-2 --query "taskArns[0]" --output text)
+
+ENI=$(AWS_PROFILE=copilot aws ecs describe-tasks \
+  --cluster botbeam-prod-Cluster-RF1huELGViqb \
+  --tasks "$TASK_ARN" --region us-east-2 \
+  --query "tasks[0].attachments[0].details[?name=='networkInterfaceId'].value" --output text)
+
+NEW_IP=$(AWS_PROFILE=copilot aws ec2 describe-network-interfaces \
+  --network-interface-ids "$ENI" --region us-east-2 \
+  --query "NetworkInterfaces[0].Association.PublicIp" --output text)
+
+echo "New ECS IP: $NEW_IP"
+
+# Remove old ECS IP rule (replace OLD_IP with the previous one)
+AWS_PROFILE=copilot aws ec2 revoke-security-group-ingress \
+  --group-id sg-0b539947e6ed29cf0 --protocol tcp --port 3306 \
+  --cidr OLD_IP/32 --region us-east-2
+
+# Add new ECS IP rule
+AWS_PROFILE=copilot aws ec2 authorize-security-group-ingress \
+  --group-id sg-0b539947e6ed29cf0 --protocol tcp --port 3306 \
+  --cidr $NEW_IP/32 --region us-east-2
 ```
 
-This gives you a public URL like `https://something.trycloudflare.com`.
+### Why the IP Dance?
 
-### 3. Add as MCP connector in Claude.ai
+RDS is in the default VPC (`vpc-0af0e03541cfd6520`). ECS is in Copilot's VPC (`vpc-0029a0ba06398b0c2`). Since they're different VPCs, security group references don't work — we can only whitelist IPs. ECS tasks in public subnets get a new public IP on every deploy.
 
-Go to **Settings → Connectors → Add custom MCP connector** and enter:
+**Future fix options:**
+- **NAT Gateway** — gives ECS a fixed egress IP (~$30/mo)
+- **Move RDS into Copilot VPC** — then use security group references
+- **VPC Peering** — connect the two VPCs
+
+## Viewing Logs
+
+```bash
+# Last hour of logs
+AWS_PROFILE=copilot copilot svc logs --name web --env prod --since 1h
+
+# Tail in real time
+AWS_PROFILE=copilot copilot svc logs --name web --env prod --follow
+
+# Logs from a crashed task
+AWS_PROFILE=copilot copilot svc logs --name web --env prod --previous
+```
+
+## Security
+
+| Concern | Status |
+|---------|--------|
+| DB password | Stored in SSM Parameter Store (SecureString, KMS encrypted). Referenced via `secrets:` in manifest |
+| RDS access | Security group allows port 3306 from ECS task IP + developer IP only |
+| HTTPS | ACM certificate on ALB, HTTP redirects to HTTPS |
+| Namespace isolation | Each namespace gets a random 8-char ID (nanoid). No auth — URL is the access key |
+| Content validation | Type whitelist, 500KB body size cap, device name validation |
+| URL proxy | SSRF protection blocks internal/private IPs. Scripts stripped from proxied HTML |
+| `.env` | Gitignored. Never committed |
+
+### RDS Security Group
+
+Group ID: `sg-0b539947e6ed29cf0`
+
+Current rules (port 3306):
+- Developer IP (update when your IP changes)
+- Current ECS task IP (update after each deploy)
+
+## Local Development
+
+```bash
+cp .env.example .env   # Fill in your DB credentials
+npm install
+npm start              # Server on http://localhost:4888
+```
+
+The `.env` file is gitignored. Required variables:
 
 ```
-https://something.trycloudflare.com/mcp
+DB_HOST=chatter.c0guz2wkpcod.us-east-2.rds.amazonaws.com
+DB_USER=admin
+DB_PASSWORD=<from SSM or ask team>
+DB_NAME=signal
+PORT=4888
 ```
 
-Claude.ai will initialize a session, discover the 5 tools, and you can push content to your displays from anywhere.
+## IAM
 
-### MCP Request Flow
+Deployments use the `copilot` AWS CLI profile, which corresponds to IAM user `copilot-deploy` with admin permissions.
 
-| Step | Component | File |
-|------|-----------|------|
-| Client | Claude.ai (web/phone) | — |
-| Tunnel | Cloudflare | — |
-| Session routing | MCP remote server | `mcp/remote.js` |
-| Tool dispatch | MCP SDK + handlers | `mcp/tools.js` |
-| HTTP bridge | API client | `mcp/client.js` |
-| REST API | Express routes | `server/routes.js` |
-| Persistence | JSON file store | `server/store.js` |
-| Real-time push | WebSocket broadcast | `server/websocket.js` |
-| Display | Browser renderer | `public/js/display.js` |
+The ECS execution role (`botbeam-prod-web-ExecutionRole-R6C5ek2ytN7N`) has:
+- ECR pull access (managed by Copilot)
+- `ssm:GetParameters` on `/copilot/botbeam/prod/secrets/db_password`
+- `kms:Decrypt` on the SSM default KMS key

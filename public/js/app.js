@@ -369,7 +369,9 @@ function connectGlobalWS() {
       if (wasActive) switchTab('home');
       else if (activeTab === 'home') renderHome();
       else renderTabs();
-    } else if (msg.event === 'content_updated' || msg.event === 'content_cleared') {
+    } else if (msg.event === 'content_updated') {
+      switchTab(msg.deviceId);
+    } else if (msg.event === 'content_cleared') {
       if (activeTab === 'home') renderHome();
     }
   };

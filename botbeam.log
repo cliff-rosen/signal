@@ -728,3 +728,13 @@
 2026-03-12T23:09:06.793Z [WS] Broadcast 3lVuiqs2:_global: device_deleted → 1 clients
 2026-03-12T23:09:34.463Z [WS] Broadcast 3lVuiqs2:test: content → 0 clients
 2026-03-12T23:09:34.463Z [WS] Broadcast 3lVuiqs2:_global: content_updated → 1 clients
+2026-03-12T23:16:23.932Z [WS] Disconnected: 3lVuiqs2:_global (0 remaining)
+2026-03-12T23:16:24.320Z [WS] Connected: 3lVuiqs2:_global (1 clients)
+2026-03-12T23:16:24.325Z [WS] Disconnected: 3lVuiqs2:_global (0 remaining)
+2026-03-12T23:16:24.341Z [WS] Connected: 3lVuiqs2:_global (1 clients)
+2026-03-12T23:16:26.674Z [WS] Disconnected: 3lVuiqs2:_global (0 remaining)
+2026-03-12T23:16:27.952Z [WS] Connected: olXxGHzJ:_global (1 clients)
+2026-03-12T23:16:34.733Z [WS] Disconnected: olXxGHzJ:_global (0 remaining)
+2026-03-12T23:16:34.770Z [WS] Connected: olXxGHzJ:_global (1 clients)
+2026-03-12T23:16:34.774Z [WS] Disconnected: olXxGHzJ:_global (0 remaining)
+2026-03-12T23:16:34.786Z [WS] Connected: olXxGHzJ:_global (1 clients)

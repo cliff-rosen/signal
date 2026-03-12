@@ -11,7 +11,7 @@ export default function Home() {
   );
   const [copied, setCopied] = useState(false);
 
-  const mcpUrl = `${settings.apiUrl}/s/${namespace}/mcp`;
+  const mcpUrl = `${settings.publicUrl}/s/${namespace}/mcp`;
 
   function dismissBookmark() {
     localStorage.setItem(`botbeam-bookmark-${namespace}`, '1');

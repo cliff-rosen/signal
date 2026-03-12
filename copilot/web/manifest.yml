@@ -25,9 +25,7 @@ variables:
   DB_HOST: chatter.c0guz2wkpcod.us-east-2.rds.amazonaws.com
   DB_USER: admin
   DB_NAME: signal
-
-secrets:
-  DB_PASSWORD: /copilot/botbeam/prod/secrets/db_password
+  DB_PASSWORD: chatchat
 
 network:
   vpc:

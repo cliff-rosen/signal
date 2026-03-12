@@ -3,6 +3,7 @@ require('dotenv').config();
 const { McpServer } = require('@modelcontextprotocol/sdk/server/mcp.js');
 const { StdioServerTransport } = require('@modelcontextprotocol/sdk/server/stdio.js');
 const { registerTools } = require('./tools');
+const httpClient = require('./client');
 
 const namespace = process.env.BOTBEAM_NAMESPACE;
 if (!namespace) {
@@ -15,7 +16,7 @@ const server = new McpServer({
   version: '0.2.0',
 });
 
-registerTools(server, namespace);
+registerTools(server, namespace, httpClient);
 
 async function main() {
   const transport = new StdioServerTransport();

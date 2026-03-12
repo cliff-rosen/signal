@@ -20,6 +20,36 @@ const server = http.createServer(app);
 // WebSocket
 const { broadcast, broadcastGlobal } = createWSServer(server);
 
+// Direct client for MCP tools — calls store + broadcast with no HTTP roundtrip
+const directClient = {
+  listDevices: (ns) => store.loadDevices(ns),
+  deleteDevice: async (ns, id) => {
+    const ok = await store.deleteDevice(ns, id);
+    if (ok) {
+      broadcast(ns, id, { event: 'clear' });
+      broadcastGlobal(ns, { event: 'device_deleted', deviceId: id });
+    }
+    return { ok };
+  },
+  pushContent: async (ns, deviceId, type, body) => {
+    const devices = await store.loadDevices(ns);
+    if (!devices.find(d => d.id === deviceId)) {
+      const { device } = await store.createDevice(ns, deviceId);
+      broadcastGlobal(ns, { event: 'device_created', device });
+    }
+    const content = await store.saveContent(ns, deviceId, { type, body });
+    broadcast(ns, deviceId, { event: 'content', data: content });
+    broadcastGlobal(ns, { event: 'content_updated', deviceId, data: content });
+    return content;
+  },
+  clearDevice: async (ns, id) => {
+    await store.deleteContent(ns, id);
+    broadcast(ns, id, { event: 'clear' });
+    broadcastGlobal(ns, { event: 'content_cleared', deviceId: id });
+    return { ok: true };
+  },
+};
+
 // Middleware
 app.use(express.json());
 
@@ -71,7 +101,7 @@ async function handleMCP(req, res) {
       });
 
       const mcpServer = new McpServer({ name: 'botbeam', version: '0.2.0' });
-      registerTools(mcpServer, namespace);
+      registerTools(mcpServer, namespace, directClient);
       await mcpServer.connect(transport);
       await transport.handleRequest(req, res, body);
     } else if (sessionId && mcpSessions.has(sessionId)) {

@@ -1,7 +1,6 @@
 const { z } = require('zod');
-const client = require('./client');
 
-function registerTools(server, namespace) {
+function registerTools(server, namespace, client) {
   server.tool(
     'list_devices',
     'List all registered virtual display devices',

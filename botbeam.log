@@ -51,3 +51,15 @@
 2026-03-12T07:04:08.034Z [WS] Disconnected: HkdnqGOS:_global (0 remaining)
 2026-03-12T07:04:08.087Z [WS] Connected: HkdnqGOS:_global (1 clients)
 2026-03-12T07:04:08.123Z [API] GET /s/HkdnqGOS/api/devices
+2026-03-12T07:18:32.254Z [API] GET /s/HkdnqGOS/api/devices
+2026-03-12T07:18:39.028Z [API] POST /s/HkdnqGOS/api/devices/test-display/content
+2026-03-12T07:18:39.169Z [WS] Broadcast HkdnqGOS:_global: device_created → 1 clients
+2026-03-12T07:18:39.214Z [API] GET /s/HkdnqGOS/api/devices
+2026-03-12T07:18:39.251Z [WS] Broadcast HkdnqGOS:test-display: content → 0 clients
+2026-03-12T07:18:39.251Z [WS] Broadcast HkdnqGOS:_global: content_updated → 1 clients
+2026-03-12T07:18:39.257Z [WS] Connected: HkdnqGOS:test-display (1 clients)
+2026-03-12T07:18:39.293Z [API] GET /s/HkdnqGOS/api/devices/test-display/content
+2026-03-12T07:18:39.364Z [WS] Disconnected: HkdnqGOS:test-display (0 remaining)
+2026-03-12T07:18:39.366Z [WS] Connected: HkdnqGOS:test-display (1 clients)
+2026-03-12T07:18:39.400Z [API] GET /s/HkdnqGOS/api/devices/test-display/content
+2026-03-12T07:18:40.375Z [WS] Connected: HkdnqGOS:test-display (2 clients)

@@ -43,6 +43,7 @@ export function BotBeamProvider({ children }: { children: ReactNode }) {
   const [wsLog, setWsLog] = useState<LogEntry[]>([]);
   const [showDebug, setShowDebug] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
+  const devicesRef = useRef<Device[]>([]);
 
   // --- Actions ---
 
@@ -74,6 +75,8 @@ export function BotBeamProvider({ children }: { children: ReactNode }) {
     if (!namespace) return url;
     return botbeamApi.proxyUrl(namespace, url);
   }, [namespace]);
+
+  devicesRef.current = devices;
 
   // --- Load devices + content when namespace is set ---
 
@@ -124,7 +127,9 @@ export function BotBeamProvider({ children }: { children: ReactNode }) {
             break;
           case 'content_updated':
             setContentMap(prev => ({ ...prev, [msg.deviceId]: msg.data }));
-            setActiveTab(msg.deviceId);
+            if (devicesRef.current.some(d => d.id === msg.deviceId)) {
+              setActiveTab(msg.deviceId);
+            }
             break;
           case 'content_cleared':
             setContentMap(prev => ({ ...prev, [msg.deviceId]: null }));

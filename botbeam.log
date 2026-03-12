@@ -829,3 +829,5 @@
 2026-03-12T23:52:25.523Z [WS] Broadcast 3lVuiqs2:_global: device_created → 1 clients
 2026-03-12T23:52:25.600Z [WS] Broadcast 3lVuiqs2:todo: content → 0 clients
 2026-03-12T23:52:25.600Z [WS] Broadcast 3lVuiqs2:_global: content_updated → 1 clients
+2026-03-12T23:55:05.467Z [WS] Disconnected: 3lVuiqs2:_global (0 remaining)
+2026-03-12T23:55:05.469Z [WS] Connected: 3lVuiqs2:_global (1 clients)

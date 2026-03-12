@@ -122,6 +122,7 @@ export function BotBeamProvider({ children }: { children: ReactNode }) {
           setWsLog(prev => [...prev, { time, event: msg.event, detail: msg.deviceId }]);
         } else if (msg.event === 'content_updated') {
           setContentMap(prev => ({ ...prev, [msg.deviceId]: msg.data }));
+          setActiveTab(msg.deviceId);
           setWsLog(prev => [...prev, { time, event: msg.event, detail: `${msg.deviceId} (${msg.data.type})` }]);
         } else if (msg.event === 'content_cleared') {
           setContentMap(prev => ({ ...prev, [msg.deviceId]: null }));

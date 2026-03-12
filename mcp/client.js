@@ -16,7 +16,6 @@ async function api(method, namespace, path, body) {
 
 module.exports = {
   listDevices: (ns) => api('GET', ns, '/devices'),
-  createDevice: (ns, name) => api('POST', ns, '/devices', { name }),
   deleteDevice: (ns, id) => api('DELETE', ns, `/devices/${id}`),
   pushContent: (ns, deviceId, type, body) => api('POST', ns, `/devices/${deviceId}/content`, { type, body }),
   clearDevice: (ns, id) => api('DELETE', ns, `/devices/${id}/content`),

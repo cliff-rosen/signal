@@ -13,29 +13,19 @@ function registerTools(server, namespace) {
   );
 
   server.tool(
-    'create_device',
-    'Register a new virtual display device',
-    { name: z.string().describe('Display name, e.g. "kitchen", "dashboard", "office"') },
-    async ({ name }) => {
-      const device = await client.createDevice(namespace, name);
-      return { content: [{ type: 'text', text: `Device created: ${device.name} (${device.id})` }] };
-    }
-  );
-
-  server.tool(
     'delete_device',
-    'Remove a virtual display device',
-    { name: z.string().describe('Device ID or name (slugified)') },
+    'Remove a virtual display tab and its content',
+    { name: z.string().describe('Device ID or name') },
     async ({ name }) => {
       const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
       await client.deleteDevice(namespace, slug);
-      return { content: [{ type: 'text', text: `Device "${name}" deleted.` }] };
+      return { content: [{ type: 'text', text: `Tab "${name}" deleted.` }] };
     }
   );
 
   server.tool(
     'push_content',
-    'Push content to a virtual display. Types: text, markdown, html, url (renders a URL in an iframe), image (renders an image from a URL), list (JSON array), dashboard (JSON array of {title, value, subtitle?})',
+    'Push content to a virtual display tab. The tab is auto-created if it does not exist. Types: text, markdown, html, url (renders a URL in an iframe), image (renders an image from a URL), list (JSON array), dashboard (JSON array of {title, value, subtitle?})',
     {
       device: z.string().describe('Device ID or name'),
       type: z.enum(['text', 'markdown', 'html', 'url', 'image', 'list', 'dashboard']).describe('Content type'),

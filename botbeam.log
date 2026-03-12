@@ -42,3 +42,6 @@
 2026-03-12T06:51:39.102Z [API] GET /s/G-whmSpT/api/devices
 2026-03-12T06:51:39.140Z [WS] Disconnected: G-whmSpT:demo (1 remaining)
 2026-03-12T06:51:39.176Z [API] GET /s/G-whmSpT/api/devices
+2026-03-12T06:54:08.353Z [API] GET /s/G-whmSpT/api/devices
+2026-03-12T06:54:22.039Z [API] POST /s/G-whmSpT/api/devices/test-tab/content
+2026-03-12T06:54:38.244Z [WS] Connected: G-whmSpT:_global (1 clients)

@@ -1,23 +1,6 @@
 # WebSocket onMessage Handler Analysis
 
-Two WebSocket consumers in BotBeam, each handling a different subset of events.
-
----
-
-## 1. Standalone Display Page (`public/js/display.js`)
-
-Subscribes to a **single device** channel (`?device={deviceId}`).
-
-| Event     | Action              |
-|-----------|---------------------|
-| `content` | `renderContent(msg.data)` — replaces the display with new content |
-| `clear`   | `showWaiting()` — hides content, shows waiting spinner |
-
-No branching. Two events, two actions.
-
----
-
-## 2. React App — Global WS (`frontend/src/context/BotBeamContext.tsx`)
+One WebSocket consumer: the React app's global connection in `BotBeamContext.tsx`.
 
 Subscribes to the **`_global`** channel. Single WebSocket for the entire session. All state lives in Context — components just render.
 

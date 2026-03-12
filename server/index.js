@@ -53,11 +53,6 @@ app.post('/api/namespaces', async (req, res) => {
 app.use('/s/:namespace/mcp', namespaceMiddleware, createMCPRouter(broadcast, broadcastGlobal));
 app.use('/s/:namespace/api', namespaceMiddleware, createAPIRouter(broadcast, broadcastGlobal));
 
-// HTML pages
-app.get('/s/:namespace/display/:device', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'public', 'display.html'));
-});
-
 app.get('/s/:namespace', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'frontend', 'dist', 'index.html'));
 });

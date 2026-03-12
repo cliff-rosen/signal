@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { marked } from 'marked';
 import type { Device, Content, DashboardCard, ListItem } from '../types';
-import { fetchContent } from '../lib/api';
+import { getContent } from '../lib/botbeam';
 
 interface Props {
   device: Device;
@@ -72,7 +72,7 @@ export default function DeviceCard({ device, namespace, onClick }: Props) {
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    fetchContent(namespace, device.id).then(data => {
+    getContent(namespace, device.id).then(data => {
       setContent(data);
       setLoaded(true);
     }).catch(() => setLoaded(true));

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useBotBeam } from '../context/BotBeamContext';
-import { createDevice } from '../lib/api';
+import { createDevice } from '../lib/botbeam';
 
 function slugify(name: string) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');

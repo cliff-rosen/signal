@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from 'react';
 import type { Device, WSEvent } from '../types';
-import { fetchDevices as apiFetchDevices, deleteDevice as apiDeleteDevice } from '../lib/api';
+import { getDevices, deleteDevice } from '../lib/botbeam';
 
 interface BotBeamState {
   namespace: string;
@@ -30,7 +30,7 @@ export function BotBeamProvider({ namespace, children }: Props) {
   const wsRef = useRef<WebSocket | null>(null);
 
   const refreshDevices = useCallback(async () => {
-    const list = await apiFetchDevices(namespace);
+    const list = await getDevices(namespace);
     setDevices(list);
   }, [namespace]);
 
@@ -42,7 +42,7 @@ export function BotBeamProvider({ namespace, children }: Props) {
     // Optimistic update
     setDevices(prev => prev.filter(d => d.id !== id));
     setActiveTab(prev => prev === id ? 'home' : prev);
-    await apiDeleteDevice(namespace, id);
+    await deleteDevice(namespace, id);
   }, [namespace]);
 
   // Load devices on mount
@@ -64,14 +64,11 @@ export function BotBeamProvider({ namespace, children }: Props) {
         const msg: WSEvent = JSON.parse(e.data);
 
         if (msg.event === 'device_created') {
-          // Refetch devices, don't force-switch tabs
-          apiFetchDevices(namespace).then(setDevices);
+          getDevices(namespace).then(setDevices);
         } else if (msg.event === 'device_deleted') {
           setDevices(prev => prev.filter(d => d.id !== msg.deviceId));
           setActiveTab(prev => prev === msg.deviceId ? 'home' : prev);
         } else if (msg.event === 'content_updated' || msg.event === 'content_cleared') {
-          // These are handled by DeviceView's per-device WS or by Home re-rendering
-          // We trigger a re-render by bumping devices (shallow copy)
           setDevices(prev => [...prev]);
         }
       };

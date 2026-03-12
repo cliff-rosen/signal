@@ -1,6 +1,6 @@
 import { marked } from 'marked';
 import type { Content, DashboardCard, ListItem } from '../types';
-import { proxyUrl } from '../lib/api';
+import { proxyUrl } from '../lib/botbeam';
 
 interface Props {
   content: Content;

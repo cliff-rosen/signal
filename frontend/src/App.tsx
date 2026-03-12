@@ -2,6 +2,7 @@ import { BotBeamProvider, useBotBeam } from './context/BotBeamContext';
 import TabBar from './components/TabBar';
 import Home from './components/Home';
 import DeviceView from './components/DeviceView';
+import Landing from './components/Landing';
 
 function AppContent() {
   const { activeTab } = useBotBeam();
@@ -15,11 +16,11 @@ function AppContent() {
 }
 
 export default function App() {
-  // Extract namespace from URL: /s/a7f3x9k2
-  const namespace = window.location.pathname.split('/')[2];
+  const match = window.location.pathname.match(/^\/s\/([^/]+)/);
+  const namespace = match?.[1];
 
   if (!namespace) {
-    return <div>Invalid URL — no namespace found.</div>;
+    return <Landing />;
   }
 
   return (

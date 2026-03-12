@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Content, WSEvent } from '../types';
-import { fetchContent } from '../lib/api';
+import { getContent } from '../lib/botbeam';
 
 /**
  * Manages a per-device WebSocket connection.
@@ -18,7 +18,7 @@ export function useDeviceWebSocket(namespace: string, deviceId: string) {
     let reconnectDelay = 1000;
 
     // Fetch current content via REST
-    fetchContent(namespace, deviceId).then(data => {
+    getContent(namespace, deviceId).then(data => {
       if (!cancelled) {
         setContent(data);
         setLoading(false);

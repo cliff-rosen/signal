@@ -130,13 +130,15 @@ async function renderHome() {
     </div>
     <div class="setup-panel" id="setup-chatgpt">
       <ol class="setup-steps">
-        <li>Open <strong>ChatGPT</strong> and start a new chat</li>
-        <li>Click the <strong>tools icon</strong> (hammer) in the message bar, then <strong>"Add more tools"</strong></li>
-        <li>Select <strong>"Add MCP server"</strong></li>
-        <li>Paste your MCP endpoint URL and give it a name (e.g. "BotBeam")</li>
-        <li>When asked about authentication, select <strong>"None"</strong></li>
+        <li>Open <a href="https://chatgpt.com" target="_blank">chatgpt.com</a> and go to <strong>Settings</strong></li>
+        <li>Navigate to <strong>Apps</strong>, then click <strong>Advanced Settings</strong></li>
+        <li>Click <strong>"Create App"</strong></li>
+        <li>Set the name to <strong>BotBeam</strong></li>
+        <li>For <strong>MCP Server</strong>, paste your MCP endpoint URL from above</li>
+        <li>For authentication, select <strong>"No Auth"</strong></li>
+        <li>Save, then start a new chat. ChatGPT can now push content to your tabs!</li>
       </ol>
-      <div class="setup-note">No authentication is needed — your namespace URL is your access key. Anyone with the link can push to your displays, but each namespace is isolated and URLs are unguessable.</div>
+      <div class="setup-note">No authentication is needed — your namespace URL is your access key. Each namespace is isolated and URLs are unguessable.</div>
     </div>
     <div class="setup-panel" id="setup-claude" style="display:none">
       <ol class="setup-steps">
@@ -335,7 +337,7 @@ async function fetchContent(deviceId) {
       const data = await res.json();
       showContent(data);
     }
-  } catch {}
+  } catch { }
 }
 
 function connectWS(deviceId) {

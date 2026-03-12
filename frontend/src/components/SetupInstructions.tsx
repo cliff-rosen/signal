@@ -1,23 +1,29 @@
 import { useState } from 'react';
-
-interface Props {
-  mcpUrl: string;
-}
+import { useBotBeam } from '../context/BotBeamContext';
+import { settings } from '../config/settings';
 
 type SetupTab = 'chatgpt' | 'claude' | 'claude-code';
 
-export default function SetupInstructions({ mcpUrl }: Props) {
+export default function SetupInstructions({ mcpUrl }: { mcpUrl: string }) {
+  const { namespace } = useBotBeam();
   const [tab, setTab] = useState<SetupTab>('chatgpt');
   const [configCopied, setConfigCopied] = useState(false);
 
-  const config = JSON.stringify({
+  const claudeCodeConfig = JSON.stringify({
     mcpServers: {
-      botbeam: { type: 'url', url: mcpUrl },
+      botbeam: {
+        command: 'npx',
+        args: ['-y', 'botbeam@latest'],
+        env: {
+          BOTBEAM_NAMESPACE: namespace,
+          BOTBEAM_SERVER_URL: settings.apiUrl || window.location.origin,
+        },
+      },
     },
   }, null, 2);
 
   function copyConfig() {
-    navigator.clipboard.writeText(config).then(() => {
+    navigator.clipboard.writeText(claudeCodeConfig).then(() => {
       setConfigCopied(true);
       setTimeout(() => setConfigCopied(false), 2000);
     });
@@ -72,16 +78,18 @@ export default function SetupInstructions({ mcpUrl }: Props) {
       {tab === 'claude-code' && (
         <div className="setup-panel">
           <ol className="setup-steps">
-            <li>Open your project directory in a terminal</li>
             <li>Add this to <strong>.claude/mcp.json</strong> in your project (create the file if needed):</li>
           </ol>
-          <pre className="setup-codeblock"><code>{config}</code></pre>
+          <pre className="setup-codeblock"><code>{claudeCodeConfig}</code></pre>
           <button className="btn btn-primary btn-copy btn-copy-config" onClick={copyConfig}>
             {configCopied ? 'Copied!' : 'Copy config'}
           </button>
-          <ol className="setup-steps" start={3}>
+          <ol className="setup-steps" start={2}>
             <li>Restart Claude Code. It will pick up the MCP server automatically.</li>
           </ol>
+          <div className="setup-note">
+            Claude Code spawns the MCP server as a local process that communicates over stdio. The namespace and server URL are passed as environment variables.
+          </div>
         </div>
       )}
 

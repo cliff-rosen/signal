@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useBotBeam } from '../context/BotBeamContext';
+import { settings } from '../config/settings';
 import SetupInstructions from './SetupInstructions';
 import DeviceCard from './DeviceCard';
 
@@ -10,7 +11,7 @@ export default function Home() {
   );
   const [copied, setCopied] = useState(false);
 
-  const mcpUrl = `${location.origin}/s/${namespace}/mcp`;
+  const mcpUrl = `${settings.apiUrl}/s/${namespace}/mcp`;
 
   function dismissBookmark() {
     localStorage.setItem(`botbeam-bookmark-${namespace}`, '1');

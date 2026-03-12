@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "botbeam": {
+    "botbeam-local": {
       "command": "node",
       "args": ["C:\\code\\signal\\mcp\\index.js"],
       "env": {

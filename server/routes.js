@@ -46,15 +46,18 @@ function createRouter(broadcast, broadcastGlobal) {
     res.json(content);
   });
 
-  // Push content
+  // Push content (auto-creates device if it doesn't exist)
   router.post('/devices/:id/content', async (req, res) => {
-    const devices = await store.loadDevices(req.namespace);
-    const device = devices.find(d => d.id === req.params.id);
-    if (!device) return res.status(404).json({ error: 'Device not found' });
-
     const { type, body } = req.body;
     if (!type || body === undefined) {
       return res.status(400).json({ error: 'type and body are required' });
+    }
+
+    const devices = await store.loadDevices(req.namespace);
+    const device = devices.find(d => d.id === req.params.id);
+    if (!device) {
+      const { device: created } = await store.createDevice(req.namespace, req.params.id);
+      broadcastGlobal(req.namespace, { event: 'device_created', device: created });
     }
 
     const content = await store.saveContent(req.namespace, req.params.id, { type, body });

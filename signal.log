@@ -89,3 +89,36 @@
 2026-03-12T05:35:34.655Z [WS] Connected: 8GouP4cp:photo (1 clients)
 2026-03-12T05:35:34.695Z [API] GET /s/8GouP4cp/api/devices/photo/content
 2026-03-12T05:35:35.657Z [WS] Connected: 8GouP4cp:photo (2 clients)
+2026-03-12T05:37:42.537Z [API] GET /s/8GouP4cp/api/devices
+2026-03-12T05:37:50.798Z [API] POST /s/8GouP4cp/api/devices
+2026-03-12T05:37:50.926Z [WS] Broadcast 8GouP4cp:_global: device_created → 1 clients
+2026-03-12T05:37:50.977Z [API] GET /s/8GouP4cp/api/devices
+2026-03-12T05:37:51.021Z [WS] Disconnected: 8GouP4cp:photo (1 remaining)
+2026-03-12T05:37:51.032Z [WS] Connected: 8GouP4cp:deploy-plan (1 clients)
+2026-03-12T05:37:51.071Z [API] GET /s/8GouP4cp/api/devices/deploy-plan/content
+2026-03-12T05:38:18.318Z [API] POST /s/8GouP4cp/api/devices/deploy-plan/content
+2026-03-12T05:38:18.437Z [WS] Broadcast 8GouP4cp:deploy-plan: content → 1 clients
+2026-03-12T05:38:18.438Z [WS] Broadcast 8GouP4cp:_global: content_updated → 1 clients
+2026-03-12T05:38:18.528Z [WS] Disconnected: 8GouP4cp:deploy-plan (0 remaining)
+2026-03-12T05:38:18.541Z [WS] Connected: 8GouP4cp:deploy-plan (1 clients)
+2026-03-12T05:38:18.587Z [API] GET /s/8GouP4cp/api/devices/deploy-plan/content
+2026-03-12T05:38:19.541Z [WS] Connected: 8GouP4cp:deploy-plan (2 clients)
+2026-03-12T05:40:10.419Z [WS] Disconnected: 8GouP4cp:deploy-plan (1 remaining)
+2026-03-12T05:40:10.426Z [WS] Connected: 8GouP4cp:photo (2 clients)
+2026-03-12T05:40:10.469Z [API] GET /s/8GouP4cp/api/devices/photo/content
+2026-03-12T05:40:12.479Z [WS] Disconnected: 8GouP4cp:photo (1 remaining)
+2026-03-12T05:40:12.484Z [WS] Connected: 8GouP4cp:tasks (1 clients)
+2026-03-12T05:40:12.557Z [API] GET /s/8GouP4cp/api/devices/tasks/content
+2026-03-12T05:49:58.587Z [WS] Disconnected: 8GouP4cp:tasks (0 remaining)
+2026-03-12T05:49:58.639Z [API] GET /s/8GouP4cp/api/devices/tasks/content
+2026-03-12T05:49:58.744Z [API] GET /s/8GouP4cp/api/devices/photo/content
+2026-03-12T05:49:58.830Z [API] GET /s/8GouP4cp/api/devices/deploy-plan/content
+2026-03-12T05:51:11.967Z [WS] Disconnected: 8GouP4cp:deploy-plan (0 remaining)
+2026-03-12T05:51:12.042Z [WS] Disconnected: 8GouP4cp:photo (0 remaining)
+2026-03-12T05:51:12.149Z [WS] Disconnected: 8GouP4cp:_global (0 remaining)
+2026-03-12T05:51:12.383Z [WS] Connected: 8GouP4cp:_global (1 clients)
+2026-03-12T05:51:12.499Z [API] GET /s/8GouP4cp/api/devices
+2026-03-12T05:51:12.778Z [API] GET /s/8GouP4cp/api/devices/tasks/content
+2026-03-12T05:51:12.884Z [API] GET /s/8GouP4cp/api/devices/photo/content
+2026-03-12T05:51:12.971Z [API] GET /s/8GouP4cp/api/devices/deploy-plan/content
+2026-03-12T05:51:25.138Z [WS] Disconnected: 8GouP4cp:_global (0 remaining)

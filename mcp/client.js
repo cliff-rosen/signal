@@ -1,4 +1,4 @@
-const BASE = process.env.SIGNAL_SERVER_URL || 'http://localhost:4888';
+const BASE = process.env.BOTBEAM_SERVER_URL || 'http://localhost:4888';
 
 async function api(method, namespace, path, body) {
   const opts = {

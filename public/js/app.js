@@ -25,7 +25,7 @@ function renderTabs() {
   // Signal/Home tab
   const homeTab = document.createElement('button');
   homeTab.className = `tab ${activeTab === 'home' ? 'active' : ''}`;
-  homeTab.textContent = 'Signal';
+  homeTab.textContent = 'BotBeam';
   homeTab.onclick = () => switchTab('home');
   tabBar.appendChild(homeTab);
 

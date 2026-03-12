@@ -6,7 +6,7 @@ function createRouter(broadcast, broadcastGlobal) {
 
   const fs = require('fs');
   const path = require('path');
-  const LOG_FILE = path.join(__dirname, '..', 'signal.log');
+  const LOG_FILE = path.join(__dirname, '..', 'botbeam.log');
 
   // Log all API calls
   router.use((req, res, next) => {

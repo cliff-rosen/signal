@@ -49,7 +49,7 @@ const httpServer = http.createServer(async (req, res) => {
         },
       });
 
-      const mcpServer = new McpServer({ name: 'signal', version: '0.1.0' });
+      const mcpServer = new McpServer({ name: 'botbeam', version: '0.1.0' });
       registerTools(mcpServer);
       await mcpServer.connect(transport);
       await transport.handleRequest(req, res, body);
@@ -79,7 +79,7 @@ const httpServer = http.createServer(async (req, res) => {
 });
 
 httpServer.listen(PORT, () => {
-  console.log(`\n  Signal MCP Remote Server`);
+  console.log(`\n  BotBeam MCP Remote Server`);
   console.log(`  Listening on http://localhost:${PORT}/mcp`);
   console.log(`\n  Add this URL as a custom MCP connector in Claude.ai\n`);
 });

@@ -2,7 +2,7 @@ const { WebSocketServer } = require('ws');
 const fs = require('fs');
 const path = require('path');
 
-const LOG_FILE = path.join(__dirname, '..', 'signal.log');
+const LOG_FILE = path.join(__dirname, '..', 'botbeam.log');
 function log(msg) {
   const line = `${new Date().toISOString()} ${msg}\n`;
   fs.appendFileSync(LOG_FILE, line);

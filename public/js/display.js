@@ -10,7 +10,7 @@ const contentEl = document.getElementById('content');
 const API_BASE = `/s/${namespace}/api`;
 
 deviceLabel.textContent = decodeURIComponent(deviceName);
-document.title = `Signal — ${decodeURIComponent(deviceName)}`;
+document.title = `BotBeam — ${decodeURIComponent(deviceName)}`;
 
 async function fetchCurrent() {
   try {
@@ -89,7 +89,7 @@ function renderContent(data) {
       const img = document.createElement('img');
       img.className = 'content-image';
       img.src = data.body;
-      img.alt = 'Signal display';
+      img.alt = 'BotBeam display';
       contentEl.appendChild(img);
       break;
     }

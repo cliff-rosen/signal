@@ -70,7 +70,7 @@ async function handleMCP(req, res) {
         },
       });
 
-      const mcpServer = new McpServer({ name: 'signal', version: '0.2.0' });
+      const mcpServer = new McpServer({ name: 'botbeam', version: '0.2.0' });
       registerTools(mcpServer, namespace);
       await mcpServer.connect(transport);
       await transport.handleRequest(req, res, body);
@@ -119,7 +119,7 @@ async function start() {
   await initDB();
   server.listen(PORT, () => {
     console.log(`\n  ╔══════════════════════════════════════╗`);
-    console.log(`  ║          SIGNAL v0.2.0                ║`);
+    console.log(`  ║         BOTBEAM v0.2.0                ║`);
     console.log(`  ║   AI-Powered Virtual Display Platform ║`);
     console.log(`  ╚══════════════════════════════════════╝`);
     console.log(`\n  Landing:  http://localhost:${PORT}`);

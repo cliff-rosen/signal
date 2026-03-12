@@ -101,9 +101,11 @@ export function BotBeamProvider({ children }: { children: ReactNode }) {
     const ns = namespace;
 
     let reconnectTimer: ReturnType<typeof setTimeout>;
+    let cancelled = false;
     let ws: WebSocket;
 
     function connect() {
+      if (cancelled) return;
       ws = new WebSocket(`${settings.wsUrl}/ws?namespace=${ns}&device=_global`);
       wsRef.current = ws;
 
@@ -112,7 +114,7 @@ export function BotBeamProvider({ children }: { children: ReactNode }) {
         const time = new Date().toLocaleTimeString();
 
         if (msg.event === 'device_created') {
-          setDevices(prev => [...prev, msg.device]);
+          setDevices(prev => prev.some(d => d.id === msg.device.id) ? prev : [...prev, msg.device]);
           setActiveTab(msg.device.id);
           setWsLog(prev => [...prev, { time, event: msg.event, detail: msg.device.name }]);
         } else if (msg.event === 'device_deleted') {
@@ -131,15 +133,16 @@ export function BotBeamProvider({ children }: { children: ReactNode }) {
       };
 
       ws.onclose = () => {
-        reconnectTimer = setTimeout(connect, 2000);
+        if (!cancelled) reconnectTimer = setTimeout(connect, 2000);
       };
     }
 
     connect();
 
     return () => {
+      cancelled = true;
       clearTimeout(reconnectTimer);
-      if (ws) ws.close();
+      ws.close();
     };
   }, [namespace]);
 

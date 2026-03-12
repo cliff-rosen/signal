@@ -699,3 +699,32 @@
 2026-03-12T22:58:00.128Z [WS] Disconnected: 3lVuiqs2:_global (2 remaining)
 2026-03-12T22:58:00.130Z [WS] Connected: 3lVuiqs2:_global (3 clients)
 2026-03-12T22:58:02.145Z [WS] Connected: 3lVuiqs2:_global (4 clients)
+2026-03-12T23:02:27.968Z [WS] Broadcast 3lVuiqs2:test: content → 0 clients
+2026-03-12T23:02:27.969Z [WS] Broadcast 3lVuiqs2:_global: content_updated → 4 clients
+2026-03-12T23:04:15.826Z [WS] Disconnected: 3lVuiqs2:_global (3 remaining)
+2026-03-12T23:04:15.829Z [WS] Disconnected: 3lVuiqs2:_global (2 remaining)
+2026-03-12T23:04:15.830Z [WS] Disconnected: 3lVuiqs2:_global (1 remaining)
+2026-03-12T23:04:15.831Z [WS] Disconnected: 3lVuiqs2:_global (0 remaining)
+2026-03-12T23:04:16.299Z [WS] Connected: 3lVuiqs2:_global (1 clients)
+2026-03-12T23:04:16.306Z [WS] Disconnected: 3lVuiqs2:_global (0 remaining)
+2026-03-12T23:04:16.323Z [WS] Connected: 3lVuiqs2:_global (1 clients)
+2026-03-12T23:04:18.318Z [WS] Connected: 3lVuiqs2:_global (2 clients)
+2026-03-12T23:04:39.124Z [WS] Broadcast 3lVuiqs2:test: content → 0 clients
+2026-03-12T23:04:39.125Z [WS] Broadcast 3lVuiqs2:_global: content_updated → 2 clients
+2026-03-12T23:05:12.610Z [WS] Broadcast 3lVuiqs2:_global: device_created → 2 clients
+2026-03-12T23:05:12.687Z [WS] Broadcast 3lVuiqs2:test-two: content → 0 clients
+2026-03-12T23:05:12.688Z [WS] Broadcast 3lVuiqs2:_global: content_updated → 2 clients
+2026-03-12T23:07:41.963Z [WS] Disconnected: 3lVuiqs2:_global (1 remaining)
+2026-03-12T23:07:41.964Z [WS] Disconnected: 3lVuiqs2:_global (0 remaining)
+2026-03-12T23:07:42.376Z [WS] Connected: 3lVuiqs2:_global (1 clients)
+2026-03-12T23:07:42.381Z [WS] Disconnected: 3lVuiqs2:_global (0 remaining)
+2026-03-12T23:07:42.389Z [WS] Connected: 3lVuiqs2:_global (1 clients)
+2026-03-12T23:08:03.928Z [WS] Broadcast 3lVuiqs2:_global: device_created → 1 clients
+2026-03-12T23:08:04.012Z [WS] Broadcast 3lVuiqs2:test-three: content → 0 clients
+2026-03-12T23:08:04.013Z [WS] Broadcast 3lVuiqs2:_global: content_updated → 1 clients
+2026-03-12T23:08:28.819Z [WS] Broadcast 3lVuiqs2:test-three: content → 0 clients
+2026-03-12T23:08:28.819Z [WS] Broadcast 3lVuiqs2:_global: content_updated → 1 clients
+2026-03-12T23:09:06.793Z [WS] Broadcast 3lVuiqs2:test-three: clear → 0 clients
+2026-03-12T23:09:06.793Z [WS] Broadcast 3lVuiqs2:_global: device_deleted → 1 clients
+2026-03-12T23:09:34.463Z [WS] Broadcast 3lVuiqs2:test: content → 0 clients
+2026-03-12T23:09:34.463Z [WS] Broadcast 3lVuiqs2:_global: content_updated → 1 clients

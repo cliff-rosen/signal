@@ -79,7 +79,11 @@ function createRouter(broadcast, broadcastGlobal) {
         ? body.some(m => m.method === 'initialize')
         : body.method === 'initialize';
 
-      if (isInit) {
+      if (sessionId && sessions.has(sessionId)) {
+        const session = sessions.get(sessionId);
+        session.lastActivity = Date.now();
+        await session.transport.handleRequest(req, res, body);
+      } else if (isInit) {
         const ip = getIP(req);
         const client = createDirectClient(broadcast, broadcastGlobal, ip);
 
@@ -94,13 +98,10 @@ function createRouter(broadcast, broadcastGlobal) {
         registerTools(mcpServer, namespace, client);
         await mcpServer.connect(transport);
         await transport.handleRequest(req, res, body);
-      } else if (sessionId && sessions.has(sessionId)) {
-        const session = sessions.get(sessionId);
-        session.lastActivity = Date.now();
-        await session.transport.handleRequest(req, res, body);
       } else {
+        // Expired or unknown session — tell client to re-initialize
         res.writeHead(404, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ jsonrpc: '2.0', error: { code: -32600, message: 'Session not found' }, id: null }));
+        res.end(JSON.stringify({ jsonrpc: '2.0', error: { code: -32600, message: 'Session expired, please re-initialize' }, id: null }));
       }
     } else if (req.method === 'GET') {
       if (sessionId && sessions.has(sessionId)) {

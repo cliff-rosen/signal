@@ -1,6 +1,9 @@
 const express = require('express');
 const store = require('./store');
 const { logAPI, getIP } = require('./log');
+const { createLogger } = require('./logger');
+
+const log = createLogger('api');
 
 // Wrap async route handlers so thrown errors become 500 responses
 const asyncHandler = (fn) => (req, res, next) =>
@@ -131,13 +134,14 @@ function createRouter(broadcast, broadcastGlobal) {
       res.setHeader('Content-Type', contentType);
       res.send(patched);
     } catch (err) {
+      log.error('Proxy fetch failed', { reqId: req.id, url, error: err.message });
       res.status(502).json({ error: `Failed to fetch: ${err.message}` });
     }
   });
 
   // Error handler for async route failures
   router.use((err, req, res, next) => {
-    console.error(`[API] Error: ${err.message}`);
+    log.error(`${req.method} ${req.path} failed`, { reqId: req.id, error: err.message, stack: err.stack });
     res.status(500).json({ error: 'Internal server error' });
   });
 

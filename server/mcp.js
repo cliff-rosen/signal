@@ -5,53 +5,81 @@ const { StreamableHTTPServerTransport } = require('@modelcontextprotocol/sdk/ser
 const { registerTools } = require('../mcp/tools');
 const store = require('./store');
 const { logAPI, getIP } = require('./log');
+const { createLogger } = require('./logger');
 
+const log = createLogger('mcp');
 const sessions = new Map();
 const SESSION_TTL = 30 * 60 * 1000; // 30 minutes
 
-// Evict stale sessions every 5 minutes
+// Evict stale sessions once a day
 setInterval(() => {
   const now = Date.now();
+  let evicted = 0;
   for (const [id, session] of sessions) {
     if (now - session.lastActivity > SESSION_TTL) {
+      log.info('Session evicted', { sessionId: id, namespace: session.namespace });
+      session.transport.close?.();
+      session.server.close?.();
       sessions.delete(id);
+      evicted++;
     }
   }
-}, 5 * 60 * 1000);
+  if (evicted > 0) log.info('Eviction sweep', { evicted, remaining: sessions.size });
+}, 24 * 60 * 60 * 1000);
 
 function createDirectClient(broadcast, broadcastGlobal, ip) {
   return {
-    listDevices: (ns) => {
-      logAPI(ns, 'list_devices', { ip });
-      return store.loadDevices(ns);
+    listDevices: async (ns) => {
+      try {
+        logAPI(ns, 'list_devices', { ip });
+        return await store.loadDevices(ns);
+      } catch (err) {
+        log.error('listDevices failed', { namespace: ns, error: err.message });
+        throw err;
+      }
     },
     deleteDevice: async (ns, id) => {
-      logAPI(ns, 'delete_device', { device: id, ip });
-      const ok = await store.deleteDevice(ns, id);
-      if (ok) {
-        broadcast(ns, id, { event: 'clear' });
-        broadcastGlobal(ns, { event: 'device_deleted', deviceId: id });
+      try {
+        logAPI(ns, 'delete_device', { device: id, ip });
+        const ok = await store.deleteDevice(ns, id);
+        if (ok) {
+          broadcast(ns, id, { event: 'clear' });
+          broadcastGlobal(ns, { event: 'device_deleted', deviceId: id });
+        }
+        return { ok };
+      } catch (err) {
+        log.error('deleteDevice failed', { namespace: ns, device: id, error: err.message });
+        throw err;
       }
-      return { ok };
     },
     pushContent: async (ns, deviceId, type, body) => {
-      logAPI(ns, 'push_content', { device: deviceId, contentType: type, body, ip });
-      const devices = await store.loadDevices(ns);
-      if (!devices.find(d => d.id === deviceId)) {
-        const { device } = await store.createDevice(ns, deviceId);
-        broadcastGlobal(ns, { event: 'device_created', device });
+      try {
+        logAPI(ns, 'push_content', { device: deviceId, contentType: type, body, ip });
+        const devices = await store.loadDevices(ns);
+        if (!devices.find(d => d.id === deviceId)) {
+          const { device } = await store.createDevice(ns, deviceId);
+          broadcastGlobal(ns, { event: 'device_created', device });
+        }
+        const content = await store.saveContent(ns, deviceId, { type, body });
+        broadcast(ns, deviceId, { event: 'content', data: content });
+        broadcastGlobal(ns, { event: 'content_updated', deviceId, data: content });
+        return content;
+      } catch (err) {
+        log.error('pushContent failed', { namespace: ns, device: deviceId, type, error: err.message });
+        throw err;
       }
-      const content = await store.saveContent(ns, deviceId, { type, body });
-      broadcast(ns, deviceId, { event: 'content', data: content });
-      broadcastGlobal(ns, { event: 'content_updated', deviceId, data: content });
-      return content;
     },
     clearDevice: async (ns, id) => {
-      logAPI(ns, 'clear_device', { device: id, ip });
-      await store.deleteContent(ns, id);
-      broadcast(ns, id, { event: 'clear' });
-      broadcastGlobal(ns, { event: 'content_cleared', deviceId: id });
-      return { ok: true };
+      try {
+        logAPI(ns, 'clear_device', { device: id, ip });
+        await store.deleteContent(ns, id);
+        broadcast(ns, id, { event: 'clear' });
+        broadcastGlobal(ns, { event: 'content_cleared', deviceId: id });
+        return { ok: true };
+      } catch (err) {
+        log.error('clearDevice failed', { namespace: ns, device: id, error: err.message });
+        throw err;
+      }
     },
   };
 }
@@ -60,65 +88,77 @@ function createRouter(broadcast, broadcastGlobal) {
   const router = express.Router({ mergeParams: true });
 
   router.all('/', async (req, res) => {
-    const namespace = req.namespace;
+    try {
+      const namespace = req.namespace;
 
-    // CORS
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Accept, Mcp-Session-Id');
-    res.setHeader('Access-Control-Expose-Headers', 'Mcp-Session-Id');
+      // CORS
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Accept, Mcp-Session-Id');
+      res.setHeader('Access-Control-Expose-Headers', 'Mcp-Session-Id');
 
-    if (req.method === 'OPTIONS') { res.writeHead(204); res.end(); return; }
+      if (req.method === 'OPTIONS') { res.writeHead(204); res.end(); return; }
 
-    const sessionId = req.headers['mcp-session-id'];
+      const sessionId = req.headers['mcp-session-id'];
 
-    if (req.method === 'POST') {
-      const body = req.body;
+      if (req.method === 'POST') {
+        const body = req.body;
 
-      const isInit = Array.isArray(body)
-        ? body.some(m => m.method === 'initialize')
-        : body.method === 'initialize';
+        const isInit = Array.isArray(body)
+          ? body.some(m => m.method === 'initialize')
+          : body.method === 'initialize';
 
-      if (sessionId && sessions.has(sessionId)) {
-        const session = sessions.get(sessionId);
-        session.lastActivity = Date.now();
-        await session.transport.handleRequest(req, res, body);
-      } else if (isInit) {
-        const ip = getIP(req);
-        const client = createDirectClient(broadcast, broadcastGlobal, ip);
+        if (sessionId && sessions.has(sessionId)) {
+          const session = sessions.get(sessionId);
+          session.lastActivity = Date.now();
+          log.debug('Session active', { sessionId, namespace });
+          await session.transport.handleRequest(req, res, body);
+        } else if (isInit) {
+          const ip = getIP(req);
+          const client = createDirectClient(broadcast, broadcastGlobal, ip);
 
-        const transport = new StreamableHTTPServerTransport({
-          sessionIdGenerator: () => crypto.randomUUID(),
-          onsessioninitialized: (id) => {
-            sessions.set(id, { transport, server: mcpServer, namespace, lastActivity: Date.now() });
-          },
-        });
+          const transport = new StreamableHTTPServerTransport({
+            sessionIdGenerator: () => crypto.randomUUID(),
+            onsessioninitialized: (id) => {
+              sessions.set(id, { transport, server: mcpServer, namespace, lastActivity: Date.now() });
+              log.info('Session created', { sessionId: id, namespace, ip });
+            },
+          });
 
-        const mcpServer = new McpServer({ name: 'botbeam', version: '0.2.0' });
-        registerTools(mcpServer, namespace, client);
-        await mcpServer.connect(transport);
-        await transport.handleRequest(req, res, body);
-      } else {
-        // Expired or unknown session — tell client to re-initialize
-        res.writeHead(404, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ jsonrpc: '2.0', error: { code: -32600, message: 'Session expired, please re-initialize' }, id: null }));
+          const mcpServer = new McpServer({ name: 'botbeam', version: '0.2.0' });
+          registerTools(mcpServer, namespace, client);
+          await mcpServer.connect(transport);
+          await transport.handleRequest(req, res, body);
+        } else {
+          log.warn('Session expired', { sessionId, namespace });
+          res.writeHead(404, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ jsonrpc: '2.0', error: { code: -32600, message: 'Session expired, please re-initialize' }, id: null }));
+        }
+      } else if (req.method === 'GET') {
+        if (sessionId && sessions.has(sessionId)) {
+          const session = sessions.get(sessionId);
+          session.lastActivity = Date.now();
+          await session.transport.handleRequest(req, res);
+        } else {
+          log.warn('Session not found (GET)', { sessionId, namespace });
+          res.writeHead(404, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ jsonrpc: '2.0', error: { code: -32600, message: 'Session not found' }, id: null }));
+        }
+      } else if (req.method === 'DELETE') {
+        if (sessionId && sessions.has(sessionId)) {
+          const session = sessions.get(sessionId);
+          await session.transport.handleRequest(req, res);
+          sessions.delete(sessionId);
+          log.info('Session deleted', { sessionId, namespace });
+        } else {
+          res.writeHead(204); res.end();
+        }
       }
-    } else if (req.method === 'GET') {
-      if (sessionId && sessions.has(sessionId)) {
-        const session = sessions.get(sessionId);
-        session.lastActivity = Date.now();
-        await session.transport.handleRequest(req, res);
-      } else {
-        res.writeHead(404, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ jsonrpc: '2.0', error: { code: -32600, message: 'Session not found' }, id: null }));
-      }
-    } else if (req.method === 'DELETE') {
-      if (sessionId && sessions.has(sessionId)) {
-        const session = sessions.get(sessionId);
-        await session.transport.handleRequest(req, res);
-        sessions.delete(sessionId);
-      } else {
-        res.writeHead(204); res.end();
+    } catch (err) {
+      log.error('MCP request failed', { reqId: req.id, error: err.message, stack: err.stack });
+      if (!res.headersSent) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ jsonrpc: '2.0', error: { code: -32603, message: 'Internal error' }, id: null }));
       }
     }
   });

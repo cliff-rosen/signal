@@ -1,4 +1,7 @@
 const { getPool } = require('./db');
+const { createLogger } = require('./logger');
+
+const log = createLogger('audit');
 
 function normalizeIP(ip) {
   if (!ip) return null;
@@ -12,7 +15,9 @@ function logAPI(namespace, action, { device, contentType, body, ip } = {}) {
   getPool().query(
     'INSERT INTO api_log (namespace, action, device, content_type, body, ip_address) VALUES (?, ?, ?, ?, ?, ?)',
     [namespace, action, device || null, contentType || null, bodyStr, normalizeIP(ip)]
-  ).catch(() => {});
+  ).catch((err) => {
+    log.warn('Failed to write audit log', { namespace, action, error: err.message });
+  });
 }
 
 function getIP(req) {

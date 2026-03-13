@@ -9,8 +9,11 @@ const { createRouter: createAPIRouter } = require('./routes');
 const { createRouter: createMCPRouter } = require('./mcp');
 const { namespaceMiddleware } = require('./namespace');
 const { logAPI, normalizeIP, getIP } = require('./log');
+const { createLogger, generateRequestId } = require('./logger');
+const { createAdminRouter } = require('./admin');
 const store = require('./store');
 
+const httpLog = createLogger('http');
 const PORT = process.env.PORT || 4888;
 const app = express();
 const server = http.createServer(app);
@@ -29,6 +32,21 @@ app.use((req, res, next) => {
   next();
 });
 app.use(express.json());
+
+// Request logging
+app.use((req, res, next) => {
+  if (req.path === '/health') return next();
+  req.id = generateRequestId();
+  const start = Date.now();
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    const line = `${req.method} ${req.originalUrl} ${res.statusCode} ${duration}ms`;
+    if (res.statusCode >= 500) httpLog.error(line, { reqId: req.id });
+    else if (res.statusCode >= 400) httpLog.warn(line, { reqId: req.id });
+    else httpLog.info(line, { reqId: req.id });
+  });
+  next();
+});
 
 // Static assets (legacy: landing page, display page, CSS, favicon)
 app.use('/assets', express.static(path.join(__dirname, '..', 'public')));
@@ -56,6 +74,9 @@ app.use('/s/:namespace/api', namespaceMiddleware, createAPIRouter(broadcast, bro
 app.get('/s/:namespace', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'frontend', 'dist', 'index.html'));
 });
+
+// Admin
+app.use('/admin', createAdminRouter());
 
 // Health check
 app.get('/health', (req, res) => res.json({ status: 'ok' }));

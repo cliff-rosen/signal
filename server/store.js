@@ -1,16 +1,14 @@
 const { getPool } = require('./db');
 const { nanoid } = require('nanoid');
+const { createLogger } = require('./logger');
 
+const log = createLogger('store');
 const MAX_BODY_BYTES = 512 * 1024; // 500KB
-const VALID_CONTENT_TYPES = new Set(['text', 'html', 'url', 'image', 'markdown', 'dashboard', 'list']);
 
 function slugify(name) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 }
-
-function logError(op, err, context = {}) {
-  console.error(`[store] ${op} failed`, { ...context, error: err.message });
-}
+const VALID_CONTENT_TYPES = new Set(['text', 'html', 'url', 'image', 'markdown', 'dashboard', 'list']);
 
 // ── Namespaces ──
 
@@ -21,7 +19,7 @@ async function createNamespace(ip) {
     await db.query('INSERT INTO namespaces (id, ip_address) VALUES (?, ?)', [id, ip || null]);
     return id;
   } catch (err) {
-    logError('createNamespace', err, { ip });
+    log.error('createNamespace failed', { ip, error: err.message });
     throw err;
   }
 }
@@ -32,7 +30,7 @@ async function getNamespace(id) {
     const [rows] = await db.query('SELECT * FROM namespaces WHERE id = ?', [id]);
     return rows[0] || null;
   } catch (err) {
-    logError('getNamespace', err, { id });
+    log.error('getNamespace failed', { id, error: err.message });
     throw err;
   }
 }
@@ -42,7 +40,7 @@ async function touchNamespace(id) {
   try {
     await db.query('UPDATE namespaces SET last_active = NOW() WHERE id = ?', [id]);
   } catch (err) {
-    logError('touchNamespace', err, { id });
+    log.error('touchNamespace failed', { id, error: err.message });
     throw err;
   }
 }
@@ -58,7 +56,7 @@ async function loadDevices(namespace) {
     );
     return rows;
   } catch (err) {
-    logError('loadDevices', err, { namespace });
+    log.error('loadDevices failed', { namespace, error: err.message });
     throw err;
   }
 }
@@ -82,7 +80,7 @@ async function createDevice(namespace, name) {
     );
     return { exists: result.affectedRows === 0, device: rows[0] };
   } catch (err) {
-    logError('createDevice', err, { namespace, name });
+    log.error('createDevice failed', { namespace, name, error: err.message });
     throw err;
   }
 }
@@ -96,7 +94,7 @@ async function deleteDevice(namespace, id) {
     );
     return result.affectedRows > 0;
   } catch (err) {
-    logError('deleteDevice', err, { namespace, id });
+    log.error('deleteDevice failed', { namespace, id, error: err.message });
     throw err;
   }
 }
@@ -124,7 +122,7 @@ async function loadContent(namespace, deviceId) {
     );
     return rows[0] || null;
   } catch (err) {
-    logError('loadContent', err, { namespace, deviceId });
+    log.error('loadContent failed', { namespace, deviceId, error: err.message });
     throw err;
   }
 }
@@ -145,7 +143,7 @@ async function saveContent(namespace, deviceId, { type, body }) {
     );
     return rows[0];
   } catch (err) {
-    logError('saveContent', err, { namespace, deviceId, type });
+    log.error('saveContent failed', { namespace, deviceId, type, error: err.message });
     throw err;
   }
 }
@@ -159,7 +157,38 @@ async function deleteContent(namespace, deviceId) {
     );
     return result.affectedRows > 0;
   } catch (err) {
-    logError('deleteContent', err, { namespace, deviceId });
+    log.error('deleteContent failed', { namespace, deviceId, error: err.message });
+    throw err;
+  }
+}
+
+// ── Admin ──
+
+async function getActiveNamespaces() {
+  const db = getPool();
+  try {
+    const [rows] = await db.query(
+      `SELECT namespace, COUNT(*) as count, MAX(created_at) as lastActivity
+       FROM api_log GROUP BY namespace ORDER BY lastActivity DESC`
+    );
+    return rows;
+  } catch (err) {
+    log.error('getActiveNamespaces failed', { error: err.message });
+    throw err;
+  }
+}
+
+async function getLogsByNamespace(namespace, limit = 100) {
+  const db = getPool();
+  try {
+    const [rows] = await db.query(
+      `SELECT action, device, content_type as contentType, ip_address as ip, created_at as createdAt
+       FROM api_log WHERE namespace = ? ORDER BY created_at DESC LIMIT ?`,
+      [namespace, limit]
+    );
+    return rows;
+  } catch (err) {
+    log.error('getLogsByNamespace failed', { namespace, error: err.message });
     throw err;
   }
 }
@@ -169,5 +198,6 @@ module.exports = {
   loadDevices, createDevice, deleteDevice,
   loadContent, saveContent, deleteContent,
   validateContent, slugify,
+  getActiveNamespaces, getLogsByNamespace,
   MAX_BODY_BYTES, VALID_CONTENT_TYPES,
 };

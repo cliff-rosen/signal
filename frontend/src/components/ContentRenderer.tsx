@@ -1,8 +1,70 @@
+import { useState, useCallback } from 'react';
 import { marked } from 'marked';
 import type { Content, DashboardCard, ListItem } from '../types';
+import { useBotBeam } from '../context/BotBeamContext';
 
 interface Props {
   content: Content;
+}
+
+function UrlEmbed({ url }: { url: string }) {
+  const { proxyUrl } = useBotBeam();
+  const [failed, setFailed] = useState(false);
+
+  const onLoad = useCallback((e: React.SyntheticEvent<HTMLIFrameElement>) => {
+    try {
+      // If the proxy returned an error JSON body, the iframe will load but show garbage.
+      // We can detect this by checking if the iframe document is accessible and tiny.
+      const doc = e.currentTarget.contentDocument;
+      if (doc) {
+        const text = doc.body?.innerText ?? '';
+        if (text.startsWith('{"error"')) {
+          setFailed(true);
+        }
+      }
+    } catch {
+      // Cross-origin — means the page actually loaded (good)
+    }
+  }, []);
+
+  if (failed) {
+    return (
+      <div className="content-url-failed">
+        <p>This site couldn't be loaded in the viewer. Some sites block embedding or aren't available through our proxy.</p>
+        <a href={url} target="_blank" rel="noopener noreferrer">{url}</a>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <div className="content-url-bar">
+        <a href={url} target="_blank" rel="noopener noreferrer" title={url}>{url}</a>
+      </div>
+      <iframe
+        className="content-url"
+        src={proxyUrl(url)}
+        allowFullScreen
+        onError={() => setFailed(true)}
+        onLoad={onLoad}
+      />
+    </>
+  );
+}
+
+function ImageEmbed({ url }: { url: string }) {
+  const [failed, setFailed] = useState(false);
+
+  if (failed) {
+    return (
+      <div className="content-url-failed">
+        <p>This image couldn't be loaded. The source may be unavailable or blocking external access.</p>
+        <a href={url} target="_blank" rel="noopener noreferrer">{url}</a>
+      </div>
+    );
+  }
+
+  return <img className="content-image" src={url} alt="Display" onError={() => setFailed(true)} />;
 }
 
 export default function ContentRenderer({ content }: Props) {
@@ -32,18 +94,14 @@ export default function ContentRenderer({ content }: Props) {
     case 'url':
       return (
         <div className="content">
-          <iframe
-            className="content-url"
-            src={content.body}
-            allowFullScreen
-          />
+          <UrlEmbed url={content.body} />
         </div>
       );
 
     case 'image':
       return (
         <div className="content content-image-wrap">
-          <img className="content-image" src={content.body} alt="Display" />
+          <ImageEmbed url={content.body} />
         </div>
       );
 

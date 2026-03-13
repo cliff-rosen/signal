@@ -28,6 +28,7 @@ variables:
 
 secrets:
   DB_PASSWORD: /copilot/botbeam/prod/secrets/db_password
+  ADMIN_PASSWORD: /copilot/botbeam/prod/secrets/admin_password
 
 network:
   vpc:

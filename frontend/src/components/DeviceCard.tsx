@@ -1,6 +1,7 @@
 import { marked } from 'marked';
 import type { Device, Content, DashboardCard, ListItem } from '../types';
 import { useBotBeam } from '../context/BotBeamContext';
+import { TYPE_META, contentDetail } from '../lib/contentMeta';
 
 interface Props {
   device: Device;
@@ -68,14 +69,23 @@ function Preview({ content }: { content: Content }) {
 export default function DeviceCard({ device, onClick }: Props) {
   const { contentMap } = useBotBeam();
   const content = contentMap[device.id] ?? null;
+  const meta = content ? TYPE_META[content.type] : null;
+  const detail = content ? contentDetail(content) : null;
 
   return (
     <div className="device-card" onClick={onClick}>
       <div className="card-header">
         <div className="name">{device.name}</div>
-        <div className={`status ${content ? 'has-content' : ''}`}>
-          {content ? 'Live' : 'Empty'}
-        </div>
+        {content && meta ? (
+          <div className="card-meta">
+            <span className="type-badge" style={{ borderColor: meta.color, color: meta.color }}>
+              {meta.label}
+            </span>
+            {detail && <span className="meta-detail">{detail}</span>}
+          </div>
+        ) : (
+          <div className="status">Empty</div>
+        )}
       </div>
       <div className="card-preview">
         {content ? (

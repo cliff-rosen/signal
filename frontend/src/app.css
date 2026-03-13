@@ -172,9 +172,18 @@ body:has(.app) {
 
 .display-view {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 40px;
+}
+
+.device-info-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  align-self: flex-start;
+  margin-bottom: 16px;
 }
 
 .device-grid {
@@ -224,8 +233,30 @@ body:has(.app) {
   color: var(--text-muted);
 }
 
-.device-card .status.has-content {
-  color: var(--success);
+.card-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.type-badge {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 7px;
+  border: 1px solid;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.meta-detail {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* ── Card preview ── */
@@ -463,6 +494,54 @@ body:has(.app) {
   border: none;
   border-radius: 8px;
   background: white;
+}
+
+.content-url-bar {
+  width: 100%;
+  padding: 8px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px 8px 0 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.8rem;
+}
+
+.content-url-bar a {
+  color: var(--text-muted);
+  text-decoration: none;
+}
+
+.content-url-bar a:hover {
+  color: var(--accent);
+}
+
+.content-url-bar + .content-url {
+  border-radius: 0 0 8px 8px;
+  height: calc(100vh - 168px);
+}
+
+.content-url-failed {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  height: calc(100vh - 128px);
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.content-url-failed p {
+  max-width: 400px;
+}
+
+.content-url-failed a {
+  color: var(--accent);
+  word-break: break-all;
 }
 
 /* Image */

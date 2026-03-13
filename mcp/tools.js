@@ -17,7 +17,7 @@ function registerTools(server, namespace, client) {
     {
       name: z.string().describe('Display name for the tab (e.g. "Overview", "Cheat Sheet")'),
       type: z.enum(['text', 'markdown', 'html', 'url', 'image', 'list', 'dashboard', 'table']).optional().describe('Content type (optional)'),
-      body: z.string().optional().describe('Content body (optional). For url/image types, provide the URL. For list/dashboard types, provide a JSON string.'),
+      body: z.string().optional().describe('Content body (optional). For url/image: the URL. For list: JSON array of strings or {text, checked?}. For dashboard: JSON array of {title, value, subtitle?}. For table: JSON {columns: [{id, label}], rows: [{colId: value, ...}]}.'),
     },
     async ({ name, type, body }) => {
       const content = type && body ? { type, body } : null;
@@ -28,12 +28,12 @@ function registerTools(server, namespace, client) {
 
   server.tool(
     'update_device',
-    'Update a virtual display tab. Can change the name, push new content, or clear content by setting content_type to "clear". Content types: text, markdown, html, url (renders in iframe), image (renders from URL), list (JSON array), dashboard (JSON array of {title, value, subtitle?})',
+    'Update a virtual display tab. Can change the name, push new content, or clear content by setting content_type to "clear". Content types: text, markdown, html, url (renders in iframe), image (renders from URL), list (JSON array of strings or {text, checked?}), dashboard (JSON array of {title, value, subtitle?}), table (JSON object: {columns: [{id, label}], rows: [{col_id: value}]})',
     {
       device: z.string().describe('Device ID (as returned by list_devices or create_device)'),
       name: z.string().optional().describe('New display name for the tab'),
       content_type: z.enum(['text', 'markdown', 'html', 'url', 'image', 'list', 'dashboard', 'table', 'clear']).optional().describe('Content type, or "clear" to remove content'),
-      body: z.string().optional().describe('Content body. Required unless content_type is "clear".'),
+      body: z.string().optional().describe('Content body (required unless content_type is "clear"). For url/image: the URL string. For list: JSON array of strings or {text, checked?}. For dashboard: JSON array of {title, value, subtitle?}. For table: JSON {columns: [{id, label}], rows: [{colId: value, ...}]}.'),
     },
     async ({ device, name, content_type, body }) => {
       const updates = {};

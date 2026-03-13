@@ -61,7 +61,9 @@ function Preview({ content }: { content: Content }) {
       );
     }
     case 'table': {
-      const data: TableData = JSON.parse(content.body);
+      let data: TableData | null = null;
+      try { data = JSON.parse(content.body); } catch { /* invalid JSON */ }
+      if (!data?.columns || !data?.rows) return <div className="preview-text">Invalid table data</div>;
       return (
         <div className="preview-table-wrap">
           <table className="preview-table">

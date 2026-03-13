@@ -235,7 +235,9 @@ export default function ContentRenderer({ content }: Props) {
     }
 
     case 'table': {
-      const tableData: TableData = JSON.parse(content.body);
+      let tableData: TableData | null = null;
+      try { tableData = JSON.parse(content.body); } catch { /* invalid JSON */ }
+      if (!tableData?.columns || !tableData?.rows) return <div className="content content-text">Invalid table data</div>;
       return (
         <div className="content content-table">
           <TableView data={tableData} />

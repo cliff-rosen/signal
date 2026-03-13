@@ -7,16 +7,43 @@ const MAX_BODY_BYTES = 512 * 1024; // 500KB
 
 const VALID_CONTENT_TYPES = new Set(['text', 'html', 'url', 'image', 'markdown', 'dashboard', 'list', 'table']);
 
+// Normalizes structured content types (table, dashboard, list) so the frontend
+// always receives a consistent shape. Returns the body string to store.
 function validateContent(type, body) {
   if (!type || typeof type !== 'string') throw new Error('Content type is required');
   if (!VALID_CONTENT_TYPES.has(type)) {
     throw new Error(`Invalid content type "${type}". Must be one of: ${[...VALID_CONTENT_TYPES].join(', ')}`);
   }
   if (body === undefined || body === null) throw new Error('Content body is required');
-  const bodyStr = typeof body === 'string' ? body : JSON.stringify(body);
+
+  let bodyStr = typeof body === 'string' ? body : JSON.stringify(body);
+
+  // Normalize table: accept a flat array of objects and wrap in {columns, rows}
+  if (type === 'table') {
+    let parsed;
+    try { parsed = JSON.parse(bodyStr); } catch { throw new Error('Table body must be valid JSON'); }
+
+    if (Array.isArray(parsed)) {
+      // Flat array of objects → infer columns from keys of first row
+      if (parsed.length === 0) throw new Error('Table body array must not be empty');
+      if (typeof parsed[0] !== 'object' || parsed[0] === null) throw new Error('Table rows must be objects');
+      const keys = Object.keys(parsed[0]);
+      const columns = keys.map(k => ({ id: k, label: k }));
+      bodyStr = JSON.stringify({ columns, rows: parsed });
+    } else if (parsed && typeof parsed === 'object') {
+      if (!Array.isArray(parsed.columns) || !Array.isArray(parsed.rows)) {
+        throw new Error('Table body must have "columns" and "rows" arrays');
+      }
+    } else {
+      throw new Error('Table body must be a JSON array or {columns, rows} object');
+    }
+  }
+
   if (Buffer.byteLength(bodyStr, 'utf8') > MAX_BODY_BYTES) {
     throw new Error(`Content body too large (max ${MAX_BODY_BYTES / 1024}KB)`);
   }
+
+  return bodyStr;
 }
 
 function rowToDevice(r) {
@@ -86,7 +113,7 @@ async function loadDevices(namespace) {
 async function createDevice(namespace, name, content) {
   if (!name || typeof name !== 'string') throw new Error('Device name is required');
   if (name.length > 255) throw new Error('Device name too long (max 255 chars)');
-  if (content) validateContent(content.type, content.body);
+  if (content) content.body = validateContent(content.type, content.body);
 
   const db = getPool();
   const id = nanoid(8);
@@ -132,7 +159,7 @@ async function updateDevice(namespace, id, updates) {
     if (updates.content === null) {
       sets.push('content_type = NULL, content_body = NULL, content_updated_at = NULL');
     } else {
-      validateContent(updates.content.type, updates.content.body);
+      updates.content.body = validateContent(updates.content.type, updates.content.body);
       sets.push('content_type = ?, content_body = ?, content_updated_at = NOW()');
       params.push(updates.content.type, updates.content.body);
     }

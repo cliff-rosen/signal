@@ -38,6 +38,19 @@ function createDirectClient(broadcast, broadcastGlobal, ip) {
         throw err;
       }
     },
+    createDevice: async (ns, name) => {
+      try {
+        logAPI(ns, 'create_device', { device: name, ip });
+        const existing = await store.findDeviceByName(ns, name);
+        if (existing) return existing;
+        const { device } = await store.createDevice(ns, name);
+        broadcastGlobal(ns, { event: 'device_created', device });
+        return device;
+      } catch (err) {
+        log.error('createDevice failed', { namespace: ns, device: name, error: err.message });
+        throw err;
+      }
+    },
     deleteDevice: async (ns, id) => {
       try {
         logAPI(ns, 'delete_device', { device: id, ip });
@@ -55,11 +68,6 @@ function createDirectClient(broadcast, broadcastGlobal, ip) {
     pushContent: async (ns, deviceId, type, body) => {
       try {
         logAPI(ns, 'push_content', { device: deviceId, contentType: type, body, ip });
-        const devices = await store.loadDevices(ns);
-        if (!devices.find(d => d.id === deviceId)) {
-          const { device } = await store.createDevice(ns, deviceId);
-          broadcastGlobal(ns, { event: 'device_created', device });
-        }
         const content = await store.saveContent(ns, deviceId, { type, body });
         broadcast(ns, deviceId, { event: 'content', data: content });
         broadcastGlobal(ns, { event: 'content_updated', deviceId, data: content });

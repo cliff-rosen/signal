@@ -5,9 +5,6 @@ const { createLogger } = require('./logger');
 const log = createLogger('store');
 const MAX_BODY_BYTES = 512 * 1024; // 500KB
 
-function slugify(name) {
-  return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-}
 const VALID_CONTENT_TYPES = new Set(['text', 'html', 'url', 'image', 'markdown', 'dashboard', 'list']);
 
 // ── Namespaces ──
@@ -66,21 +63,51 @@ async function createDevice(namespace, name) {
   if (name.length > 255) throw new Error('Device name too long (max 255 chars)');
 
   const db = getPool();
-  const id = slugify(name);
-  if (!id) throw new Error('Device name must contain at least one alphanumeric character');
+  const id = nanoid(8);
 
   try {
-    const [result] = await db.query(
-      'INSERT IGNORE INTO devices (id, namespace, name) VALUES (?, ?, ?)',
+    await db.query(
+      'INSERT INTO devices (id, namespace, name) VALUES (?, ?, ?)',
       [id, namespace, name]
     );
     const [rows] = await db.query(
       'SELECT id, name, created_at as createdAt FROM devices WHERE namespace = ? AND id = ?',
       [namespace, id]
     );
-    return { exists: result.affectedRows === 0, device: rows[0] };
+    return { device: rows[0] };
   } catch (err) {
     log.error('createDevice failed', { namespace, name, error: err.message });
+    throw err;
+  }
+}
+
+async function findDeviceByName(namespace, name) {
+  const db = getPool();
+  try {
+    const [rows] = await db.query(
+      'SELECT id, name, created_at as createdAt FROM devices WHERE namespace = ? AND name = ?',
+      [namespace, name]
+    );
+    return rows[0] || null;
+  } catch (err) {
+    log.error('findDeviceByName failed', { namespace, name, error: err.message });
+    throw err;
+  }
+}
+
+async function renameDevice(namespace, id, name) {
+  if (!name || typeof name !== 'string') throw new Error('Device name is required');
+  if (name.length > 255) throw new Error('Device name too long (max 255 chars)');
+
+  const db = getPool();
+  try {
+    const [result] = await db.query(
+      'UPDATE devices SET name = ? WHERE namespace = ? AND id = ?',
+      [name, namespace, id]
+    );
+    return result.affectedRows > 0;
+  } catch (err) {
+    log.error('renameDevice failed', { namespace, id, name, error: err.message });
     throw err;
   }
 }
@@ -195,9 +222,9 @@ async function getLogsByNamespace(namespace, limit = 100) {
 
 module.exports = {
   createNamespace, getNamespace, touchNamespace,
-  loadDevices, createDevice, deleteDevice,
+  loadDevices, createDevice, findDeviceByName, renameDevice, deleteDevice,
   loadContent, saveContent, deleteContent,
-  validateContent, slugify,
+  validateContent,
   getActiveNamespaces, getLogsByNamespace,
   MAX_BODY_BYTES, VALID_CONTENT_TYPES,
 };

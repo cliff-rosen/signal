@@ -31,13 +31,17 @@ function createRouter(broadcast, broadcastGlobal) {
     res.json(await store.loadDevices(req.namespace));
   }));
 
-  // Create device
+  // Create device (exact name match returns existing)
   router.post('/devices', asyncHandler(async (req, res) => {
     const { name } = req.body;
     if (!name) return res.status(400).json({ error: 'name is required' });
-    const { exists, device } = await store.createDevice(req.namespace, name);
-    if (!exists) broadcastGlobal(req.namespace, { event: 'device_created', device });
-    res.status(exists ? 200 : 201).json(device);
+
+    const existing = await store.findDeviceByName(req.namespace, name);
+    if (existing) return res.json(existing);
+
+    const { device } = await store.createDevice(req.namespace, name);
+    broadcastGlobal(req.namespace, { event: 'device_created', device });
+    res.status(201).json(device);
   }));
 
   // Delete device
@@ -56,18 +60,11 @@ function createRouter(broadcast, broadcastGlobal) {
     res.json(content);
   }));
 
-  // Push content (auto-creates device if it doesn't exist)
+  // Push content to device by ID
   router.post('/devices/:id/content', asyncHandler(async (req, res) => {
     const { type, body } = req.body;
     if (!type || body === undefined) {
       return res.status(400).json({ error: 'type and body are required' });
-    }
-
-    const devices = await store.loadDevices(req.namespace);
-    const device = devices.find(d => d.id === req.params.id);
-    if (!device) {
-      const { device: created } = await store.createDevice(req.namespace, req.params.id);
-      broadcastGlobal(req.namespace, { event: 'device_created', device: created });
     }
 
     const content = await store.saveContent(req.namespace, req.params.id, { type, body });

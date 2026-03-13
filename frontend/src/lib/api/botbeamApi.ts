@@ -1,6 +1,6 @@
-import { get, post, del } from './index';
+import { get, post, patch, del } from './index';
 import { settings } from '../../config/settings';
-import type { Device, Content } from '../../types';
+import type { Device } from '../../types';
 
 function base(namespace: string) {
   return `/s/${namespace}/api`;
@@ -23,18 +23,16 @@ export const botbeamApi = {
     return post<Device>(`${base(namespace)}/devices`, { name });
   },
 
+  async updateDevice(namespace: string, id: string, updates: { name?: string; content?: { type: string; body: string } | null }) {
+    return patch<Device>(`${base(namespace)}/devices/${id}`, updates);
+  },
+
   async deleteDevice(namespace: string, id: string) {
     return del(`${base(namespace)}/devices/${id}`);
   },
 
-  // Content
-
-  async getContent(namespace: string, deviceId: string): Promise<Content | null> {
-    try {
-      return await get<Content>(`${base(namespace)}/devices/${deviceId}/content`);
-    } catch {
-      return null;
-    }
+  async resetDevices(namespace: string) {
+    return del(`${base(namespace)}/devices`);
   },
 
   // Utilities

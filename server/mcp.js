@@ -38,16 +38,26 @@ function createDirectClient(broadcast, broadcastGlobal, ip) {
         throw err;
       }
     },
-    createDevice: async (ns, name) => {
+    createDevice: async (ns, name, content) => {
       try {
-        logAPI(ns, 'create_device', { device: name, ip });
-        const existing = await store.findDeviceByName(ns, name);
-        if (existing) return existing;
-        const { device } = await store.createDevice(ns, name);
+        logAPI(ns, 'create_device', { device: name, contentType: content?.type, ip });
+        const device = await store.createDevice(ns, name, content || null);
         broadcastGlobal(ns, { event: 'device_created', device });
         return device;
       } catch (err) {
         log.error('createDevice failed', { namespace: ns, device: name, error: err.message });
+        throw err;
+      }
+    },
+    updateDevice: async (ns, id, updates) => {
+      try {
+        logAPI(ns, 'update_device', { device: id, contentType: updates.content?.type, ip });
+        const device = await store.updateDevice(ns, id, updates);
+        if (!device) throw new Error('Device not found');
+        broadcastGlobal(ns, { event: 'device_updated', device });
+        return device;
+      } catch (err) {
+        log.error('updateDevice failed', { namespace: ns, device: id, error: err.message });
         throw err;
       }
     },
@@ -56,36 +66,11 @@ function createDirectClient(broadcast, broadcastGlobal, ip) {
         logAPI(ns, 'delete_device', { device: id, ip });
         const ok = await store.deleteDevice(ns, id);
         if (ok) {
-          broadcast(ns, id, { event: 'clear' });
           broadcastGlobal(ns, { event: 'device_deleted', deviceId: id });
         }
         return { ok };
       } catch (err) {
         log.error('deleteDevice failed', { namespace: ns, device: id, error: err.message });
-        throw err;
-      }
-    },
-    pushContent: async (ns, deviceId, type, body) => {
-      try {
-        logAPI(ns, 'push_content', { device: deviceId, contentType: type, body, ip });
-        const content = await store.saveContent(ns, deviceId, { type, body });
-        broadcast(ns, deviceId, { event: 'content', data: content });
-        broadcastGlobal(ns, { event: 'content_updated', deviceId, data: content });
-        return content;
-      } catch (err) {
-        log.error('pushContent failed', { namespace: ns, device: deviceId, type, error: err.message });
-        throw err;
-      }
-    },
-    clearDevice: async (ns, id) => {
-      try {
-        logAPI(ns, 'clear_device', { device: id, ip });
-        await store.deleteContent(ns, id);
-        broadcast(ns, id, { event: 'clear' });
-        broadcastGlobal(ns, { event: 'content_cleared', deviceId: id });
-        return { ok: true };
-      } catch (err) {
-        log.error('clearDevice failed', { namespace: ns, device: id, error: err.message });
         throw err;
       }
     },

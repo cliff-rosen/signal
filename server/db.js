@@ -46,23 +46,36 @@ async function initDB() {
       id VARCHAR(100) NOT NULL,
       namespace VARCHAR(12) NOT NULL,
       name VARCHAR(255) NOT NULL,
+      content_type VARCHAR(20),
+      content_body LONGTEXT,
+      content_updated_at TIMESTAMP NULL,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       PRIMARY KEY (namespace, id),
       FOREIGN KEY (namespace) REFERENCES namespaces(id) ON DELETE CASCADE
     )
   `);
 
-  await db.query(`
-    CREATE TABLE IF NOT EXISTS content (
-      namespace VARCHAR(12) NOT NULL,
-      device_id VARCHAR(100) NOT NULL,
-      type VARCHAR(20) NOT NULL,
-      body LONGTEXT NOT NULL,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-      PRIMARY KEY (namespace, device_id),
-      FOREIGN KEY (namespace, device_id) REFERENCES devices(namespace, id) ON DELETE CASCADE
-    )
-  `);
+  // Migration: add content columns to devices if missing (for existing databases)
+  await db.query(`ALTER TABLE devices ADD COLUMN IF NOT EXISTS content_type VARCHAR(20)`).catch(() => {});
+  await db.query(`ALTER TABLE devices ADD COLUMN IF NOT EXISTS content_body LONGTEXT`).catch(() => {});
+  await db.query(`ALTER TABLE devices ADD COLUMN IF NOT EXISTS content_updated_at TIMESTAMP NULL`).catch(() => {});
+
+  // Migration: move data from content table to devices table if content table exists
+  try {
+    const [tables] = await db.query(`SHOW TABLES LIKE 'content'`);
+    if (tables.length > 0) {
+      await db.query(`
+        UPDATE devices d
+        JOIN content c ON d.namespace = c.namespace AND d.id = c.device_id
+        SET d.content_type = c.type,
+            d.content_body = c.body,
+            d.content_updated_at = c.updated_at
+      `);
+      await db.query(`DROP TABLE content`);
+    }
+  } catch (err) {
+    // Migration already ran or content table doesn't exist — fine
+  }
 
   // Add ip_address column if missing (safe for existing tables)
   await db.query(`

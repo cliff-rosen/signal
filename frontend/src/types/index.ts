@@ -26,8 +26,6 @@ export interface ListItem {
 
 export type WSEvent =
   | { event: 'device_created'; device: Device }
+  | { event: 'device_updated'; device: Device }
   | { event: 'device_deleted'; deviceId: string }
-  | { event: 'content_updated'; deviceId: string; data: Content }
-  | { event: 'content_cleared'; deviceId: string }
-  | { event: 'content'; data: Content }
-  | { event: 'clear' };
+  | { event: 'devices_reset' };

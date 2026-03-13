@@ -14,7 +14,7 @@ function createRouter(broadcast, broadcastGlobal) {
 
   // Log write API calls (skip GETs — those are just browser fetches)
   router.use((req, res, next) => {
-    if (req.method === 'POST' || req.method === 'DELETE') {
+    if (req.method !== 'GET') {
       const action = `${req.method} ${req.path}`;
       logAPI(req.namespace, action, {
         device: req.params.id,
@@ -26,58 +26,51 @@ function createRouter(broadcast, broadcastGlobal) {
     next();
   });
 
-  // List devices
+  // List devices (with content)
   router.get('/devices', asyncHandler(async (req, res) => {
     res.json(await store.loadDevices(req.namespace));
   }));
 
-  // Create device (exact name match returns existing)
+  // Create device (optionally with content)
   router.post('/devices', asyncHandler(async (req, res) => {
-    const { name } = req.body;
+    const { name, content } = req.body;
     if (!name) return res.status(400).json({ error: 'name is required' });
 
-    const existing = await store.findDeviceByName(req.namespace, name);
-    if (existing) return res.json(existing);
-
-    const { device } = await store.createDevice(req.namespace, name);
+    const device = await store.createDevice(req.namespace, name, content || null);
     broadcastGlobal(req.namespace, { event: 'device_created', device });
     res.status(201).json(device);
+  }));
+
+  // Update device (name and/or content; content: null clears it)
+  router.patch('/devices/:id', asyncHandler(async (req, res) => {
+    const { name, content } = req.body;
+    if (name === undefined && !('content' in req.body)) {
+      return res.status(400).json({ error: 'name or content is required' });
+    }
+
+    const updates = {};
+    if (name !== undefined) updates.name = name;
+    if ('content' in req.body) updates.content = content;
+
+    const device = await store.updateDevice(req.namespace, req.params.id, updates);
+    if (!device) return res.status(404).json({ error: 'Device not found' });
+
+    broadcastGlobal(req.namespace, { event: 'device_updated', device });
+    res.json(device);
   }));
 
   // Delete device
   router.delete('/devices/:id', asyncHandler(async (req, res) => {
     const ok = await store.deleteDevice(req.namespace, req.params.id);
     if (!ok) return res.status(404).json({ error: 'Device not found' });
-    broadcast(req.namespace, req.params.id, { event: 'clear' });
     broadcastGlobal(req.namespace, { event: 'device_deleted', deviceId: req.params.id });
     res.status(204).end();
   }));
 
-  // Get content
-  router.get('/devices/:id/content', asyncHandler(async (req, res) => {
-    const content = await store.loadContent(req.namespace, req.params.id);
-    if (!content) return res.status(404).json({ error: 'No content' });
-    res.json(content);
-  }));
-
-  // Push content to device by ID
-  router.post('/devices/:id/content', asyncHandler(async (req, res) => {
-    const { type, body } = req.body;
-    if (!type || body === undefined) {
-      return res.status(400).json({ error: 'type and body are required' });
-    }
-
-    const content = await store.saveContent(req.namespace, req.params.id, { type, body });
-    broadcast(req.namespace, req.params.id, { event: 'content', data: content });
-    broadcastGlobal(req.namespace, { event: 'content_updated', deviceId: req.params.id, data: content });
-    res.json(content);
-  }));
-
-  // Clear content
-  router.delete('/devices/:id/content', asyncHandler(async (req, res) => {
-    await store.deleteContent(req.namespace, req.params.id);
-    broadcast(req.namespace, req.params.id, { event: 'clear' });
-    broadcastGlobal(req.namespace, { event: 'content_cleared', deviceId: req.params.id });
+  // Reset — delete all devices
+  router.delete('/devices', asyncHandler(async (req, res) => {
+    await store.resetDevices(req.namespace);
+    broadcastGlobal(req.namespace, { event: 'devices_reset' });
     res.status(204).end();
   }));
 

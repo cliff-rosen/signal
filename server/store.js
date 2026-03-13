@@ -7,6 +7,31 @@ const MAX_BODY_BYTES = 512 * 1024; // 500KB
 
 const VALID_CONTENT_TYPES = new Set(['text', 'html', 'url', 'image', 'markdown', 'dashboard', 'list']);
 
+function validateContent(type, body) {
+  if (!type || typeof type !== 'string') throw new Error('Content type is required');
+  if (!VALID_CONTENT_TYPES.has(type)) {
+    throw new Error(`Invalid content type "${type}". Must be one of: ${[...VALID_CONTENT_TYPES].join(', ')}`);
+  }
+  if (body === undefined || body === null) throw new Error('Content body is required');
+  const bodyStr = typeof body === 'string' ? body : JSON.stringify(body);
+  if (Buffer.byteLength(bodyStr, 'utf8') > MAX_BODY_BYTES) {
+    throw new Error(`Content body too large (max ${MAX_BODY_BYTES / 1024}KB)`);
+  }
+}
+
+function rowToDevice(r) {
+  return {
+    id: r.id,
+    name: r.name,
+    createdAt: r.createdAt,
+    content: r.content_type
+      ? { type: r.content_type, body: r.content_body, updatedAt: r.content_updated_at }
+      : null,
+  };
+}
+
+const DEVICE_COLS = `id, name, created_at as createdAt, content_type, content_body, content_updated_at`;
+
 // ── Namespaces ──
 
 async function createNamespace(ip) {
@@ -48,66 +73,88 @@ async function loadDevices(namespace) {
   const db = getPool();
   try {
     const [rows] = await db.query(
-      'SELECT id, name, created_at as createdAt FROM devices WHERE namespace = ? ORDER BY created_at',
+      `SELECT ${DEVICE_COLS} FROM devices WHERE namespace = ? ORDER BY created_at`,
       [namespace]
     );
-    return rows;
+    return rows.map(rowToDevice);
   } catch (err) {
     log.error('loadDevices failed', { namespace, error: err.message });
     throw err;
   }
 }
 
-async function createDevice(namespace, name) {
+async function createDevice(namespace, name, content) {
   if (!name || typeof name !== 'string') throw new Error('Device name is required');
   if (name.length > 255) throw new Error('Device name too long (max 255 chars)');
+  if (content) validateContent(content.type, content.body);
 
   const db = getPool();
   const id = nanoid(8);
 
   try {
-    await db.query(
-      'INSERT INTO devices (id, namespace, name) VALUES (?, ?, ?)',
-      [id, namespace, name]
-    );
+    if (content) {
+      await db.query(
+        `INSERT INTO devices (id, namespace, name, content_type, content_body, content_updated_at)
+         VALUES (?, ?, ?, ?, ?, NOW())`,
+        [id, namespace, name, content.type, content.body]
+      );
+    } else {
+      await db.query(
+        'INSERT INTO devices (id, namespace, name) VALUES (?, ?, ?)',
+        [id, namespace, name]
+      );
+    }
     const [rows] = await db.query(
-      'SELECT id, name, created_at as createdAt FROM devices WHERE namespace = ? AND id = ?',
+      `SELECT ${DEVICE_COLS} FROM devices WHERE namespace = ? AND id = ?`,
       [namespace, id]
     );
-    return { device: rows[0] };
+    return rowToDevice(rows[0]);
   } catch (err) {
     log.error('createDevice failed', { namespace, name, error: err.message });
     throw err;
   }
 }
 
-async function findDeviceByName(namespace, name) {
+async function updateDevice(namespace, id, updates) {
+  
   const db = getPool();
-  try {
-    const [rows] = await db.query(
-      'SELECT id, name, created_at as createdAt FROM devices WHERE namespace = ? AND name = ?',
-      [namespace, name]
-    );
-    return rows[0] || null;
-  } catch (err) {
-    log.error('findDeviceByName failed', { namespace, name, error: err.message });
-    throw err;
+  const sets = [];
+  const params = [];
+
+  if (updates.name !== undefined) {
+    if (!updates.name || typeof updates.name !== 'string') throw new Error('Device name is required');
+    if (updates.name.length > 255) throw new Error('Device name too long (max 255 chars)');
+    sets.push('name = ?');
+    params.push(updates.name);
   }
-}
 
-async function renameDevice(namespace, id, name) {
-  if (!name || typeof name !== 'string') throw new Error('Device name is required');
-  if (name.length > 255) throw new Error('Device name too long (max 255 chars)');
+  if ('content' in updates) {
+    if (updates.content === null) {
+      sets.push('content_type = NULL, content_body = NULL, content_updated_at = NULL');
+    } else {
+      validateContent(updates.content.type, updates.content.body);
+      sets.push('content_type = ?, content_body = ?, content_updated_at = NOW()');
+      params.push(updates.content.type, updates.content.body);
+    }
+  }
 
-  const db = getPool();
+  if (sets.length === 0) throw new Error('Nothing to update');
+
+  params.push(namespace, id);
+
   try {
     const [result] = await db.query(
-      'UPDATE devices SET name = ? WHERE namespace = ? AND id = ?',
-      [name, namespace, id]
+      `UPDATE devices SET ${sets.join(', ')} WHERE namespace = ? AND id = ?`,
+      params
     );
-    return result.affectedRows > 0;
+    if (result.affectedRows === 0) return null;
+    const [rows] = await db.query(
+      `SELECT ${DEVICE_COLS} FROM devices WHERE namespace = ? AND id = ?`,
+      [namespace, id]
+    );
+    return rowToDevice(rows[0]);
   } catch (err) {
-    log.error('renameDevice failed', { namespace, id, name, error: err.message });
+    log.error('updateDevice failed', { namespace, id, error: err.message });
     throw err;
   }
 }
@@ -126,65 +173,16 @@ async function deleteDevice(namespace, id) {
   }
 }
 
-// ── Content ──
-
-function validateContent(type, body) {
-  if (!type || typeof type !== 'string') throw new Error('Content type is required');
-  if (!VALID_CONTENT_TYPES.has(type)) {
-    throw new Error(`Invalid content type "${type}". Must be one of: ${[...VALID_CONTENT_TYPES].join(', ')}`);
-  }
-  if (body === undefined || body === null) throw new Error('Content body is required');
-  const bodyStr = typeof body === 'string' ? body : JSON.stringify(body);
-  if (Buffer.byteLength(bodyStr, 'utf8') > MAX_BODY_BYTES) {
-    throw new Error(`Content body too large (max ${MAX_BODY_BYTES / 1024}KB)`);
-  }
-}
-
-async function loadContent(namespace, deviceId) {
-  const db = getPool();
-  try {
-    const [rows] = await db.query(
-      'SELECT type, body, updated_at as updatedAt FROM content WHERE namespace = ? AND device_id = ?',
-      [namespace, deviceId]
-    );
-    return rows[0] || null;
-  } catch (err) {
-    log.error('loadContent failed', { namespace, deviceId, error: err.message });
-    throw err;
-  }
-}
-
-async function saveContent(namespace, deviceId, { type, body }) {
-  validateContent(type, body);
-
-  const db = getPool();
-  try {
-    await db.query(
-      `INSERT INTO content (namespace, device_id, type, body) VALUES (?, ?, ?, ?)
-       ON DUPLICATE KEY UPDATE type = VALUES(type), body = VALUES(body), updated_at = NOW()`,
-      [namespace, deviceId, type, body]
-    );
-    const [rows] = await db.query(
-      'SELECT type, body, updated_at as updatedAt FROM content WHERE namespace = ? AND device_id = ?',
-      [namespace, deviceId]
-    );
-    return rows[0];
-  } catch (err) {
-    log.error('saveContent failed', { namespace, deviceId, type, error: err.message });
-    throw err;
-  }
-}
-
-async function deleteContent(namespace, deviceId) {
+async function resetDevices(namespace) {
   const db = getPool();
   try {
     const [result] = await db.query(
-      'DELETE FROM content WHERE namespace = ? AND device_id = ?',
-      [namespace, deviceId]
+      'DELETE FROM devices WHERE namespace = ?',
+      [namespace]
     );
-    return result.affectedRows > 0;
+    return result.affectedRows;
   } catch (err) {
-    log.error('deleteContent failed', { namespace, deviceId, error: err.message });
+    log.error('resetDevices failed', { namespace, error: err.message });
     throw err;
   }
 }
@@ -222,8 +220,7 @@ async function getLogsByNamespace(namespace, limit = 100) {
 
 module.exports = {
   createNamespace, getNamespace, touchNamespace,
-  loadDevices, createDevice, findDeviceByName, renameDevice, deleteDevice,
-  loadContent, saveContent, deleteContent,
+  loadDevices, createDevice, updateDevice, deleteDevice, resetDevices,
   validateContent,
   getActiveNamespaces, getLogsByNamespace,
   MAX_BODY_BYTES, VALID_CONTENT_TYPES,

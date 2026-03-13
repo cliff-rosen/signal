@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from 'react';
-import type { Device, Content, WSEvent } from '../types';
+import type { Device, WSEvent } from '../types';
 import { botbeamApi } from '../lib/api/botbeamApi';
 import { settings } from '../config/settings';
 
@@ -43,7 +43,6 @@ export function BotBeamProvider({ children }: { children: ReactNode }) {
   const [showDebug, setShowDebug] = useState(false);
   const [connected, setConnected] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
-  const devicesRef = useRef<Device[]>([]);
 
   // --- Actions ---
 
@@ -76,25 +75,10 @@ export function BotBeamProvider({ children }: { children: ReactNode }) {
     return botbeamApi.proxyUrl(namespace, url);
   }, [namespace]);
 
-  devicesRef.current = devices;
-
-  // --- Helpers to update device content ---
-
-  function setDeviceContent(deviceId: string, content: Content | null) {
-    setDevices(prev => prev.map(d => d.id === deviceId ? { ...d, content } : d));
-  }
-
   // --- Fetch full state from API (used on init and after reconnect) ---
 
   const refreshState = useCallback(async (ns: string) => {
-    const list = await botbeamApi.getDevices(ns);
-    const devicesWithContent = await Promise.all(
-      list.map(async d => ({
-        ...d,
-        content: await botbeamApi.getContent(ns, d.id),
-      }))
-    );
-    setDevices(devicesWithContent);
+    setDevices(await botbeamApi.getDevices(ns));
   }, []);
 
   // --- Load devices + content when namespace is set ---
@@ -137,22 +121,23 @@ export function BotBeamProvider({ children }: { children: ReactNode }) {
           case 'device_created':
             setDevices(prev => prev.some(d => d.id === msg.device.id)
               ? prev
-              : [...prev, { ...msg.device, content: null }]
+              : [...prev, msg.device]
             );
+            setActiveTab(msg.device.id);
+            break;
+          case 'device_updated':
+            setDevices(prev => prev.map(d =>
+              d.id === msg.device.id ? msg.device : d
+            ));
             setActiveTab(msg.device.id);
             break;
           case 'device_deleted':
             setDevices(prev => prev.filter(d => d.id !== msg.deviceId));
             setActiveTab(prev => prev === msg.deviceId ? 'home' : prev);
             break;
-          case 'content_updated':
-            setDeviceContent(msg.deviceId, msg.data);
-            if (devicesRef.current.some(d => d.id === msg.deviceId)) {
-              setActiveTab(msg.deviceId);
-            }
-            break;
-          case 'content_cleared':
-            setDeviceContent(msg.deviceId, null);
+          case 'devices_reset':
+            setDevices([]);
+            setActiveTab('home');
             break;
         }
 

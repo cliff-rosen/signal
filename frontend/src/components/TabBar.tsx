@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { useBotBeam } from '../context/BotBeamContext';
 
 export default function TabBar() {
-  const { devices, activeTab, switchTab, removeDevice, addDevice, connected } = useBotBeam();
+  const { devices, activeTab, switchTab, removeDevice, resetDevices, addDevice, connected } = useBotBeam();
   const [showModal, setShowModal] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
+  const [showReset, setShowReset] = useState(false);
   const [newName, setNewName] = useState('');
 
   async function handleCreate() {
@@ -56,6 +57,11 @@ export default function TabBar() {
         ))}
 
         <button className="tab tab-add" onClick={() => setShowModal(true)}>+</button>
+        {devices.length > 0 && (
+          <button className="tab tab-reset" title="Reset all tabs" onClick={() => setShowReset(true)}>
+            Reset
+          </button>
+        )}
       </nav>
 
       {/* New device modal */}
@@ -74,6 +80,22 @@ export default function TabBar() {
             <div className="actions">
               <button className="btn btn-ghost" onClick={() => setShowModal(false)}>Cancel</button>
               <button className="btn btn-primary" onClick={handleCreate}>Create</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reset confirmation modal */}
+      {showReset && (
+        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowReset(false); }}>
+          <div className="modal">
+            <h2>Reset all tabs?</h2>
+            <p style={{ color: 'var(--text-muted)', margin: '0 0 20px' }}>
+              This will delete all tabs and their content. This can't be undone.
+            </p>
+            <div className="actions">
+              <button className="btn btn-ghost" onClick={() => setShowReset(false)}>Cancel</button>
+              <button className="btn btn-danger" onClick={() => { resetDevices(); setShowReset(false); }}>Reset</button>
             </div>
           </div>
         </div>

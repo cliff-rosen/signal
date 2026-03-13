@@ -74,6 +74,16 @@ function createDirectClient(broadcast, broadcastGlobal, ip) {
         throw err;
       }
     },
+    resetDevices: async (ns) => {
+      try {
+        logAPI(ns, 'reset_devices', { ip });
+        await store.resetDevices(ns);
+        broadcastGlobal(ns, { event: 'devices_reset' });
+      } catch (err) {
+        log.error('resetDevices failed', { namespace: ns, error: err.message });
+        throw err;
+      }
+    },
   };
 }
 

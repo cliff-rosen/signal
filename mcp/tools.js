@@ -27,19 +27,25 @@ function registerTools(server, namespace, client) {
   );
 
   server.tool(
-    'push_content',
-    'Push content to an existing virtual display tab. Types: text, markdown, html, url (renders a URL in an iframe), image (renders an image from a URL), list (JSON array), dashboard (JSON array of {title, value, subtitle?})',
+    'update_device',
+    'Update a virtual display tab. Can change the name, push new content, or clear content by setting content_type to "clear". Content types: text, markdown, html, url (renders in iframe), image (renders from URL), list (JSON array), dashboard (JSON array of {title, value, subtitle?})',
     {
       device: z.string().describe('Device ID (as returned by list_devices or create_device)'),
-      type: z.enum(['text', 'markdown', 'html', 'url', 'image', 'list', 'dashboard']).describe('Content type'),
-      body: z.string().describe('Content body. For url/image types, provide the URL. For list/dashboard types, provide a JSON string.'),
-      name: z.string().optional().describe('Optional new display name for the tab'),
+      name: z.string().optional().describe('New display name for the tab'),
+      content_type: z.enum(['text', 'markdown', 'html', 'url', 'image', 'list', 'dashboard', 'clear']).optional().describe('Content type, or "clear" to remove content'),
+      body: z.string().optional().describe('Content body. Required unless content_type is "clear".'),
     },
-    async ({ device, type, body, name }) => {
-      const updates = { content: { type, body } };
+    async ({ device, name, content_type, body }) => {
+      const updates = {};
       if (name) updates.name = name;
+      if (content_type === 'clear') {
+        updates.content = null;
+      } else if (content_type && body) {
+        updates.content = { type: content_type, body };
+      }
       const result = await client.updateDevice(namespace, device, updates);
-      return { content: [{ type: 'text', text: `Content pushed to "${result.name}" (${type}) at ${result.content.updatedAt}` }] };
+      const action = content_type === 'clear' ? 'cleared' : content_type ? `updated (${content_type})` : 'renamed';
+      return { content: [{ type: 'text', text: `Device "${result.name}" ${action}` }] };
     }
   );
 
@@ -54,12 +60,12 @@ function registerTools(server, namespace, client) {
   );
 
   server.tool(
-    'clear_device',
-    'Clear the content of a virtual display tab without deleting it',
-    { device: z.string().describe('Device ID (as returned by list_devices or create_device)') },
-    async ({ device }) => {
-      await client.updateDevice(namespace, device, { content: null });
-      return { content: [{ type: 'text', text: `Display "${device}" cleared.` }] };
+    'reset_devices',
+    'Delete all virtual display tabs and their content',
+    {},
+    async () => {
+      await client.resetDevices(namespace);
+      return { content: [{ type: 'text', text: 'All devices cleared.' }] };
     }
   );
 }

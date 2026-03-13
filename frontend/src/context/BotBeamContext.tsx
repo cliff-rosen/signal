@@ -21,6 +21,7 @@ interface BotBeamContextType {
   switchTab: (id: string) => void;
   addDevice: (name: string) => Promise<void>;
   removeDevice: (id: string) => Promise<void>;
+  resetDevices: () => Promise<void>;
   toggleDebug: () => void;
   proxyUrl: (url: string) => string;
 }
@@ -64,6 +65,11 @@ export function BotBeamProvider({ children }: { children: ReactNode }) {
   const removeDevice = useCallback(async (id: string) => {
     if (!namespace) return;
     await botbeamApi.deleteDevice(namespace, id);
+  }, [namespace]);
+
+  const resetDevices = useCallback(async () => {
+    if (!namespace) return;
+    await botbeamApi.resetDevices(namespace);
   }, [namespace]);
 
   const toggleDebug = useCallback(() => {
@@ -176,6 +182,7 @@ export function BotBeamProvider({ children }: { children: ReactNode }) {
     switchTab,
     addDevice,
     removeDevice,
+    resetDevices,
     toggleDebug,
     proxyUrl,
   };

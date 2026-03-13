@@ -103,6 +103,17 @@ body:has(.app) {
   color: var(--accent);
 }
 
+.tab-reset {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  padding: 8px 12px;
+  margin-left: auto;
+}
+
+.tab-reset:hover {
+  color: #e55;
+}
+
 /* ── Main content area ── */
 .main {
   flex: 1;

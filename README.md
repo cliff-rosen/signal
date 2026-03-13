@@ -28,7 +28,6 @@ PORT=4888
 | Command | What it does |
 |---------|-------------|
 | `npm start` | Start the server (web + MCP, single process) |
-| `npm run mcp` | Start the local stdio MCP server (for Claude Code) |
 
 ## How It Works
 
@@ -60,25 +59,6 @@ PORT=4888
 | `list` | JSON array | `'["item1", {"text":"item2","checked":true}]'` |
 | `dashboard` | JSON array of cards | `'[{"title":"Users","value":"1.2k"}]'` |
 
-## Local MCP (Claude Code)
-
-For local Claude Code usage, add to `.claude/mcp.json`:
-
-```json
-{
-  "mcpServers": {
-    "signal": {
-      "command": "node",
-      "args": ["C:\\code\\signal\\mcp\\index.js"],
-      "env": {
-        "SIGNAL_NAMESPACE": "your-namespace-id",
-        "SIGNAL_SERVER_URL": "http://localhost:4888"
-      }
-    }
-  }
-}
-```
-
 ## URL Structure
 
 ```
@@ -95,11 +75,11 @@ For local Claude Code usage, add to `.claude/mcp.json`:
 The server logs WebSocket connections, broadcasts, and API calls to stdout:
 
 ```
-[WS] Connected: abc123:dashboard (1 clients)
-[WS] Broadcast abc123:dashboard: content → 1 clients
-[WS] Broadcast abc123:_global: content_updated → 1 clients
+[WS] Connected: abc123:_global (1 clients)
+[WS] Broadcast abc123:_global: device_created → 1 clients
+[WS] Broadcast abc123:_global: device_updated → 1 clients
 [API] POST /s/abc123/api/devices
-[API] POST /s/abc123/api/devices/dashboard/content
+[API] PATCH /s/abc123/api/devices/thPRR7kb
 ```
 
 ## Architecture

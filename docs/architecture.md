@@ -14,7 +14,7 @@ Person (browser)  ──►  BotBeam Server  ◄──  Chatbot (MCP client)
 ```
 
 - **Person** — opens `https://botbeam.ironcliff.ai/s/{namespace}` in a browser. Sees tabs, receives content via WebSocket.
-- **Chatbot** — connects to `https://botbeam.ironcliff.ai/s/{namespace}/mcp` via MCP protocol. Calls tools like `push_content`, `list_devices`, `clear_device`.
+- **Chatbot** — connects to `https://botbeam.ironcliff.ai/s/{namespace}/mcp` via MCP protocol. Calls tools like `push_content`, `list_devices`, `create_device`, `delete_device`.
 - **Server** — one Node.js process running Express + WebSocket. Stores everything in MySQL. Two paths reach the same core logic (`store.js`):
   - **Browser path**: `routes.js` — REST API at `/s/{namespace}/api/...`
   - **Chatbot path**: `mcp.js` — MCP JSON-RPC at `/s/{namespace}/mcp`
@@ -33,18 +33,11 @@ server/
   db.js           — MySQL connection pool + table creation
 
 mcp/
-  index.js        — Stdio MCP server (for Claude Code local usage)
-  tools.js        — Tool definitions shared by mcp.js and mcp/index.js
-  client.js       — HTTP client (only used by stdio server)
+  tools.js        — MCP tool definitions (used by server/mcp.js)
 
-public/
-  landing.html    — Marketing landing page
-  index.html      — App shell (loads app.js)
-  display.html    — Standalone display page (loads display.js)
-  js/app.js       — Main app: tabs, content rendering, WebSocket, setup instructions
-  js/display.js   — Single-device display viewer
-  css/style.css   — Dark theme
-  favicon.svg     — Beam/screen icon
+frontend/
+  src/            — React app (Vite + TypeScript)
+  dist/           — Built assets (served by Express at /app/)
 ```
 
 ## How Mounting Works
@@ -84,8 +77,7 @@ Database name: `signal`
 Tables (created automatically by `db.js` on startup):
 
 - **namespaces** — `id` (nanoid 8), `ip_address`, `created_at`, `last_active`
-- **devices** — `id` (slugified name), `namespace` (FK), `name`, `created_at`
-- **content** — `namespace` + `device_id` (composite PK, FK), `type`, `body` (LONGTEXT), `updated_at`
+- **devices** — `id` (nanoid 8), `namespace` (FK), `name`, `content_type`, `content_body` (LONGTEXT), `content_updated_at`, `created_at`
 - **api_log** — `namespace`, `action`, `device`, `content_type`, `body` (LONGTEXT), `ip_address`, `created_at`
 
 ---

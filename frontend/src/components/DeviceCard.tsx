@@ -1,6 +1,5 @@
 import { marked } from 'marked';
 import type { Device, Content, DashboardCard, ListItem } from '../types';
-import { useBotBeam } from '../context/BotBeamContext';
 import { TYPE_META, contentDetail } from '../lib/contentMeta';
 
 interface Props {
@@ -67,8 +66,7 @@ function Preview({ content }: { content: Content }) {
 }
 
 export default function DeviceCard({ device, onClick }: Props) {
-  const { contentMap } = useBotBeam();
-  const content = contentMap[device.id] ?? null;
+  const content = device.content;
   const meta = content ? TYPE_META[content.type] : null;
   const detail = content ? contentDetail(content) : null;
 

@@ -7,9 +7,9 @@ interface Props {
 }
 
 export default function DeviceView({ deviceId }: Props) {
-  const { devices, contentMap } = useBotBeam();
+  const { devices } = useBotBeam();
   const device = devices.find(d => d.id === deviceId);
-  const content = contentMap[deviceId] ?? null;
+  const content = device?.content ?? null;
 
   if (!content) {
     return (

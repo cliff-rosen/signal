@@ -2,6 +2,7 @@ export interface Device {
   id: string;
   name: string;
   createdAt: string;
+  content: Content | null;
 }
 
 export type ContentType = 'text' | 'markdown' | 'html' | 'url' | 'image' | 'list' | 'dashboard';

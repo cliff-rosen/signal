@@ -13,7 +13,6 @@ interface BotBeamContextType {
   namespace: string | null;
   devices: Device[];
   activeTab: string;
-  contentMap: Record<string, Content | null>;
   wsLog: LogEntry[];
   showDebug: boolean;
   connected: boolean;
@@ -40,7 +39,6 @@ export function BotBeamProvider({ children }: { children: ReactNode }) {
   const [namespace, setNamespace] = useState<string | null>(match?.[1] ?? null);
   const [devices, setDevices] = useState<Device[]>([]);
   const [activeTab, setActiveTab] = useState('home');
-  const [contentMap, setContentMap] = useState<Record<string, Content | null>>({});
   const [wsLog, setWsLog] = useState<LogEntry[]>([]);
   const [showDebug, setShowDebug] = useState(false);
   const [connected, setConnected] = useState(false);
@@ -80,15 +78,23 @@ export function BotBeamProvider({ children }: { children: ReactNode }) {
 
   devicesRef.current = devices;
 
+  // --- Helpers to update device content ---
+
+  function setDeviceContent(deviceId: string, content: Content | null) {
+    setDevices(prev => prev.map(d => d.id === deviceId ? { ...d, content } : d));
+  }
+
   // --- Fetch full state from API (used on init and after reconnect) ---
 
   const refreshState = useCallback(async (ns: string) => {
     const list = await botbeamApi.getDevices(ns);
-    setDevices(list);
-    const entries = await Promise.all(
-      list.map(async d => [d.id, await botbeamApi.getContent(ns, d.id)] as const)
+    const devicesWithContent = await Promise.all(
+      list.map(async d => ({
+        ...d,
+        content: await botbeamApi.getContent(ns, d.id),
+      }))
     );
-    setContentMap(Object.fromEntries(entries));
+    setDevices(devicesWithContent);
   }, []);
 
   // --- Load devices + content when namespace is set ---
@@ -129,22 +135,24 @@ export function BotBeamProvider({ children }: { children: ReactNode }) {
 
         switch (msg.event) {
           case 'device_created':
-            setDevices(prev => prev.some(d => d.id === msg.device.id) ? prev : [...prev, msg.device]);
+            setDevices(prev => prev.some(d => d.id === msg.device.id)
+              ? prev
+              : [...prev, { ...msg.device, content: null }]
+            );
             setActiveTab(msg.device.id);
             break;
           case 'device_deleted':
             setDevices(prev => prev.filter(d => d.id !== msg.deviceId));
-            setContentMap(prev => { const next = { ...prev }; delete next[msg.deviceId]; return next; });
             setActiveTab(prev => prev === msg.deviceId ? 'home' : prev);
             break;
           case 'content_updated':
-            setContentMap(prev => ({ ...prev, [msg.deviceId]: msg.data }));
+            setDeviceContent(msg.deviceId, msg.data);
             if (devicesRef.current.some(d => d.id === msg.deviceId)) {
               setActiveTab(msg.deviceId);
             }
             break;
           case 'content_cleared':
-            setContentMap(prev => ({ ...prev, [msg.deviceId]: null }));
+            setDeviceContent(msg.deviceId, null);
             break;
         }
 
@@ -176,7 +184,6 @@ export function BotBeamProvider({ children }: { children: ReactNode }) {
     namespace,
     devices,
     activeTab,
-    contentMap,
     wsLog,
     showDebug,
     connected,

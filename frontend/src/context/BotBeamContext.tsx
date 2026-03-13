@@ -16,6 +16,7 @@ interface BotBeamContextType {
   wsLog: LogEntry[];
   showDebug: boolean;
   connected: boolean;
+  pulsingTab: string | null;
 
   getStarted: () => Promise<void>;
   switchTab: (id: string) => void;
@@ -43,6 +44,8 @@ export function BotBeamProvider({ children }: { children: ReactNode }) {
   const [wsLog, setWsLog] = useState<LogEntry[]>([]);
   const [showDebug, setShowDebug] = useState(false);
   const [connected, setConnected] = useState(false);
+  const [pulsingTab, setPulsingTab] = useState<string | null>(null);
+  const pulseTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const wsRef = useRef<WebSocket | null>(null);
 
   // --- Actions ---
@@ -89,12 +92,18 @@ export function BotBeamProvider({ children }: { children: ReactNode }) {
 
   // --- Load devices + content when namespace is set ---
 
+  // Load devices when namespace changes. The `cancelled` flag prevents a stale
+  // response from overwriting state if the namespace changes before the fetch resolves.
   useEffect(() => {
     if (!namespace) return;
     let cancelled = false;
-    refreshState(namespace).catch(() => { if (!cancelled) console.error('Initial state load failed'); });
+    botbeamApi.getDevices(namespace).then(devices => {
+      if (!cancelled) setDevices(devices);
+    }).catch(() => {
+      if (!cancelled) console.error('Initial state load failed');
+    });
     return () => { cancelled = true; };
-  }, [namespace, refreshState]);
+  }, [namespace]);
 
   // --- Global WebSocket ---
 
@@ -130,12 +139,18 @@ export function BotBeamProvider({ children }: { children: ReactNode }) {
               : [...prev, msg.device]
             );
             setActiveTab(msg.device.id);
+            clearTimeout(pulseTimer.current);
+            setPulsingTab(msg.device.id);
+            pulseTimer.current = setTimeout(() => setPulsingTab(null), 800);
             break;
           case 'device_updated':
             setDevices(prev => prev.map(d =>
               d.id === msg.device.id ? msg.device : d
             ));
             setActiveTab(msg.device.id);
+            clearTimeout(pulseTimer.current);
+            setPulsingTab(msg.device.id);
+            pulseTimer.current = setTimeout(() => setPulsingTab(null), 800);
             break;
           case 'device_deleted':
             setDevices(prev => prev.filter(d => d.id !== msg.deviceId));
@@ -178,6 +193,7 @@ export function BotBeamProvider({ children }: { children: ReactNode }) {
     wsLog,
     showDebug,
     connected,
+    pulsingTab,
     getStarted,
     switchTab,
     addDevice,

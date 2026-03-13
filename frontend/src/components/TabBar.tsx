@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useBotBeam } from '../context/BotBeamContext';
 
 export default function TabBar() {
-  const { devices, activeTab, switchTab, removeDevice, resetDevices, addDevice, connected } = useBotBeam();
+  const { devices, activeTab, switchTab, removeDevice, resetDevices, addDevice, connected, pulsingTab } = useBotBeam();
   const [showModal, setShowModal] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
   const [showReset, setShowReset] = useState(false);
@@ -39,7 +39,7 @@ export default function TabBar() {
         {devices.map(d => (
           <button
             key={d.id}
-            className={`tab ${activeTab === d.id ? 'active' : ''}`}
+            className={`tab ${activeTab === d.id ? 'active' : ''} ${pulsingTab === d.id ? 'tab-pulse' : ''}`}
             onClick={() => switchTab(d.id)}
           >
             <span>{d.name}</span>

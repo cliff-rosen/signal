@@ -48,16 +48,11 @@ app.use((req, res, next) => {
   next();
 });
 
-// Static assets (legacy: landing page, display page, CSS, favicon)
+// Static assets (display page CSS, favicon)
 app.use('/assets', express.static(path.join(__dirname, '..', 'public')));
 
-// React app build (Vite output)
+// React app static assets (Vite output)
 app.use('/app', express.static(path.join(__dirname, '..', 'frontend', 'dist')));
-
-// Landing page
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'public', 'landing.html'));
-});
 
 // Create namespace
 app.post('/api/namespaces', async (req, res) => {
@@ -71,9 +66,10 @@ app.post('/api/namespaces', async (req, res) => {
 app.use('/s/:namespace/mcp', namespaceMiddleware, createMCPRouter(broadcast, broadcastGlobal));
 app.use('/s/:namespace/api', namespaceMiddleware, createAPIRouter(broadcast, broadcastGlobal));
 
-app.get('/s/:namespace', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'frontend', 'dist', 'index.html'));
-});
+// React app — serves both landing (/) and namespace dashboards (/s/:id)
+const reactIndex = path.join(__dirname, '..', 'frontend', 'dist', 'index.html');
+app.get('/', (req, res) => res.sendFile(reactIndex));
+app.get('/s/:namespace', (req, res) => res.sendFile(reactIndex));
 
 // Admin
 app.use('/admin', createAdminRouter());

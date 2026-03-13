@@ -26,12 +26,19 @@ else
   echo "No running task found (first deploy?)"
 fi
 
-# 2. Deploy via Copilot
+# 2. Open security group so the new task can connect to RDS during startup
+echo ""
+echo "Opening RDS security group for deploy..."
+aws ec2 authorize-security-group-ingress --group-id "$SG_ID" \
+  --protocol tcp --port 3306 --cidr 0.0.0.0/0 2>/dev/null || true
+echo "Security group opened."
+
+# 3. Deploy via Copilot
 echo ""
 echo "Deploying..."
 copilot svc deploy --name web --env prod
 
-# 3. Get the new ECS task's public IP
+# 4. Get the new ECS task's public IP
 echo ""
 echo "Finding new task IP..."
 sleep 5
@@ -40,7 +47,9 @@ TASK_ARN=$(aws ecs list-tasks --cluster "$CLUSTER" \
   --query "taskArns[0]" --output text)
 
 if [ "$TASK_ARN" = "None" ] || [ -z "$TASK_ARN" ]; then
-  echo "ERROR: No running task found after deploy."
+  echo "ERROR: No running task found after deploy. Closing security group."
+  aws ec2 revoke-security-group-ingress --group-id "$SG_ID" \
+    --protocol tcp --port 3306 --cidr 0.0.0.0/0 2>/dev/null || true
   exit 1
 fi
 
@@ -52,18 +61,31 @@ NEW_IP=$(aws ec2 describe-network-interfaces --network-interface-ids "$ENI" \
 
 echo "New task IP: $NEW_IP"
 
-# 4. Update RDS security group: revoke old ECS IP, authorize new one
+# 5. Lock down security group: remove 0.0.0.0/0, add specific IPs
+echo "Locking down security group..."
+aws ec2 revoke-security-group-ingress --group-id "$SG_ID" \
+  --protocol tcp --port 3306 --cidr 0.0.0.0/0 2>/dev/null || true
+
+# Revoke old ECS IP if it changed
 if [ -n "$OLD_IP" ] && [ "$OLD_IP" != "$NEW_IP" ]; then
   echo "Revoking old ECS IP ($OLD_IP)..."
   aws ec2 revoke-security-group-ingress --group-id "$SG_ID" \
     --protocol tcp --port 3306 --cidr "${OLD_IP}/32" 2>/dev/null || true
 fi
 
+# Add new ECS IP
 echo "Authorizing new ECS IP ($NEW_IP)..."
 aws ec2 authorize-security-group-ingress --group-id "$SG_ID" \
   --protocol tcp --port 3306 --cidr "${NEW_IP}/32" 2>/dev/null || true
 
+# Keep developer IP if present
+LOCAL_IP=$(curl -s https://checkip.amazonaws.com)
+echo "Ensuring local IP ($LOCAL_IP) is authorized..."
+aws ec2 authorize-security-group-ingress --group-id "$SG_ID" \
+  --protocol tcp --port 3306 --cidr "${LOCAL_IP}/32" 2>/dev/null || true
+
 echo ""
 echo "=== Deploy complete ==="
-echo "ECS IP: $NEW_IP"
-echo "Site:   https://botbeam.ironcliff.ai"
+echo "ECS IP:   $NEW_IP"
+echo "Local IP: $LOCAL_IP"
+echo "Site:     https://botbeam.ironcliff.ai"

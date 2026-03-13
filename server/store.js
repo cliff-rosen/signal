@@ -5,7 +5,7 @@ const { createLogger } = require('./logger');
 const log = createLogger('store');
 const MAX_BODY_BYTES = 512 * 1024; // 500KB
 
-const VALID_CONTENT_TYPES = new Set(['text', 'html', 'url', 'image', 'markdown', 'dashboard', 'list']);
+const VALID_CONTENT_TYPES = new Set(['text', 'html', 'url', 'image', 'markdown', 'dashboard', 'list', 'table']);
 
 function validateContent(type, body) {
   if (!type || typeof type !== 'string') throw new Error('Content type is required');

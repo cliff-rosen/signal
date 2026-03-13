@@ -16,7 +16,7 @@ function registerTools(server, namespace, client) {
     'Create a new virtual display tab, optionally with initial content.',
     {
       name: z.string().describe('Display name for the tab (e.g. "Overview", "Cheat Sheet")'),
-      type: z.enum(['text', 'markdown', 'html', 'url', 'image', 'list', 'dashboard']).optional().describe('Content type (optional)'),
+      type: z.enum(['text', 'markdown', 'html', 'url', 'image', 'list', 'dashboard', 'table']).optional().describe('Content type (optional)'),
       body: z.string().optional().describe('Content body (optional). For url/image types, provide the URL. For list/dashboard types, provide a JSON string.'),
     },
     async ({ name, type, body }) => {
@@ -32,7 +32,7 @@ function registerTools(server, namespace, client) {
     {
       device: z.string().describe('Device ID (as returned by list_devices or create_device)'),
       name: z.string().optional().describe('New display name for the tab'),
-      content_type: z.enum(['text', 'markdown', 'html', 'url', 'image', 'list', 'dashboard', 'clear']).optional().describe('Content type, or "clear" to remove content'),
+      content_type: z.enum(['text', 'markdown', 'html', 'url', 'image', 'list', 'dashboard', 'table', 'clear']).optional().describe('Content type, or "clear" to remove content'),
       body: z.string().optional().describe('Content body. Required unless content_type is "clear".'),
     },
     async ({ device, name, content_type, body }) => {

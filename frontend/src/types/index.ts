@@ -5,7 +5,17 @@ export interface Device {
   content: Content | null;
 }
 
-export type ContentType = 'text' | 'markdown' | 'html' | 'url' | 'image' | 'list' | 'dashboard';
+export type ContentType = 'text' | 'markdown' | 'html' | 'url' | 'image' | 'list' | 'dashboard' | 'table';
+
+export interface TableColumn {
+  id: string;
+  label: string;
+}
+
+export interface TableData {
+  columns: TableColumn[];
+  rows: Record<string, unknown>[];
+}
 
 export interface Content {
   type: ContentType;

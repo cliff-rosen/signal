@@ -1,21 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useBotBeam } from '../context/BotBeamContext';
-import { settings } from '../config/settings';
 
 export default function TabBar() {
-  const { devices, activeTab, switchTab, removeDevice, resetDevices, addDevice, connected, pulsingTab } = useBotBeam();
+  const { devices, activeTab, switchTab, removeDevice, resetDevices, addDevice, connected, pulsingTab, version } = useBotBeam();
   const [showModal, setShowModal] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
   const [showReset, setShowReset] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
-  const [version, setVersion] = useState('');
   const [newName, setNewName] = useState('');
-
-  useEffect(() => {
-    fetch(`${settings.apiUrl}/health`).then(r => r.json()).then(d => {
-      setVersion(d.version ?? '');
-    }).catch(() => {});
-  }, []);
 
   function handleAbout() {
     setShowAbout(true);

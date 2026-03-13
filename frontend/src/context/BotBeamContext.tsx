@@ -17,6 +17,7 @@ interface BotBeamContextType {
   showDebug: boolean;
   connected: boolean;
   pulsingTab: string | null;
+  version: string;
 
   getStarted: () => Promise<void>;
   switchTab: (id: string) => void;
@@ -45,8 +46,10 @@ export function BotBeamProvider({ children }: { children: ReactNode }) {
   const [showDebug, setShowDebug] = useState(false);
   const [connected, setConnected] = useState(false);
   const [pulsingTab, setPulsingTab] = useState<string | null>(null);
+  const [version, setVersion] = useState('');
   const pulseTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const wsRef = useRef<WebSocket | null>(null);
+  const initialVersion = useRef('');
 
   // --- Actions ---
 
@@ -184,6 +187,25 @@ export function BotBeamProvider({ children }: { children: ReactNode }) {
     };
   }, [namespace, refreshState]);
 
+  // --- Version polling: reload when a new deploy is detected ---
+
+  useEffect(() => {
+    function check() {
+      fetch(`${settings.apiUrl}/health`).then(r => r.json()).then(d => {
+        const v = d.version ?? '';
+        if (!initialVersion.current) {
+          initialVersion.current = v;
+          setVersion(v);
+        } else if (v && v !== initialVersion.current) {
+          window.location.reload();
+        }
+      }).catch(() => {});
+    }
+    check();
+    const id = setInterval(check, 30_000);
+    return () => clearInterval(id);
+  }, []);
+
   // --- Provider ---
 
   const value: BotBeamContextType = {
@@ -194,6 +216,7 @@ export function BotBeamProvider({ children }: { children: ReactNode }) {
     showDebug,
     connected,
     pulsingTab,
+    version,
     getStarted,
     switchTab,
     addDevice,

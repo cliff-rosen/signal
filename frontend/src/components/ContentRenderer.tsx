@@ -1,6 +1,6 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { marked } from 'marked';
-import type { Content, DashboardCard, ListItem } from '../types';
+import type { Content, DashboardCard, ListItem, TableData } from '../types';
 import { useBotBeam } from '../context/BotBeamContext';
 
 interface Props {
@@ -65,6 +65,97 @@ function ImageEmbed({ url }: { url: string }) {
   }
 
   return <img className="content-image" src={url} alt="Display" onError={() => setFailed(true)} />;
+}
+
+type SortDir = 'asc' | 'desc' | null;
+
+function TableView({ data }: { data: TableData }) {
+  const [sortCol, setSortCol] = useState<string | null>(null);
+  const [sortDir, setSortDir] = useState<SortDir>(null);
+  const [filter, setFilter] = useState('');
+
+  const toggleSort = (colId: string) => {
+    if (sortCol !== colId) { setSortCol(colId); setSortDir('asc'); }
+    else if (sortDir === 'asc') setSortDir('desc');
+    else { setSortCol(null); setSortDir(null); }
+  };
+
+  const rows = useMemo(() => {
+    let result = data.rows;
+
+    if (filter) {
+      const q = filter.toLowerCase();
+      result = result.filter(row =>
+        data.columns.some(col => String(row[col.id] ?? '').toLowerCase().includes(q))
+      );
+    }
+
+    if (sortCol && sortDir) {
+      result = [...result].sort((a, b) => {
+        const av = a[sortCol] ?? '';
+        const bv = b[sortCol] ?? '';
+        const an = Number(av), bn = Number(bv);
+        let cmp: number;
+        if (!isNaN(an) && !isNaN(bn) && av !== '' && bv !== '') {
+          cmp = an - bn;
+        } else {
+          cmp = String(av).localeCompare(String(bv));
+        }
+        return sortDir === 'desc' ? -cmp : cmp;
+      });
+    }
+
+    return result;
+  }, [data.rows, data.columns, filter, sortCol, sortDir]);
+
+  return (
+    <div className="content-table-wrap">
+      <div className="content-table-toolbar">
+        <input
+          className="content-table-search"
+          type="text"
+          placeholder="Filter rows..."
+          value={filter}
+          onChange={e => setFilter(e.target.value)}
+        />
+        <span className="content-table-count">
+          {rows.length}{filter ? ` / ${data.rows.length}` : ''} row{rows.length !== 1 ? 's' : ''}
+        </span>
+      </div>
+      <div className="content-table-scroll">
+        <table className="content-table">
+          <thead>
+            <tr>
+              {data.columns.map(col => (
+                <th key={col.id} onClick={() => toggleSort(col.id)}>
+                  <span>{col.label}</span>
+                  <span className="sort-indicator">
+                    {sortCol === col.id ? (sortDir === 'asc' ? ' \u25B2' : ' \u25BC') : ''}
+                  </span>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row, i) => (
+              <tr key={i}>
+                {data.columns.map(col => (
+                  <td key={col.id}>{String(row[col.id] ?? '')}</td>
+                ))}
+              </tr>
+            ))}
+            {rows.length === 0 && (
+              <tr>
+                <td colSpan={data.columns.length} className="content-table-empty">
+                  {filter ? 'No matching rows' : 'No data'}
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
 }
 
 export default function ContentRenderer({ content }: Props) {
@@ -139,6 +230,15 @@ export default function ContentRenderer({ content }: Props) {
               </div>
             ))}
           </div>
+        </div>
+      );
+    }
+
+    case 'table': {
+      const tableData: TableData = JSON.parse(content.body);
+      return (
+        <div className="content content-table">
+          <TableView data={tableData} />
         </div>
       );
     }

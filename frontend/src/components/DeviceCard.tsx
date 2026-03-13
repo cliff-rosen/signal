@@ -1,5 +1,5 @@
 import { marked } from 'marked';
-import type { Device, Content, DashboardCard, ListItem } from '../types';
+import type { Device, Content, DashboardCard, ListItem, TableData } from '../types';
 import { TYPE_META, contentDetail } from '../lib/contentMeta';
 
 interface Props {
@@ -57,6 +57,28 @@ function Preview({ content }: { content: Content }) {
               <div className="value">{c.value}</div>
             </div>
           ))}
+        </div>
+      );
+    }
+    case 'table': {
+      const data: TableData = JSON.parse(content.body);
+      return (
+        <div className="preview-table-wrap">
+          <table className="preview-table">
+            <thead>
+              <tr>{data.columns.slice(0, 4).map(c => <th key={c.id}>{c.label}</th>)}</tr>
+            </thead>
+            <tbody>
+              {data.rows.slice(0, 5).map((row, i) => (
+                <tr key={i}>
+                  {data.columns.slice(0, 4).map(c => (
+                    <td key={c.id}>{String(row[c.id] ?? '')}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {data.rows.length > 5 && <div className="preview-more">+{data.rows.length - 5} more rows</div>}
         </div>
       );
     }

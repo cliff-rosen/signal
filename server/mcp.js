@@ -128,7 +128,8 @@ function createRouter(broadcast, broadcastGlobal) {
             },
           });
 
-          const mcpServer = new McpServer({ name: 'botbeam', version: '0.2.0' });
+          const { MCP_VERSION } = require('../mcp/tools');
+          const mcpServer = new McpServer({ name: 'botbeam', version: MCP_VERSION });
           registerTools(mcpServer, namespace, client);
           await mcpServer.connect(transport);
           await transport.handleRequest(req, res, body);

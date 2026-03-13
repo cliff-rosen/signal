@@ -1,5 +1,8 @@
 const { z } = require('zod');
 
+// Bump when the tool surface changes (new tools, renamed params, schema changes)
+const MCP_VERSION = '1.0.0';
+
 function registerTools(server, namespace, client) {
   server.tool(
     'list_devices',
@@ -70,4 +73,4 @@ function registerTools(server, namespace, client) {
   );
 }
 
-module.exports = { registerTools };
+module.exports = { registerTools, MCP_VERSION };

@@ -16,6 +16,7 @@ interface BotBeamContextType {
   contentMap: Record<string, Content | null>;
   wsLog: LogEntry[];
   showDebug: boolean;
+  connected: boolean;
 
   getStarted: () => Promise<void>;
   switchTab: (id: string) => void;
@@ -42,6 +43,7 @@ export function BotBeamProvider({ children }: { children: ReactNode }) {
   const [contentMap, setContentMap] = useState<Record<string, Content | null>>({});
   const [wsLog, setWsLog] = useState<LogEntry[]>([]);
   const [showDebug, setShowDebug] = useState(false);
+  const [connected, setConnected] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
   const devicesRef = useRef<Device[]>([]);
 
@@ -115,6 +117,7 @@ export function BotBeamProvider({ children }: { children: ReactNode }) {
       wsRef.current = ws;
 
       ws.onopen = () => {
+        setConnected(true);
         if (isReconnect) {
           refreshState(ns).catch(() => {});
         }
@@ -153,6 +156,7 @@ export function BotBeamProvider({ children }: { children: ReactNode }) {
       };
 
       ws.onclose = () => {
+        setConnected(false);
         if (!cancelled) reconnectTimer = setTimeout(connect, 2000);
       };
     }
@@ -175,6 +179,7 @@ export function BotBeamProvider({ children }: { children: ReactNode }) {
     contentMap,
     wsLog,
     showDebug,
+    connected,
     getStarted,
     switchTab,
     addDevice,

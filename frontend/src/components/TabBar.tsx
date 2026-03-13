@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useBotBeam } from '../context/BotBeamContext';
 
 export default function TabBar() {
-  const { devices, activeTab, switchTab, removeDevice, addDevice } = useBotBeam();
+  const { devices, activeTab, switchTab, removeDevice, addDevice, connected } = useBotBeam();
   const [showModal, setShowModal] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
   const [newName, setNewName] = useState('');
@@ -23,7 +23,10 @@ export default function TabBar() {
   return (
     <>
       <nav className="tab-bar">
-        <a className="back-link" href="/">BotBeam</a>
+        <a className="back-link" href="/">
+          <span className={`ws-dot ${connected ? 'on' : ''}`} title={connected ? 'Connected' : 'Disconnected'} />
+          BotBeam
+        </a>
 
         <button
           className={`tab ${activeTab === 'home' ? 'active' : ''}`}

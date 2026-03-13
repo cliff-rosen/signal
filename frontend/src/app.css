@@ -1029,6 +1029,21 @@ body:has(.app) {
   color: var(--accent);
 }
 
+.ws-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #555;
+  margin-right: 6px;
+  vertical-align: middle;
+  transition: background 0.3s;
+}
+
+.ws-dot.on {
+  background: var(--success);
+}
+
 /* ── Debug panel ── */
 .debug-toggle {
   position: fixed;

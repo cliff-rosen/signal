@@ -1052,6 +1052,32 @@ body:has(.app) {
   color: var(--accent);
 }
 
+.back-group {
+  display: flex;
+  align-items: center;
+  margin-right: auto;
+}
+
+.back-group .back-link {
+  margin-right: 0;
+}
+
+.tab-about {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-family: var(--font);
+  font-size: 0.6rem;
+  padding: 2px 6px;
+  cursor: pointer;
+  opacity: 0.35;
+  transition: opacity 0.2s;
+}
+
+.tab-about:hover {
+  opacity: 1;
+}
+
 .ws-dot {
   display: inline-block;
   width: 6px;

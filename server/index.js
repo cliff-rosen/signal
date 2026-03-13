@@ -13,8 +13,11 @@ const { createLogger, generateRequestId } = require('./logger');
 const { createAdminRouter } = require('./admin');
 const store = require('./store');
 
+const fs = require('fs');
+
 const httpLog = createLogger('http');
 const PORT = process.env.PORT || 4888;
+const VERSION = fs.readFileSync(path.join(__dirname, '..', 'VERSION'), 'utf8').trim();
 const app = express();
 const server = http.createServer(app);
 
@@ -75,14 +78,14 @@ app.get('/s/:namespace', (req, res) => res.sendFile(reactIndex));
 app.use('/admin', createAdminRouter());
 
 // Health check
-app.get('/health', (req, res) => res.json({ status: 'ok' }));
+app.get('/health', (req, res) => res.json({ status: 'ok', version: VERSION }));
 
 // Start
 async function start() {
   await initDB();
   server.listen(PORT, () => {
     console.log(`\n  ╔══════════════════════════════════════╗`);
-    console.log(`  ║         BOTBEAM v0.2.0                ║`);
+    console.log(`  ║         BOTBEAM v${VERSION.padEnd(21)}║`);
     console.log(`  ║   AI-Powered Virtual Display Platform ║`);
     console.log(`  ╚══════════════════════════════════════╝`);
     console.log(`\n  Landing:  http://localhost:${PORT}`);

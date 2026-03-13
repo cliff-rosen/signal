@@ -7,7 +7,13 @@ export AWS_REGION=us-east-2
 SG_ID="sg-0b539947e6ed29cf0"
 CLUSTER="botbeam-prod-Cluster-RF1huELGViqb"
 
-echo "=== BotBeam Deploy ==="
+# Bump version
+VERSION_FILE="$(dirname "$0")/VERSION"
+CURRENT=$(cat "$VERSION_FILE")
+NEXT=$(awk "BEGIN {printf \"%.1f\", $CURRENT + 0.1}")
+echo "$NEXT" > "$VERSION_FILE"
+
+echo "=== BotBeam Deploy v${NEXT} ==="
 echo ""
 
 # 1. Get the current ECS task IP (this is the "old" IP we'll revoke later)

@@ -1,12 +1,25 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useBotBeam } from '../context/BotBeamContext';
+import { settings } from '../config/settings';
 
 export default function TabBar() {
   const { devices, activeTab, switchTab, removeDevice, resetDevices, addDevice, connected, pulsingTab } = useBotBeam();
   const [showModal, setShowModal] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
   const [showReset, setShowReset] = useState(false);
+  const [showAbout, setShowAbout] = useState(false);
+  const [version, setVersion] = useState('');
   const [newName, setNewName] = useState('');
+
+  useEffect(() => {
+    fetch(`${settings.apiUrl}/health`).then(r => r.json()).then(d => {
+      setVersion(d.version ?? '');
+    }).catch(() => {});
+  }, []);
+
+  function handleAbout() {
+    setShowAbout(true);
+  }
 
   async function handleCreate() {
     const name = newName.trim();
@@ -24,10 +37,13 @@ export default function TabBar() {
   return (
     <>
       <nav className="tab-bar">
-        <a className="back-link" href="/">
-          <span className={`ws-dot ${connected ? 'on' : ''}`} title={connected ? 'Connected' : 'Disconnected'} />
-          BotBeam
-        </a>
+        <span className="back-group">
+          <a className="back-link" href="/">
+            <span className={`ws-dot ${connected ? 'on' : ''}`} title={connected ? 'Connected' : 'Disconnected'} />
+            BotBeam
+          </a>
+          <button className="tab-about" title="About BotBeam" onClick={handleAbout}>v{version}</button>
+        </span>
 
         <button
           className={`tab ${activeTab === 'home' ? 'active' : ''}`}
@@ -96,6 +112,24 @@ export default function TabBar() {
             <div className="actions">
               <button className="btn btn-ghost" onClick={() => setShowReset(false)}>Cancel</button>
               <button className="btn btn-danger" onClick={() => { resetDevices(); setShowReset(false); }}>Reset</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* About modal */}
+      {showAbout && (
+        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowAbout(false); }}>
+          <div className="modal" style={{ textAlign: 'center' }}>
+            <h2>BotBeam</h2>
+            <p style={{ color: 'var(--text-muted)', margin: '0 0 8px' }}>
+              AI-Powered Virtual Display Platform
+            </p>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+              Version {version}
+            </p>
+            <div className="actions" style={{ marginTop: '16px' }}>
+              <button className="btn btn-primary" onClick={() => setShowAbout(false)}>OK</button>
             </div>
           </div>
         </div>

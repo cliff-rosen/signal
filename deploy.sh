@@ -1,70 +1,69 @@
-#!/bin/bash
-# BotBeam deploy script
-# Handles the RDS security group dance (open before deploy, lock down after)
+#!/usr/bin/env bash
+set -euo pipefail
 
-set -e
+export AWS_PROFILE=copilot
+export AWS_REGION=us-east-2
 
-PROFILE="copilot"
-REGION="us-east-2"
-RDS_SG="sg-0b539947e6ed29cf0"
+SG_ID="sg-0b539947e6ed29cf0"
 CLUSTER="botbeam-prod-Cluster-RF1huELGViqb"
 
-echo "=== Opening RDS security group for deploy ==="
-AWS_PROFILE=$PROFILE aws ec2 authorize-security-group-ingress \
-  --group-id $RDS_SG --protocol tcp --port 3306 --cidr 0.0.0.0/0 \
-  --region $REGION 2>/dev/null || echo "(already open)"
+echo "=== BotBeam Deploy ==="
+echo ""
 
-echo "=== Deploying to ECS ==="
-AWS_PROFILE=$PROFILE copilot svc deploy --name web --env prod
+# 1. Get the current ECS task IP (this is the "old" IP we'll revoke later)
+echo "Finding current ECS task IP..."
+OLD_TASK_ARN=$(aws ecs list-tasks --cluster "$CLUSTER" \
+  --query "taskArns[0]" --output text 2>/dev/null || echo "None")
 
-echo "=== Getting new ECS task IP ==="
-TASK_ARN=$(AWS_PROFILE=$PROFILE aws ecs list-tasks \
-  --cluster $CLUSTER --region $REGION \
+OLD_IP=""
+if [ "$OLD_TASK_ARN" != "None" ] && [ -n "$OLD_TASK_ARN" ]; then
+  OLD_ENI=$(aws ecs describe-tasks --cluster "$CLUSTER" --tasks "$OLD_TASK_ARN" \
+    --query "tasks[0].attachments[0].details[?name=='networkInterfaceId'].value" --output text)
+  OLD_IP=$(aws ec2 describe-network-interfaces --network-interface-ids "$OLD_ENI" \
+    --query "NetworkInterfaces[0].Association.PublicIp" --output text)
+  echo "Current task IP: $OLD_IP"
+else
+  echo "No running task found (first deploy?)"
+fi
+
+# 2. Deploy via Copilot
+echo ""
+echo "Deploying..."
+copilot svc deploy --name web --env prod
+
+# 3. Get the new ECS task's public IP
+echo ""
+echo "Finding new task IP..."
+sleep 5
+
+TASK_ARN=$(aws ecs list-tasks --cluster "$CLUSTER" \
   --query "taskArns[0]" --output text)
 
-ENI=$(AWS_PROFILE=$PROFILE aws ecs describe-tasks \
-  --cluster $CLUSTER --tasks "$TASK_ARN" --region $REGION \
+if [ "$TASK_ARN" = "None" ] || [ -z "$TASK_ARN" ]; then
+  echo "ERROR: No running task found after deploy."
+  exit 1
+fi
+
+ENI=$(aws ecs describe-tasks --cluster "$CLUSTER" --tasks "$TASK_ARN" \
   --query "tasks[0].attachments[0].details[?name=='networkInterfaceId'].value" --output text)
 
-NEW_IP=$(AWS_PROFILE=$PROFILE aws ec2 describe-network-interfaces \
-  --network-interface-ids "$ENI" --region $REGION \
+NEW_IP=$(aws ec2 describe-network-interfaces --network-interface-ids "$ENI" \
   --query "NetworkInterfaces[0].Association.PublicIp" --output text)
 
-echo "New ECS IP: $NEW_IP"
+echo "New task IP: $NEW_IP"
 
-echo "=== Locking down RDS security group ==="
-# Remove 0.0.0.0/0
-AWS_PROFILE=$PROFILE aws ec2 revoke-security-group-ingress \
-  --group-id $RDS_SG --protocol tcp --port 3306 --cidr 0.0.0.0/0 \
-  --region $REGION 2>/dev/null || true
+# 4. Update RDS security group: revoke old ECS IP, authorize new one
+if [ -n "$OLD_IP" ] && [ "$OLD_IP" != "$NEW_IP" ]; then
+  echo "Revoking old ECS IP ($OLD_IP)..."
+  aws ec2 revoke-security-group-ingress --group-id "$SG_ID" \
+    --protocol tcp --port 3306 --cidr "${OLD_IP}/32" 2>/dev/null || true
+fi
 
-# Remove all old /32 ECS IPs (keep dev IP)
-DEV_IP="71.211.141.248"
-EXISTING=$(AWS_PROFILE=$PROFILE aws ec2 describe-security-groups \
-  --group-ids $RDS_SG --region $REGION \
-  --query "SecurityGroups[0].IpPermissions[?FromPort==\`3306\`].IpRanges[].CidrIp" --output text)
-
-for CIDR in $EXISTING; do
-  IP="${CIDR%/32}"
-  if [ "$IP" != "$DEV_IP" ] && [ "$IP" != "$NEW_IP" ]; then
-    echo "  Removing old IP: $CIDR"
-    AWS_PROFILE=$PROFILE aws ec2 revoke-security-group-ingress \
-      --group-id $RDS_SG --protocol tcp --port 3306 --cidr "$CIDR" \
-      --region $REGION 2>/dev/null || true
-  fi
-done
-
-# Add new ECS IP
-AWS_PROFILE=$PROFILE aws ec2 authorize-security-group-ingress \
-  --group-id $RDS_SG --protocol tcp --port 3306 --cidr "$NEW_IP/32" \
-  --region $REGION 2>/dev/null || echo "(already exists)"
-
-echo "=== Verifying ==="
-curl -sf https://botbeam.ironcliff.ai/health && echo " OK" || echo " FAILED"
+echo "Authorizing new ECS IP ($NEW_IP)..."
+aws ec2 authorize-security-group-ingress --group-id "$SG_ID" \
+  --protocol tcp --port 3306 --cidr "${NEW_IP}/32" 2>/dev/null || true
 
 echo ""
-echo "RDS security group now allows:"
-echo "  - $DEV_IP/32 (dev)"
-echo "  - $NEW_IP/32 (ECS)"
-echo ""
-echo "Done."
+echo "=== Deploy complete ==="
+echo "ECS IP: $NEW_IP"
+echo "Site:   https://botbeam.ironcliff.ai"

@@ -120,7 +120,9 @@ document.getElementById('pw').addEventListener('keydown', e => { if (e.key === '
 
 async function doLogin() {
   token = document.getElementById('pw').value;
+  console.log('[admin] doLogin called, token length:', token.length);
   const ok = await tryLoad();
+  console.log('[admin] tryLoad returned:', ok);
   if (ok) {
     localStorage.setItem('botbeam-admin-token', token);
   } else {
@@ -129,15 +131,19 @@ async function doLogin() {
 }
 
 async function tryLoad() {
+  console.log('[admin] tryLoad called, token:', JSON.stringify(token));
   try {
     const res = await fetch('/admin/api/namespaces', { headers: { Authorization: token } });
+    console.log('[admin] fetch status:', res.status);
     if (!res.ok) return false;
     const data = await res.json();
+    console.log('[admin] data received, count:', data.length);
     document.getElementById('login').style.display = 'none';
     document.getElementById('app').style.display = '';
     renderNamespaces(data);
+    console.log('[admin] renderNamespaces complete');
     return true;
-  } catch { return false; }
+  } catch (err) { console.error('[admin] tryLoad error:', err); return false; }
 }
 
 function renderNamespaces(list) {

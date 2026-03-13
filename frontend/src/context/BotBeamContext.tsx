@@ -78,24 +78,25 @@ export function BotBeamProvider({ children }: { children: ReactNode }) {
 
   devicesRef.current = devices;
 
+  // --- Fetch full state from API (used on init and after reconnect) ---
+
+  const refreshState = useCallback(async (ns: string) => {
+    const list = await botbeamApi.getDevices(ns);
+    setDevices(list);
+    const entries = await Promise.all(
+      list.map(async d => [d.id, await botbeamApi.getContent(ns, d.id)] as const)
+    );
+    setContentMap(Object.fromEntries(entries));
+  }, []);
+
   // --- Load devices + content when namespace is set ---
 
   useEffect(() => {
     if (!namespace) return;
-    const ns = namespace;
     let cancelled = false;
-    botbeamApi.getDevices(ns).then(async list => {
-      if (cancelled) return;
-      setDevices(list);
-      const entries = await Promise.all(
-        list.map(async d => [d.id, await botbeamApi.getContent(ns, d.id)] as const)
-      );
-      if (!cancelled) {
-        setContentMap(Object.fromEntries(entries));
-      }
-    });
+    refreshState(namespace).catch(() => { if (!cancelled) console.error('Initial state load failed'); });
     return () => { cancelled = true; };
-  }, [namespace]);
+  }, [namespace, refreshState]);
 
   // --- Global WebSocket ---
 
@@ -106,11 +107,19 @@ export function BotBeamProvider({ children }: { children: ReactNode }) {
     let reconnectTimer: ReturnType<typeof setTimeout>;
     let cancelled = false;
     let ws: WebSocket;
+    let isReconnect = false;
 
     function connect() {
       if (cancelled) return;
       ws = new WebSocket(`${settings.wsUrl}/ws?namespace=${ns}&device=_global`);
       wsRef.current = ws;
+
+      ws.onopen = () => {
+        if (isReconnect) {
+          refreshState(ns).catch(() => {});
+        }
+        isReconnect = true;
+      };
 
       ws.onmessage = (e) => {
         const msg: WSEvent = JSON.parse(e.data);
@@ -155,7 +164,7 @@ export function BotBeamProvider({ children }: { children: ReactNode }) {
       clearTimeout(reconnectTimer);
       ws.close();
     };
-  }, [namespace]);
+  }, [namespace, refreshState]);
 
   // --- Provider ---
 

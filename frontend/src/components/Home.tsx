@@ -12,6 +12,8 @@ export default function Home() {
   const [copied, setCopied] = useState(false);
 
   const mcpUrl = `${settings.publicUrl}/s/${namespace}/mcp`;
+  const displayDevices = devices.filter(d => !d.pickupMode);
+  const hasDevices = devices.length > 0;
 
   function dismissBookmark() {
     localStorage.setItem(`botbeam-bookmark-${namespace}`, '1');
@@ -39,24 +41,10 @@ export default function Home() {
           </div>
         )}
 
-        {/* MCP endpoint */}
-        <div className="endpoint-banner">
-          <div className="endpoint-label">Your MCP Endpoint</div>
-          <div className="endpoint-row">
-            <code className="endpoint-url">{mcpUrl}</code>
-            <button className="btn btn-primary btn-copy" onClick={copyEndpoint}>
-              {copied ? 'Copied!' : 'Copy'}
-            </button>
-          </div>
-        </div>
-
-        {/* Setup instructions */}
-        <SetupInstructions mcpUrl={mcpUrl} />
-
-        {/* Device grid */}
-        {devices.filter(d => !d.pickupMode).length > 0 && (
+        {/* Device grid — top when devices exist */}
+        {displayDevices.length > 0 && (
           <div className="device-grid">
-            {devices.filter(d => !d.pickupMode).map(d => (
+            {displayDevices.map(d => (
               <DeviceCard
                 key={d.id}
                 device={d}
@@ -65,6 +53,30 @@ export default function Home() {
             ))}
           </div>
         )}
+
+        {/* MCP endpoint — compact when devices exist */}
+        {hasDevices ? (
+          <div className="endpoint-compact">
+            <span className="endpoint-compact-label">MCP</span>
+            <code className="endpoint-compact-url">{mcpUrl}</code>
+            <button className="btn btn-ghost endpoint-compact-copy" onClick={copyEndpoint}>
+              {copied ? 'Copied!' : 'Copy'}
+            </button>
+          </div>
+        ) : (
+          <div className="endpoint-banner">
+            <div className="endpoint-label">Your MCP Endpoint</div>
+            <div className="endpoint-row">
+              <code className="endpoint-url">{mcpUrl}</code>
+              <button className="btn btn-primary btn-copy" onClick={copyEndpoint}>
+                {copied ? 'Copied!' : 'Copy'}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Setup instructions — collapsed when devices exist */}
+        <SetupInstructions mcpUrl={mcpUrl} defaultCollapsed={hasDevices} />
       </div>
     </div>
   );

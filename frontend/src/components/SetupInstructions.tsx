@@ -2,9 +2,10 @@ import { useState } from 'react';
 
 type SetupTab = 'chatgpt' | 'claude' | 'claude-code';
 
-export default function SetupInstructions({ mcpUrl }: { mcpUrl: string }) {
+export default function SetupInstructions({ mcpUrl, defaultCollapsed }: { mcpUrl: string; defaultCollapsed?: boolean }) {
   const [tab, setTab] = useState<SetupTab>('chatgpt');
   const [copied, setCopied] = useState(false);
+  const [collapsed, setCollapsed] = useState(!!defaultCollapsed);
 
   const claudeCodeCommand = `claude mcp add botbeam --transport http ${mcpUrl}`;
 
@@ -17,7 +18,12 @@ export default function SetupInstructions({ mcpUrl }: { mcpUrl: string }) {
 
   return (
     <div className="setup-instructions">
-      <div className="setup-heading">Connect your AI</div>
+      <div className="setup-heading setup-heading-toggle" onClick={() => setCollapsed(!collapsed)}>
+        <span>Connect your AI</span>
+        <span className={`setup-chevron ${collapsed ? '' : 'open'}`}>›</span>
+      </div>
+      {collapsed ? null : (<>
+
       <p className="setup-intro">
         Copy the MCP endpoint above, then add it as a connector in ChatGPT or Claude.
         Once connected, just tell your AI what to show and which tab to put it in — it handles the rest.
@@ -99,6 +105,7 @@ export default function SetupInstructions({ mcpUrl }: { mcpUrl: string }) {
           Tabs are created automatically as your AI needs them. As you keep talking, new tabs appear — by the end you have a full reference you can keep open.
         </p>
       </div>
+      </>)}
     </div>
   );
 }

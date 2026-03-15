@@ -205,6 +205,42 @@ body:has(.app) {
   margin-top: 10px;
 }
 
+/* Compact endpoint (shown when devices exist) */
+.endpoint-compact {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 14px;
+}
+
+.endpoint-compact-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.endpoint-compact-url {
+  flex: 1;
+  font-size: 0.78rem;
+  color: var(--accent);
+  font-family: monospace;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.endpoint-compact-copy {
+  font-size: 0.75rem;
+  padding: 4px 12px;
+  flex-shrink: 0;
+}
+
 .display-view {
   display: flex;
   flex-direction: column;
@@ -1206,6 +1242,29 @@ table.content-table {
   font-size: 1.1rem;
   font-weight: 600;
   margin-bottom: 8px;
+}
+
+.setup-heading-toggle {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  user-select: none;
+}
+
+.setup-heading-toggle:hover {
+  color: var(--accent);
+}
+
+.setup-chevron {
+  font-size: 1.2rem;
+  color: var(--text-muted);
+  transition: transform 0.2s;
+  transform: rotate(0deg);
+}
+
+.setup-chevron.open {
+  transform: rotate(90deg);
 }
 
 .setup-intro {

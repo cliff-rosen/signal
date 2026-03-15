@@ -1577,8 +1577,17 @@ table.content-table {
   transition: background 0.15s;
 }
 
+.dropbox-item {
+  cursor: pointer;
+}
+
 .dropbox-item:hover {
   background: rgba(255, 255, 255, 0.02);
+}
+
+.dropbox-item-active {
+  background: var(--accent-dim);
+  border-left: 2px solid var(--accent);
 }
 
 .dropbox-item:last-child {
@@ -1609,11 +1618,6 @@ table.content-table {
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--text);
-  cursor: pointer;
-}
-
-.dropbox-item-name:hover {
-  color: var(--accent);
 }
 
 .dropbox-item-delete {

@@ -3,7 +3,7 @@ import { useBotBeam } from '../context/BotBeamContext';
 import type { Device } from '../types';
 
 export default function DropboxPanel() {
-  const { devices, removeDevice, pulsingDropbox, switchTab } = useBotBeam();
+  const { devices, removeDevice, pulsingDropbox, switchTab, activeTab } = useBotBeam();
   const [collapsed, setCollapsed] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -60,6 +60,7 @@ export default function DropboxPanel() {
               <DropboxItem
                 key={d.id}
                 device={d}
+                isActive={activeTab === d.id}
                 isPulsing={pulsingDropbox === d.id}
                 copiedId={copiedId}
                 onCopyId={copyId}
@@ -77,6 +78,7 @@ export default function DropboxPanel() {
               <DropboxItem
                 key={d.id}
                 device={d}
+                isActive={activeTab === d.id}
                 isPulsing={pulsingDropbox === d.id}
                 copiedId={copiedId}
                 onCopyId={copyId}
@@ -107,8 +109,9 @@ export default function DropboxPanel() {
   );
 }
 
-function DropboxItem({ device, isPulsing, copiedId, onCopyId, onView, onDelete, muted }: {
+function DropboxItem({ device, isActive, isPulsing, copiedId, onCopyId, onView, onDelete, muted }: {
   device: Device;
+  isActive: boolean;
   isPulsing: boolean;
   copiedId: string | null;
   onCopyId: (id: string) => void;
@@ -119,12 +122,12 @@ function DropboxItem({ device, isPulsing, copiedId, onCopyId, onView, onDelete, 
   const pickupCount = device.pickupCount ?? 0;
 
   return (
-    <div className={`dropbox-item ${muted ? 'dropbox-item-muted' : ''} ${isPulsing ? 'dropbox-item-pulse' : ''}`}>
+    <div className={`dropbox-item ${isActive ? 'dropbox-item-active' : ''} ${muted ? 'dropbox-item-muted' : ''} ${isPulsing ? 'dropbox-item-pulse' : ''}`} onClick={onView}>
       <div className="dropbox-item-header">
-        <span className="dropbox-item-name" onClick={onView} title="View payload">{device.name}</span>
-        <button className="dropbox-item-delete" onClick={onDelete} title="Delete">&times;</button>
+        <span className="dropbox-item-name">{device.name}</span>
+        <button className="dropbox-item-delete" onClick={(e) => { e.stopPropagation(); onDelete(); }} title="Delete">&times;</button>
       </div>
-      <div className="dropbox-item-id" onClick={() => onCopyId(device.id)} title="Click to copy ID">
+      <div className="dropbox-item-id" onClick={(e) => { e.stopPropagation(); onCopyId(device.id); }} title="Click to copy ID">
         {copiedId === device.id ? 'Copied!' : device.id}
       </div>
       <div className="dropbox-item-meta">

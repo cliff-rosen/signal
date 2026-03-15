@@ -1,11 +1,18 @@
+export interface Pickup {
+  pickedUpBy: string;
+  pickedUpAt: string;
+}
+
 export interface Device {
   id: string;
   name: string;
   createdAt: string;
   content: Content | null;
+  pickupMode?: 'single' | 'multi';
+  pickups?: Pickup[];
 }
 
-export type ContentType = 'text' | 'markdown' | 'html' | 'url' | 'image' | 'list' | 'dashboard' | 'table';
+export type ContentType = 'text' | 'markdown' | 'html' | 'url' | 'image' | 'list' | 'dashboard' | 'table' | 'json';
 
 export interface TableColumn {
   id: string;
@@ -38,4 +45,5 @@ export type WSEvent =
   | { event: 'device_created'; device: Device }
   | { event: 'device_updated'; device: Device }
   | { event: 'device_deleted'; deviceId: string }
-  | { event: 'devices_reset' };
+  | { event: 'devices_reset' }
+  | { event: 'device_picked_up'; deviceId: string; pickedUpBy: string };

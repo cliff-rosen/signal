@@ -9,6 +9,7 @@ export const TYPE_META: Record<ContentType, { label: string; color: string }> = 
   list:      { label: 'List',      color: '#90caf9' },
   dashboard: { label: 'Dashboard', color: '#fff176' },
   table:     { label: 'Table',     color: '#a5d6a7' },
+  json:      { label: 'JSON',      color: '#ffcc80' },
 };
 
 export function contentDetail(content: Content): string | null {
@@ -33,6 +34,14 @@ export function contentDetail(content: Content): string | null {
       try {
         const data: TableData = JSON.parse(content.body);
         return `${data.rows.length} row${data.rows.length === 1 ? '' : 's'}, ${data.columns.length} col${data.columns.length === 1 ? '' : 's'}`;
+      } catch { return null; }
+    }
+    case 'json': {
+      try {
+        const data = JSON.parse(content.body);
+        if (Array.isArray(data)) return `${data.length} item${data.length === 1 ? '' : 's'}`;
+        if (typeof data === 'object' && data !== null) return `${Object.keys(data).length} key${Object.keys(data).length === 1 ? '' : 's'}`;
+        return null;
       } catch { return null; }
     }
     case 'html':

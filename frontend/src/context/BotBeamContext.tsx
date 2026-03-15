@@ -163,6 +163,13 @@ export function BotBeamProvider({ children }: { children: ReactNode }) {
             setDevices([]);
             setActiveTab('home');
             break;
+          case 'device_picked_up':
+            setDevices(prev => prev.map(d => {
+              if (d.id !== msg.deviceId) return d;
+              const pickup = { pickedUpBy: msg.pickedUpBy, pickedUpAt: new Date().toISOString() };
+              return { ...d, pickups: [pickup, ...(d.pickups ?? [])] };
+            }));
+            break;
         }
 
         setWsLog(prev => [...prev, {

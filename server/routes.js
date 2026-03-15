@@ -31,12 +31,12 @@ function createRouter(broadcast, broadcastGlobal) {
     res.json(await store.loadDevices(req.namespace));
   }));
 
-  // Create device (optionally with content)
+  // Create device (optionally with content, optionally as dropbox)
   router.post('/devices', asyncHandler(async (req, res) => {
-    const { name, content } = req.body;
+    const { name, content, pickup_mode } = req.body;
     if (!name) return res.status(400).json({ error: 'name is required' });
 
-    const device = await store.createDevice(req.namespace, name, content || null);
+    const device = await store.createDevice(req.namespace, name, content || null, pickup_mode || undefined);
     broadcastGlobal(req.namespace, { event: 'device_created', device });
     res.status(201).json(device);
   }));
@@ -72,6 +72,23 @@ function createRouter(broadcast, broadcastGlobal) {
     await store.resetDevices(req.namespace);
     broadcastGlobal(req.namespace, { event: 'devices_reset' });
     res.status(204).end();
+  }));
+
+  // List dropboxes (devices with pickup_mode set)
+  router.get('/dropboxes', asyncHandler(async (req, res) => {
+    res.json(await store.loadDropboxes(req.namespace));
+  }));
+
+  // Pick up a dropbox
+  router.post('/devices/:id/pickup', asyncHandler(async (req, res) => {
+    const { picked_up_by } = req.body;
+    if (!picked_up_by) return res.status(400).json({ error: 'picked_up_by is required' });
+
+    const device = await store.pickupDropbox(req.namespace, req.params.id, picked_up_by);
+    if (!device) return res.status(404).json({ error: 'Device not found' });
+
+    broadcastGlobal(req.namespace, { event: 'device_picked_up', deviceId: req.params.id, pickedUpBy: picked_up_by });
+    res.json(device);
   }));
 
   // Proxy external URLs (bypasses X-Frame-Options)

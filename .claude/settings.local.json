@@ -10,7 +10,9 @@
       "WebFetch(domain:wttr.in)",
       "Read(//c/Users/cliff/.claude/**)",
       "Bash(cd /c/code/signal && node -e \"\nconst store = require\\('./server/store'\\);\nconst { initDB } = require\\('./server/db'\\);\ninitDB\\(\\).then\\(async \\(\\) => {\n  // Find what namespace has those devices\n  const db = require\\('./server/db'\\).getDB\\(\\);\n  const [rows] = await db.query\\('SELECT DISTINCT namespace_id FROM devices ORDER BY namespace_id'\\);\n  console.log\\('Namespaces with devices:', rows\\);\n  const [devices] = await db.query\\('SELECT namespace_id, id, name FROM devices WHERE namespace_id = ?', ['3lVuiqs2']\\);\n  console.log\\('Devices in 3lVuiqs2:', devices\\);\n  const [all] = await db.query\\('SELECT namespace_id, id, name FROM devices'\\);\n  console.log\\('All devices:', all\\);\n  process.exit\\(0\\);\n}\\);\n\")",
-      "Bash(xargs grep:*)"
+      "Bash(xargs grep:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx eslint:*)"
     ]
   }
 }

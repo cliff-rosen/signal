@@ -115,6 +115,25 @@ body:has(.app) {
   100% { background: var(--surface-hover); transform: scale(1); }
 }
 
+/* Dropbox indicator dot in tab */
+.tab-dropbox-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ffcc80;
+  margin-left: 6px;
+  flex-shrink: 0;
+}
+
+.tab-dropbox-dot.picked-up {
+  background: var(--text-muted);
+}
+
+.tab-picked-up {
+  opacity: 0.5;
+}
+
 .tab-reset {
   color: var(--text-muted);
   font-size: 0.8rem;
@@ -568,6 +587,83 @@ table.content-table {
   color: var(--text-muted);
   padding: 24px 14px;
   font-style: italic;
+}
+
+/* JSON */
+.content-json-wrap { max-width: 900px; }
+.content-json {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+  overflow-x: auto;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--accent);
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+}
+
+.preview-json {
+  font-size: 0.65rem;
+  line-height: 1.4;
+  color: var(--accent);
+  white-space: pre-wrap;
+  word-break: break-all;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+}
+
+/* Dropbox badge */
+.dropbox-badge {
+  display: inline-block;
+  font-size: 0.6rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(255, 204, 128, 0.15);
+  color: #ffcc80;
+  border: 1px solid rgba(255, 204, 128, 0.3);
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+.dropbox-badge.picked-up {
+  background: rgba(136, 136, 136, 0.15);
+  color: var(--text-muted);
+  border-color: rgba(136, 136, 136, 0.3);
+}
+
+.device-picked-up {
+  opacity: 0.5;
+}
+
+.device-id-copy {
+  cursor: pointer;
+  font-family: monospace;
+  font-size: 0.75rem;
+}
+
+.device-id-copy:hover {
+  color: var(--accent);
+}
+
+/* Pickup history */
+.pickup-history {
+  width: 100%;
+  max-width: 900px;
+  margin-bottom: 12px;
+}
+
+.pickup-entry {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  padding: 4px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.pickup-entry strong {
+  color: var(--text);
 }
 
 /* Waiting state */

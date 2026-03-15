@@ -38,10 +38,10 @@ function createDirectClient(broadcast, broadcastGlobal, ip) {
         throw err;
       }
     },
-    createDevice: async (ns, name, content) => {
+    createDevice: async (ns, name, content, pickupMode) => {
       try {
-        logAPI(ns, 'create_device', { device: name, contentType: content?.type, ip });
-        const device = await store.createDevice(ns, name, content || null);
+        logAPI(ns, 'create_device', { device: name, contentType: content?.type, pickupMode, ip });
+        const device = await store.createDevice(ns, name, content || null, pickupMode);
         broadcastGlobal(ns, { event: 'device_created', device });
         return device;
       } catch (err) {
@@ -81,6 +81,27 @@ function createDirectClient(broadcast, broadcastGlobal, ip) {
         broadcastGlobal(ns, { event: 'devices_reset' });
       } catch (err) {
         log.error('resetDevices failed', { namespace: ns, error: err.message });
+        throw err;
+      }
+    },
+    listDropboxes: async (ns) => {
+      try {
+        logAPI(ns, 'list_dropboxes', { ip });
+        return await store.loadDropboxes(ns);
+      } catch (err) {
+        log.error('listDropboxes failed', { namespace: ns, error: err.message });
+        throw err;
+      }
+    },
+    pickupDropbox: async (ns, deviceId, pickedUpBy) => {
+      try {
+        logAPI(ns, 'pickup_dropbox', { device: deviceId, ip });
+        const device = await store.pickupDropbox(ns, deviceId, pickedUpBy);
+        if (!device) throw new Error('Device not found');
+        broadcastGlobal(ns, { event: 'device_picked_up', deviceId, pickedUpBy });
+        return device;
+      } catch (err) {
+        log.error('pickupDropbox failed', { namespace: ns, device: deviceId, error: err.message });
         throw err;
       }
     },

@@ -5,7 +5,8 @@ const { createLogger } = require('./logger');
 const log = createLogger('store');
 const MAX_BODY_BYTES = 512 * 1024; // 500KB
 
-const VALID_CONTENT_TYPES = new Set(['text', 'html', 'url', 'image', 'markdown', 'dashboard', 'list', 'table']);
+const VALID_CONTENT_TYPES = new Set(['text', 'html', 'url', 'image', 'markdown', 'dashboard', 'list', 'table', 'json']);
+const VALID_PICKUP_MODES = new Set(['single', 'multi']);
 
 // Normalizes structured content types (table, dashboard, list) so the frontend
 // always receives a consistent shape. Returns the body string to store.
@@ -47,7 +48,7 @@ function validateContent(type, body) {
 }
 
 function rowToDevice(r) {
-  return {
+  const device = {
     id: r.id,
     name: r.name,
     createdAt: r.createdAt,
@@ -55,9 +56,11 @@ function rowToDevice(r) {
       ? { type: r.content_type, body: r.content_body, updatedAt: r.content_updated_at }
       : null,
   };
+  if (r.pickup_mode) device.pickupMode = r.pickup_mode;
+  return device;
 }
 
-const DEVICE_COLS = `id, name, created_at as createdAt, content_type, content_body, content_updated_at`;
+const DEVICE_COLS = `id, name, created_at as createdAt, content_type, content_body, content_updated_at, pickup_mode`;
 
 // ── Namespaces ──
 
@@ -110,10 +113,16 @@ async function loadDevices(namespace) {
   }
 }
 
-async function createDevice(namespace, name, content) {
+async function createDevice(namespace, name, content, pickupMode) {
   if (!name || typeof name !== 'string') throw new Error('Device name is required');
   if (name.length > 255) throw new Error('Device name too long (max 255 chars)');
   if (content) content.body = validateContent(content.type, content.body);
+  if (pickupMode && !VALID_PICKUP_MODES.has(pickupMode)) {
+    throw new Error(`Invalid pickup mode "${pickupMode}". Must be one of: ${[...VALID_PICKUP_MODES].join(', ')}`);
+  }
+  if (pickupMode && (!content || content.type !== 'json')) {
+    throw new Error('Dropbox devices must use content type "json"');
+  }
 
   const db = getPool();
   const id = nanoid(8);
@@ -121,9 +130,9 @@ async function createDevice(namespace, name, content) {
   try {
     if (content) {
       await db.query(
-        `INSERT INTO devices (id, namespace, name, content_type, content_body, content_updated_at)
-         VALUES (?, ?, ?, ?, ?, NOW())`,
-        [id, namespace, name, content.type, content.body]
+        `INSERT INTO devices (id, namespace, name, content_type, content_body, content_updated_at, pickup_mode)
+         VALUES (?, ?, ?, ?, ?, NOW(), ?)`,
+        [id, namespace, name, content.type, content.body, pickupMode || null]
       );
     } else {
       await db.query(
@@ -214,6 +223,72 @@ async function resetDevices(namespace) {
   }
 }
 
+// ── Dropbox ──
+
+async function loadDropboxes(namespace) {
+  const db = getPool();
+  try {
+    const [rows] = await db.query(
+      `SELECT ${DEVICE_COLS} FROM devices WHERE namespace = ? AND pickup_mode IS NOT NULL ORDER BY created_at`,
+      [namespace]
+    );
+    const devices = rows.map(rowToDevice);
+
+    // Attach pickup history to each dropbox
+    for (const device of devices) {
+      const [pickups] = await db.query(
+        `SELECT picked_up_by as pickedUpBy, picked_up_at as pickedUpAt FROM pickups WHERE namespace = ? AND device_id = ? ORDER BY picked_up_at DESC`,
+        [namespace, device.id]
+      );
+      device.pickups = pickups;
+    }
+
+    return devices;
+  } catch (err) {
+    log.error('loadDropboxes failed', { namespace, error: err.message });
+    throw err;
+  }
+}
+
+async function pickupDropbox(namespace, deviceId, pickedUpBy) {
+  if (!pickedUpBy || typeof pickedUpBy !== 'string') throw new Error('picked_up_by is required');
+  if (pickedUpBy.length > 255) throw new Error('picked_up_by too long (max 255 chars)');
+
+  const db = getPool();
+  try {
+    // Load the device
+    const [devRows] = await db.query(
+      `SELECT ${DEVICE_COLS} FROM devices WHERE namespace = ? AND id = ?`,
+      [namespace, deviceId]
+    );
+    if (devRows.length === 0) return null;
+    const device = rowToDevice(devRows[0]);
+
+    if (!device.pickupMode) throw new Error('This device is not a dropbox');
+
+    // For single-use, check if already picked up (atomic via INSERT...SELECT)
+    if (device.pickupMode === 'single') {
+      const [existing] = await db.query(
+        'SELECT id FROM pickups WHERE namespace = ? AND device_id = ?',
+        [namespace, deviceId]
+      );
+      if (existing.length > 0) throw new Error('This dropbox has already been picked up');
+    }
+
+    // Record the pickup
+    await db.query(
+      'INSERT INTO pickups (namespace, device_id, picked_up_by) VALUES (?, ?, ?)',
+      [namespace, deviceId, pickedUpBy]
+    );
+
+    // Return the content
+    return device;
+  } catch (err) {
+    log.error('pickupDropbox failed', { namespace, deviceId, error: err.message });
+    throw err;
+  }
+}
+
 // ── Admin ──
 
 async function getActiveNamespaces() {
@@ -248,7 +323,8 @@ async function getLogsByNamespace(namespace, limit = 100) {
 module.exports = {
   createNamespace, getNamespace, touchNamespace,
   loadDevices, createDevice, updateDevice, deleteDevice, resetDevices,
+  loadDropboxes, pickupDropbox,
   validateContent,
   getActiveNamespaces, getLogsByNamespace,
-  MAX_BODY_BYTES, VALID_CONTENT_TYPES,
+  MAX_BODY_BYTES, VALID_CONTENT_TYPES, VALID_PICKUP_MODES,
 };

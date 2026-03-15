@@ -67,6 +67,20 @@ function ImageEmbed({ url }: { url: string }) {
   return <img className="content-image" src={url} alt="Display" onError={() => setFailed(true)} />;
 }
 
+function JsonViewer({ body }: { body: string }) {
+  let formatted: string;
+  try {
+    formatted = JSON.stringify(JSON.parse(body), null, 2);
+  } catch {
+    formatted = body;
+  }
+  return (
+    <pre className="content-json">
+      <code>{formatted}</code>
+    </pre>
+  );
+}
+
 type SortDir = 'asc' | 'desc' | null;
 
 function TableView({ data }: { data: TableData }) {
@@ -233,6 +247,13 @@ export default function ContentRenderer({ content }: Props) {
         </div>
       );
     }
+
+    case 'json':
+      return (
+        <div className="content content-json-wrap">
+          <JsonViewer body={content.body} />
+        </div>
+      );
 
     case 'table': {
       let tableData: TableData | null = null;

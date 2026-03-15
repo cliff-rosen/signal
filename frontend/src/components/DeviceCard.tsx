@@ -60,6 +60,11 @@ function Preview({ content }: { content: Content }) {
         </div>
       );
     }
+    case 'json': {
+      let formatted: string;
+      try { formatted = JSON.stringify(JSON.parse(content.body), null, 2); } catch { formatted = content.body; }
+      return <pre className="preview-json">{formatted}</pre>;
+    }
     case 'table': {
       let data: TableData | null = null;
       try { data = JSON.parse(content.body); } catch { /* invalid JSON */ }
@@ -94,10 +99,20 @@ export default function DeviceCard({ device, onClick }: Props) {
   const meta = content ? TYPE_META[content.type] : null;
   const detail = content ? contentDetail(content) : null;
 
+  const isDropbox = !!device.pickupMode;
+  const isPickedUp = isDropbox && device.pickupMode === 'single' && (device.pickups?.length ?? 0) > 0;
+
   return (
-    <div className="device-card" onClick={onClick}>
+    <div className={`device-card ${isPickedUp ? 'device-picked-up' : ''}`} onClick={onClick}>
       <div className="card-header">
-        <div className="name">{device.name}</div>
+        <div className="name">
+          {device.name}
+          {isDropbox && (
+            <span className={`dropbox-badge ${isPickedUp ? 'picked-up' : ''}`}>
+              {isPickedUp ? 'picked up' : device.pickupMode === 'single' ? 'dropbox' : 'dropbox (multi)'}
+            </span>
+          )}
+        </div>
         {content && meta ? (
           <div className="card-meta">
             <span className="type-badge" style={{ borderColor: meta.color, color: meta.color }}>

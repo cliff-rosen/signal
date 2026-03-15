@@ -49,9 +49,21 @@ async function initDB() {
       content_type VARCHAR(20),
       content_body LONGTEXT,
       content_updated_at TIMESTAMP NULL,
+      pickup_mode VARCHAR(10),
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       PRIMARY KEY (namespace, id),
       FOREIGN KEY (namespace) REFERENCES namespaces(id) ON DELETE CASCADE
+    )
+  `);
+
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS pickups (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      namespace VARCHAR(12) NOT NULL,
+      device_id VARCHAR(100) NOT NULL,
+      picked_up_by VARCHAR(255) NOT NULL,
+      picked_up_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (namespace, device_id) REFERENCES devices(namespace, id) ON DELETE CASCADE
     )
   `);
 
@@ -59,6 +71,7 @@ async function initDB() {
   await db.query(`ALTER TABLE devices ADD COLUMN IF NOT EXISTS content_type VARCHAR(20)`).catch(() => {});
   await db.query(`ALTER TABLE devices ADD COLUMN IF NOT EXISTS content_body LONGTEXT`).catch(() => {});
   await db.query(`ALTER TABLE devices ADD COLUMN IF NOT EXISTS content_updated_at TIMESTAMP NULL`).catch(() => {});
+  await db.query(`ALTER TABLE devices ADD COLUMN IF NOT EXISTS pickup_mode VARCHAR(10)`).catch(() => {});
 
   // Migration: move data from content table to devices table if content table exists
   try {

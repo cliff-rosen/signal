@@ -50,6 +50,7 @@ async function initDB() {
       content_body LONGTEXT,
       content_updated_at TIMESTAMP NULL,
       pickup_mode VARCHAR(10),
+      pickup_count INT NOT NULL DEFAULT 0,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       PRIMARY KEY (namespace, id),
       FOREIGN KEY (namespace) REFERENCES namespaces(id) ON DELETE CASCADE
@@ -72,6 +73,16 @@ async function initDB() {
   await db.query(`ALTER TABLE devices ADD COLUMN IF NOT EXISTS content_body LONGTEXT`).catch(() => {});
   await db.query(`ALTER TABLE devices ADD COLUMN IF NOT EXISTS content_updated_at TIMESTAMP NULL`).catch(() => {});
   await db.query(`ALTER TABLE devices ADD COLUMN IF NOT EXISTS pickup_mode VARCHAR(10)`).catch(() => {});
+  await db.query(`ALTER TABLE devices ADD COLUMN IF NOT EXISTS pickup_count INT NOT NULL DEFAULT 0`).catch(() => {});
+
+  // Backfill pickup_count from pickups table for existing data
+  await db.query(`
+    UPDATE devices d
+    SET d.pickup_count = (
+      SELECT COUNT(*) FROM pickups p WHERE p.namespace = d.namespace AND p.device_id = d.id
+    )
+    WHERE d.pickup_mode IS NOT NULL
+  `).catch(() => {});
 
   // Migration: move data from content table to devices table if content table exists
   try {

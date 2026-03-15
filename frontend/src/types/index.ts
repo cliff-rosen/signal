@@ -9,6 +9,7 @@ export interface Device {
   createdAt: string;
   content: Content | null;
   pickupMode?: 'single' | 'multi';
+  pickupCount?: number;
   pickups?: Pickup[];
 }
 

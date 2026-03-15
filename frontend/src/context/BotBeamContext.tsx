@@ -17,6 +17,7 @@ interface BotBeamContextType {
   showDebug: boolean;
   connected: boolean;
   pulsingTab: string | null;
+  pulsingDropbox: string | null;
   version: string;
 
   getStarted: () => Promise<void>;
@@ -46,8 +47,10 @@ export function BotBeamProvider({ children }: { children: ReactNode }) {
   const [showDebug, setShowDebug] = useState(false);
   const [connected, setConnected] = useState(false);
   const [pulsingTab, setPulsingTab] = useState<string | null>(null);
+  const [pulsingDropbox, setPulsingDropbox] = useState<string | null>(null);
   const [version, setVersion] = useState('');
   const pulseTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const pulseDropboxTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const wsRef = useRef<WebSocket | null>(null);
   const initialVersion = useRef('');
 
@@ -141,19 +144,31 @@ export function BotBeamProvider({ children }: { children: ReactNode }) {
               ? prev
               : [...prev, msg.device]
             );
-            setActiveTab(msg.device.id);
-            clearTimeout(pulseTimer.current);
-            setPulsingTab(msg.device.id);
-            pulseTimer.current = setTimeout(() => setPulsingTab(null), 800);
+            if (msg.device.pickupMode) {
+              clearTimeout(pulseDropboxTimer.current);
+              setPulsingDropbox(msg.device.id);
+              pulseDropboxTimer.current = setTimeout(() => setPulsingDropbox(null), 800);
+            } else {
+              setActiveTab(msg.device.id);
+              clearTimeout(pulseTimer.current);
+              setPulsingTab(msg.device.id);
+              pulseTimer.current = setTimeout(() => setPulsingTab(null), 800);
+            }
             break;
           case 'device_updated':
             setDevices(prev => prev.map(d =>
               d.id === msg.device.id ? msg.device : d
             ));
-            setActiveTab(msg.device.id);
-            clearTimeout(pulseTimer.current);
-            setPulsingTab(msg.device.id);
-            pulseTimer.current = setTimeout(() => setPulsingTab(null), 800);
+            if (msg.device.pickupMode) {
+              clearTimeout(pulseDropboxTimer.current);
+              setPulsingDropbox(msg.device.id);
+              pulseDropboxTimer.current = setTimeout(() => setPulsingDropbox(null), 800);
+            } else {
+              setActiveTab(msg.device.id);
+              clearTimeout(pulseTimer.current);
+              setPulsingTab(msg.device.id);
+              pulseTimer.current = setTimeout(() => setPulsingTab(null), 800);
+            }
             break;
           case 'device_deleted':
             setDevices(prev => prev.filter(d => d.id !== msg.deviceId));
@@ -167,8 +182,15 @@ export function BotBeamProvider({ children }: { children: ReactNode }) {
             setDevices(prev => prev.map(d => {
               if (d.id !== msg.deviceId) return d;
               const pickup = { pickedUpBy: msg.pickedUpBy, pickedUpAt: new Date().toISOString() };
-              return { ...d, pickups: [pickup, ...(d.pickups ?? [])] };
+              return {
+                ...d,
+                pickupCount: (d.pickupCount ?? 0) + 1,
+                pickups: [pickup, ...(d.pickups ?? [])],
+              };
             }));
+            clearTimeout(pulseDropboxTimer.current);
+            setPulsingDropbox(msg.deviceId);
+            pulseDropboxTimer.current = setTimeout(() => setPulsingDropbox(null), 800);
             break;
         }
 
@@ -223,6 +245,7 @@ export function BotBeamProvider({ children }: { children: ReactNode }) {
     showDebug,
     connected,
     pulsingTab,
+    pulsingDropbox,
     version,
     getStarted,
     switchTab,

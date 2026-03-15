@@ -44,16 +44,13 @@ export default function TabBar() {
           Home
         </button>
 
-        {devices.map(d => {
-          const isPickedUp = d.pickupMode === 'single' && (d.pickups?.length ?? 0) > 0;
-          return (
+        {devices.filter(d => !d.pickupMode).map(d => (
           <button
             key={d.id}
-            className={`tab ${activeTab === d.id ? 'active' : ''} ${pulsingTab === d.id ? 'tab-pulse' : ''} ${isPickedUp ? 'tab-picked-up' : ''}`}
+            className={`tab ${activeTab === d.id ? 'active' : ''} ${pulsingTab === d.id ? 'tab-pulse' : ''}`}
             onClick={() => switchTab(d.id)}
           >
             <span>{d.name}</span>
-            {d.pickupMode && <span className={`tab-dropbox-dot ${isPickedUp ? 'picked-up' : ''}`} title={isPickedUp ? 'Picked up' : 'Dropbox'} />}
             <span
               className="tab-close"
               title="Delete tab"
@@ -65,11 +62,10 @@ export default function TabBar() {
               &times;
             </span>
           </button>
-          );
-        })}
+        ))}
 
         <button className="tab tab-add" onClick={() => setShowModal(true)}>+</button>
-        {devices.length > 0 && (
+        {devices.filter(d => !d.pickupMode).length > 0 && (
           <button className="tab tab-reset" title="Reset all tabs" onClick={() => setShowReset(true)}>
             Reset
           </button>

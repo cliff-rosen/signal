@@ -34,6 +34,18 @@ body:has(.app) {
   height: 100vh;
 }
 
+/* ── App body (flex row for main + sidebar) ── */
+.app-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.app-body > .main {
+  flex: 1;
+  min-width: 0;
+}
+
 /* ── Tab bar ── */
 .tab-bar {
   display: flex;
@@ -113,25 +125,6 @@ body:has(.app) {
   50%  { transform: scale(1.08); }
   70%  { transform: scale(0.99); }
   100% { background: var(--surface-hover); transform: scale(1); }
-}
-
-/* Dropbox indicator dot in tab */
-.tab-dropbox-dot {
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #ffcc80;
-  margin-left: 6px;
-  flex-shrink: 0;
-}
-
-.tab-dropbox-dot.picked-up {
-  background: var(--text-muted);
-}
-
-.tab-picked-up {
-  opacity: 0.5;
 }
 
 .tab-reset {
@@ -648,22 +641,120 @@ table.content-table {
   color: var(--accent);
 }
 
-/* Pickup history */
-.pickup-history {
+/* ── Dropbox package overlay (DeviceView) ── */
+.dropbox-package {
+  position: relative;
   width: 100%;
   max-width: 900px;
+  min-height: 300px;
+}
+
+.dropbox-content-behind {
+  filter: blur(6px);
+  opacity: 0.2;
+  pointer-events: none;
+  user-select: none;
+}
+
+.dropbox-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  gap: 12px;
+}
+
+.dropbox-icon {
+  font-size: 3.5rem;
+}
+
+.dropbox-status {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #ffcc80;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.dropbox-pickup-count {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.dropbox-history {
+  margin-top: 8px;
+  text-align: center;
+}
+
+.dropbox-history .pickup-entry {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  padding: 2px 0;
+}
+
+.dropbox-package.picked-up .dropbox-status {
+  color: var(--text-muted);
+}
+
+.dropbox-package.picked-up .dropbox-content-behind {
+  opacity: 0.1;
+}
+
+.dropbox-reveal-btn {
+  margin-top: 4px;
+  font-size: 0.8rem;
+  color: var(--accent);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 16px;
+}
+
+.dropbox-reveal-btn:hover {
+  border-color: var(--accent);
+}
+
+.dropbox-hide-btn {
+  font-size: 0.78rem;
+  color: var(--text-muted);
   margin-bottom: 12px;
 }
 
-.pickup-entry {
-  font-size: 0.78rem;
-  color: var(--text-muted);
-  padding: 4px 0;
-  border-bottom: 1px solid var(--border);
+.dropbox-hide-btn:hover {
+  color: var(--accent);
 }
 
-.pickup-entry strong {
-  color: var(--text);
+/* ── Dropbox card preview ── */
+.dropbox-card-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 8px;
+}
+
+.dropbox-card-preview .dropbox-icon {
+  font-size: 2.5rem;
+}
+
+.dropbox-card-preview .dropbox-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #ffcc80;
+}
+
+.dropbox-card-preview .dropbox-label.picked-up {
+  color: var(--text-muted);
+}
+
+.dropbox-card-preview .dropbox-count {
+  font-size: 0.7rem;
+  color: var(--text-muted);
 }
 
 /* Waiting state */
@@ -1379,9 +1470,217 @@ table.content-table {
   color: var(--text);
 }
 
+/* ── Dropbox sidebar ── */
+.dropbox-sidebar {
+  width: 280px;
+  flex-shrink: 0;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.dropbox-sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.dropbox-sidebar-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.dropbox-sidebar-collapse {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+}
+
+.dropbox-sidebar-collapse:hover {
+  color: var(--text);
+}
+
+/* Collapsed sidebar */
+.dropbox-sidebar-collapsed {
+  width: 36px;
+  flex-shrink: 0;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 12px;
+  gap: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.dropbox-sidebar-collapsed:hover {
+  background: var(--bg);
+}
+
+.dropbox-sidebar-icon {
+  font-size: 1rem;
+}
+
+.dropbox-sidebar-count {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #ffcc80;
+  background: rgba(255, 204, 128, 0.15);
+  border-radius: 8px;
+  padding: 1px 6px;
+}
+
+.dropbox-pulse {
+  animation: dropbox-sidebar-pulse 0.8s ease-out;
+}
+
+@keyframes dropbox-sidebar-pulse {
+  0%   { background: rgba(255, 204, 128, 0.3); }
+  100% { background: var(--surface); }
+}
+
+/* Sections */
+.dropbox-section {
+  padding: 8px 0;
+}
+
+.dropbox-section + .dropbox-section {
+  border-top: 1px solid var(--border);
+}
+
+.dropbox-section-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  padding: 4px 14px 6px;
+}
+
+/* Items */
+.dropbox-item {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+}
+
+.dropbox-item:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.dropbox-item:last-child {
+  border-bottom: none;
+}
+
+.dropbox-item-muted {
+  opacity: 0.5;
+}
+
+.dropbox-item-pulse {
+  animation: dropbox-item-flash 0.8s ease-out;
+}
+
+@keyframes dropbox-item-flash {
+  0%   { background: rgba(255, 204, 128, 0.2); }
+  100% { background: transparent; }
+}
+
+.dropbox-item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.dropbox-item-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.dropbox-item-name:hover {
+  color: var(--accent);
+}
+
+.dropbox-item-delete {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1rem;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s;
+  padding: 0 2px;
+  line-height: 1;
+}
+
+.dropbox-item:hover .dropbox-item-delete {
+  opacity: 1;
+}
+
+.dropbox-item-delete:hover {
+  color: #e55;
+}
+
+.dropbox-item-id {
+  font-family: monospace;
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  margin-bottom: 4px;
+}
+
+.dropbox-item-id:hover {
+  color: var(--accent);
+}
+
+.dropbox-item-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dropbox-item-status {
+  font-size: 0.6rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: rgba(255, 204, 128, 0.15);
+  color: #ffcc80;
+  border: 1px solid rgba(255, 204, 128, 0.3);
+}
+
+.dropbox-item-status.picked-up {
+  background: rgba(136, 136, 136, 0.15);
+  color: var(--text-muted);
+  border-color: rgba(136, 136, 136, 0.3);
+}
+
+.dropbox-item-count {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+}
+
 @media (max-width: 600px) {
   .landing-features { flex-direction: column; gap: 24px; }
   .landing-hero h1 { font-size: 2rem; }
   .steps-row { flex-direction: column; gap: 24px; }
   .step-arrow { display: none; }
+  .dropbox-sidebar { width: 220px; }
 }

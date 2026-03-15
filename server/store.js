@@ -56,11 +56,14 @@ function rowToDevice(r) {
       ? { type: r.content_type, body: r.content_body, updatedAt: r.content_updated_at }
       : null,
   };
-  if (r.pickup_mode) device.pickupMode = r.pickup_mode;
+  if (r.pickup_mode) {
+    device.pickupMode = r.pickup_mode;
+    device.pickupCount = r.pickup_count ?? 0;
+  }
   return device;
 }
 
-const DEVICE_COLS = `id, name, created_at as createdAt, content_type, content_body, content_updated_at, pickup_mode`;
+const DEVICE_COLS = `id, name, created_at as createdAt, content_type, content_body, content_updated_at, pickup_mode, pickup_count`;
 
 // ── Namespaces ──
 
@@ -275,14 +278,22 @@ async function pickupDropbox(namespace, deviceId, pickedUpBy) {
       if (existing.length > 0) throw new Error('This dropbox has already been picked up');
     }
 
-    // Record the pickup
+    // Record the pickup and increment counter atomically
     await db.query(
       'INSERT INTO pickups (namespace, device_id, picked_up_by) VALUES (?, ?, ?)',
       [namespace, deviceId, pickedUpBy]
     );
+    await db.query(
+      'UPDATE devices SET pickup_count = pickup_count + 1 WHERE namespace = ? AND id = ?',
+      [namespace, deviceId]
+    );
 
-    // Return the content
-    return device;
+    // Re-read device with updated pickup_count
+    const [updated] = await db.query(
+      `SELECT ${DEVICE_COLS} FROM devices WHERE namespace = ? AND id = ?`,
+      [namespace, deviceId]
+    );
+    return rowToDevice(updated[0]);
   } catch (err) {
     log.error('pickupDropbox failed', { namespace, deviceId, error: err.message });
     throw err;

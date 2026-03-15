@@ -100,7 +100,7 @@ export default function DeviceCard({ device, onClick }: Props) {
   const detail = content ? contentDetail(content) : null;
 
   const isDropbox = !!device.pickupMode;
-  const isPickedUp = isDropbox && device.pickupMode === 'single' && (device.pickups?.length ?? 0) > 0;
+  const isPickedUp = isDropbox && device.pickupMode === 'single' && (device.pickupCount ?? 0) > 0;
 
   return (
     <div className={`device-card ${isPickedUp ? 'device-picked-up' : ''}`} onClick={onClick}>
@@ -126,7 +126,19 @@ export default function DeviceCard({ device, onClick }: Props) {
       </div>
       <div className="card-preview">
         {content ? (
-          <Preview content={content} />
+          isDropbox ? (
+            <div className="dropbox-card-preview">
+              <div className="dropbox-icon">{isPickedUp ? '\u{1F4ED}' : '\u{1F4E6}'}</div>
+              <div className={`dropbox-label ${isPickedUp ? 'picked-up' : ''}`}>
+                {isPickedUp ? 'Picked up' : 'Awaiting pickup'}
+              </div>
+              {device.pickupMode === 'multi' && (device.pickupCount ?? 0) > 0 && (
+                <div className="dropbox-count">{device.pickupCount} pickup{device.pickupCount !== 1 ? 's' : ''}</div>
+              )}
+            </div>
+          ) : (
+            <Preview content={content} />
+          )
         ) : (
           <div className="preview-empty">
             <span className="pulse" />Waiting for content

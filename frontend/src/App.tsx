@@ -4,6 +4,7 @@ import Home from './components/Home';
 import DeviceView from './components/DeviceView';
 import Landing from './components/Landing';
 import DebugPanel from './components/DebugPanel';
+import DropboxPanel from './components/DropboxPanel';
 
 function AppContent() {
   const { namespace, activeTab } = useBotBeam();
@@ -13,7 +14,10 @@ function AppContent() {
   return (
     <div className="app">
       <TabBar />
-      {activeTab === 'home' ? <Home /> : <DeviceView key={activeTab} deviceId={activeTab} />}
+      <div className="app-body">
+        {activeTab === 'home' ? <Home /> : <DeviceView key={activeTab} deviceId={activeTab} />}
+        <DropboxPanel />
+      </div>
       <DebugPanel />
     </div>
   );

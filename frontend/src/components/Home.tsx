@@ -54,9 +54,9 @@ export default function Home() {
         <SetupInstructions mcpUrl={mcpUrl} />
 
         {/* Device grid */}
-        {devices.length > 0 && (
+        {devices.filter(d => !d.pickupMode).length > 0 && (
           <div className="device-grid">
-            {devices.map(d => (
+            {devices.filter(d => !d.pickupMode).map(d => (
               <DeviceCard
                 key={d.id}
                 device={d}

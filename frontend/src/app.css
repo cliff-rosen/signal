@@ -1116,18 +1116,21 @@ table.content-table {
   max-width: 90%;
 }
 
-.example-more {
+.example-after {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  text-align: center;
+  line-height: 1.6;
+  margin-top: 16px;
+}
+
+.landing-more-prompts {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  align-items: center;
-}
-
-.example-more-label {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  width: 100%;
-  margin-bottom: 2px;
+  justify-content: center;
+  max-width: 600px;
+  margin: 32px 0 48px;
 }
 
 .example-prompt-pill {
@@ -1743,6 +1746,7 @@ table.content-table {
 @media (max-width: 600px) {
   .landing-features { flex-direction: column; gap: 24px; }
   .landing-hero h1 { font-size: 2rem; }
+  .landing-more-prompts { flex-direction: column; align-items: center; }
   .steps-row { flex-direction: column; gap: 24px; }
   .step-arrow { display: none; }
   .dropbox-sidebar { width: 220px; }
